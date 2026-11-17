@@ -1,0 +1,17 @@
+name = "psplus-sorter-api"
+main = "src/index.js"
+compatibility_date = "2025-06-01"
+
+# Sites allowed to call this API: your GitHub Pages address, comma-separated, no trailing slash.
+# e.g. "https://yourname.github.io"
+[vars]
+ALLOWED_ORIGINS = "https://misterhundoah-code.github.io"
+ALLOW_LOCALHOST = "0"
+MAX_NEW_ACCOUNTS_PER_DAY = "500"
+
+# Create the database with:  npx wrangler d1 create psplus-sorter
+# then paste the database_id it prints below.
+[[d1_databases]]
+binding = "DB"
+database_name = "psplus-sorter"
+database_id = "PASTE-YOUR-DATABASE-ID-HERE"
