@@ -14,4 +14,4 @@ MAX_NEW_ACCOUNTS_PER_DAY = "500"
 [[d1_databases]]
 binding = "DB"
 database_name = "psplus-sorter"
-database_id = "PASTE-YOUR-DATABASE-ID-HERE"
+database_id = "2af9fe18-b0a7-4c23-adbe-970108e5464b"
