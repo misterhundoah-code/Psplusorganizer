@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PS Plus Catalogue Sorter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800;900&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a night-sky marquee up top showing the viewer's progress and what is on deck, then a filter rail beside one long shelf of games, each with a colour-coded spine tile keyed to its style. */
+:root{
+  --bg:#eef1f6; --panel:#ffffff; --ink:#131a2a; --muted:#5b6579; --line:#d5dbe6;
+  --accent:#0b4fd6; --accent-ink:#ffffff; --chip:#e3e8f1;
+  --great:#0d7a5f; --good:#2f9150; --mid:#b97a00; --bad:#c23b3b; --none:#8a93a6;
+  --classic:#0f7f8c; --playing:#c8620a; --want:#0b4fd6; --played:#2f9150; --bounced:#8a3fd1; --skip:#7c869a; --monthly:#a35a00;
+  --hero1:#0a1030; --hero2:#16206a; --hero-ink:#f2f5ff; --hero-muted:#aab6e6;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0a0e18; --panel:#131a2a; --ink:#e8ecf5; --muted:#97a2b8; --line:#273148;
+    --accent:#6d9bff; --accent-ink:#0a0e18; --chip:#1e2840;
+    --great:#35c79c; --good:#58c684; --mid:#e0a93a; --bad:#f07a7a; --none:#6d778c;
+    --classic:#4fc6d3; --playing:#f59a4a; --want:#6d9bff; --played:#58c684; --bounced:#b98cf5; --skip:#7f8aa2; --monthly:#f0b24a;
+    --hero1:#060a1e; --hero2:#131c5c;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0a0e18; --panel:#131a2a; --ink:#e8ecf5; --muted:#97a2b8; --line:#273148;
+  --accent:#6d9bff; --accent-ink:#0a0e18; --chip:#1e2840;
+  --great:#35c79c; --good:#58c684; --mid:#e0a93a; --bad:#f07a7a; --none:#6d778c;
+  --classic:#4fc6d3; --playing:#f59a4a; --want:#6d9bff; --played:#58c684; --bounced:#b98cf5; --skip:#7f8aa2; --monthly:#f0b24a;
+  --hero1:#060a1e; --hero2:#131c5c;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
+a{color:inherit}
+.wrap{max-width:1360px;margin:0 auto;padding:16px 16px 48px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- hero ---------- */
+.hero{position:relative;overflow:hidden;border-radius:16px;color:var(--hero-ink);padding:26px 26px 22px;margin-bottom:20px;
+  background:
+    radial-gradient(600px 260px at 88% -10%,rgba(255,92,138,.38),transparent 70%),
+    radial-gradient(520px 300px at 8% 120%,rgba(46,196,255,.30),transparent 70%),
+    linear-gradient(120deg,var(--hero1),var(--hero2));}
+.hero::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:radial-gradient(rgba(255,255,255,.55) 1px,transparent 1.4px);background-size:34px 34px;
+  mask-image:linear-gradient(180deg,#000,transparent 75%);-webkit-mask-image:linear-gradient(180deg,#000,transparent 75%)}
+.hero>*{position:relative}
+.herotop{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 28px}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(40px,6.2vw,76px);line-height:.9;letter-spacing:.005em;margin:0;text-transform:uppercase;text-wrap:balance}
+h1 em{font-style:normal;color:transparent;-webkit-text-stroke:2px #7fd4ff}
+.sub{color:var(--hero-muted);font-size:14px;max-width:46ch}
+.progress{margin-top:22px}
+.plabel{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px;font-family:var(--display);font-weight:700;font-size:18px;letter-spacing:.06em;text-transform:uppercase}
+.plabel span{color:var(--hero-muted);font-weight:600}
+.pbar{display:flex;height:14px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.14);margin-top:8px}
+.pbar i{display:block;height:100%;width:0;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.pbar .sg{background:#f59a4a}.pbar .sw{background:#6d9bff}.pbar .sp{background:#58c684}.pbar .sb{background:#b98cf5}.pbar .sx{background:#8f9ab3}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-size:13px;color:var(--hero-muted)}
+.legend b{color:var(--hero-ink);font-weight:600;font-variant-numeric:tabular-nums}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+.deckhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;margin:22px 0 10px}
+.eyebrow{font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:.08em;text-transform:uppercase;margin:0;white-space:nowrap}
+.deckhead span{color:var(--hero-muted);font-size:13px}
+.deck{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.card{flex:0 0 150px;display:flex;flex-direction:column;gap:8px;text-decoration:none;color:var(--hero-ink)}
+.card .tile{width:150px;height:92px;border-radius:10px;font-size:44px}
+.card .ct{font-weight:600;font-size:13.5px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .cm{font-size:12.5px;color:var(--hero-muted);font-variant-numeric:tabular-nums}
+.card:hover .tile{transform:translateY(-3px) rotate(-1deg)}
+
+/* ---------- spine tiles ---------- */
+.tile{--h:220;--a:135deg;flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:8px;color:#fff;
+  font-family:var(--display);font-weight:900;font-size:21px;letter-spacing:.02em;line-height:1;text-shadow:0 1px 0 rgba(0,0,0,.25);
+  background:
+    repeating-linear-gradient(var(--a),rgba(255,255,255,.13) 0 3px,transparent 3px 11px),
+    linear-gradient(var(--a),hsl(var(--h) 72% 44%),hsl(calc(var(--h) + 38) 78% 26%));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);transition:transform .18s ease}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:hsl(var(--h) 68% 50%);margin-right:5px;vertical-align:1px}
+
+/* ---------- layout ---------- */
+.layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:20px;align-items:start}
+.rail{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}
+.rail summary{display:none}
+.railhead{font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 2px}
+.inner{display:flex;flex-direction:column;gap:16px}
+.grp{display:flex;flex-direction:column;gap:7px}
+.grp>label,.grp>.lab{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.grp>label.check{font-family:var(--body);text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink);font-weight:400}
+input[type=search],select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.seg,.chips{display:flex;flex-wrap:wrap;gap:6px}
+.seg button,.chips button,.btn{font:inherit;font-size:13.5px;color:var(--ink);background:var(--chip);border:1px solid transparent;border-radius:999px;padding:4px 11px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.chips button[aria-pressed=true]{background:hsl(var(--h) 62% 40%);color:#fff;font-weight:600}
+.chips button[aria-pressed=true] .dot{background:#fff}
+.seg button:hover,.chips button:hover,.btn:hover{border-color:var(--accent)}
+.chips button small{opacity:.7;font-size:11.5px;margin-left:3px}
+.row2{display:grid;grid-template-columns:1fr auto;gap:6px}
+.btn{border-radius:8px;background:transparent;border-color:var(--line);padding:7px 10px}
+.hint{font-size:12.5px;color:var(--muted)}
+.check{display:flex;gap:8px;align-items:center;font-size:14px}
+.check input{accent-color:var(--accent);width:16px;height:16px;flex:none}
+
+/* ---------- shelf ---------- */
+.shelfhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 16px;margin-bottom:6px}
+.shelfhead h2{font-family:var(--display);font-weight:800;font-size:30px;letter-spacing:.05em;text-transform:uppercase;margin:0;line-height:1}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 12px}
+.tabs button{--c:var(--accent);font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 14px;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+.tabs button[data-v=g]{--c:var(--playing)}.tabs button[data-v=w]{--c:var(--want)}.tabs button[data-v=p]{--c:var(--played)}.tabs button[data-v=b]{--c:var(--bounced)}.tabs button[data-v=x]{--c:var(--skip)}.tabs button[data-v=n]{--c:var(--bad)}
+.tabs button:hover{color:var(--ink);border-color:var(--c)}
+.tabs button[aria-selected=true]{background:var(--c);border-color:var(--c);color:#fff}
+.tabs button b{font-weight:700;margin-left:6px;color:var(--c);font-variant-numeric:tabular-nums}
+.tabs button[aria-selected=true] b{color:#fff}
+.count{font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:.04em;text-transform:uppercase}
+.count b{color:var(--accent)}
+.tablebox{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+thead th{position:sticky;top:0;background:var(--panel);text-align:left;font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);padding:0;white-space:nowrap;z-index:2}
+thead th button{all:unset;cursor:pointer;display:block;width:100%;box-sizing:border-box;padding:10px 12px}
+thead th.plain{padding:10px 12px}
+thead th button:hover,thead th[aria-sort] button{color:var(--ink)}
+thead th[aria-sort=ascending] button::after{content:" ▲";color:var(--accent);font-size:11px}
+thead th[aria-sort=descending] button::after{content:" ▼";color:var(--accent);font-size:11px}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+tr.band th{text-align:left;padding:16px 12px 7px;border-bottom:2px solid var(--bc,var(--line));background:color-mix(in srgb,var(--bc,var(--muted)) 7%,var(--panel));font-family:var(--display);font-weight:800;font-size:21px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink)}
+tr.band th small{font-family:var(--body);font-weight:400;font-size:12.5px;letter-spacing:0;text-transform:none;color:var(--muted);margin-left:10px}
+tr.game{--st:transparent}
+tr.game td:first-child{box-shadow:inset 4px 0 0 var(--st)}
+tr.is-g{--st:var(--playing)} tr.is-w{--st:var(--want)} tr.is-p{--st:var(--played)} tr.is-b{--st:var(--bounced)} tr.is-x{--st:var(--skip)}
+tr.game:hover{background:color-mix(in srgb,var(--accent) 6%,transparent)}
+tr.game:hover .tile{transform:scale(1.08) rotate(-2deg)}
+td.num,th.num{text-align:right}
+th.num button{text-align:right}
+.g{display:flex;align-items:center;gap:12px;min-width:0}
+.gt{min-width:0}
+.title a{font-weight:600;text-decoration:none}
+.title a:hover{text-decoration:underline;text-decoration-color:var(--accent)}
+tr.is-p .title a,tr.is-x .title a,tr.is-b .title a{color:var(--muted)}
+.tags{display:flex;flex-wrap:wrap;gap:3px 12px;color:var(--muted);font-size:12.5px;margin-top:2px}
+.syn{font-size:13px;color:var(--muted);margin-top:3px;max-width:62ch;line-height:1.4}
+.pvt{border:1px solid var(--line);border-radius:4px;padding:0 5px;color:var(--ink);font-size:12px;white-space:nowrap}
+.flag{display:inline-block;font-family:var(--display);font-weight:700;font-size:12.5px;letter-spacing:.07em;text-transform:uppercase;border:1px solid currentColor;border-radius:4px;padding:0 5px;margin-left:8px;vertical-align:1px;white-space:nowrap}
+.flag.new{color:var(--accent)} .flag.mon{color:var(--monthly)}
+.plat{display:inline-flex;gap:4px}
+.plat span{font-family:var(--display);font-weight:700;font-size:13.5px;letter-spacing:.05em;border:1px solid var(--line);border-radius:4px;padding:1px 6px;color:var(--muted)}
+.plat span.p5{color:#fff;background:var(--accent);border-color:var(--accent)}
+:root[data-theme="dark"] .plat span.p5{color:var(--accent-ink)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .plat span.p5{color:var(--accent-ink)}}
+.score{display:inline-block;min-width:40px;text-align:center;font-family:var(--display);font-weight:800;font-size:21px;line-height:1;padding:6px 0;border-radius:7px;color:#fff}
+.score.s{background:var(--great);box-shadow:0 0 0 2px color-mix(in srgb,var(--great) 35%,transparent)}
+.score.g{background:var(--good)} .score.m{background:var(--mid)} .score.b{background:var(--bad)}
+.score.n{background:transparent;color:var(--none);font-size:14px;font-weight:700;border:1px dashed var(--none);padding:5px 0}
+.time{white-space:nowrap}
+.time.est{color:var(--muted)}
+.marks{display:inline-flex;gap:4px;white-space:nowrap}
+.marks button{--c:var(--ink);font:inherit;font-size:12.5px;line-height:1;color:var(--muted);background:transparent;border:1px solid var(--line);border-radius:7px;padding:6px 8px;cursor:pointer;transition:background .12s,color .12s,border-color .12s,transform .12s}
+.marks button.mg{--c:var(--playing)}.marks button.mn{--c:var(--monthly)}.marks button.mw{--c:var(--want)}.marks button.mp{--c:var(--played)}.marks button.mb{--c:var(--bounced)}.marks button.mx{--c:var(--skip)}
+.marks button:hover{color:var(--c);border-color:var(--c);transform:translateY(-1px)}
+.marks button[aria-pressed=true]{background:var(--c);border-color:var(--c);color:#fff;font-weight:600}
+.fy{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.pri{display:inline-block;min-width:40px;text-align:center;font-family:var(--display);font-weight:800;font-size:21px;line-height:1;padding:5px 0;border-radius:999px;border:2px solid var(--pc,var(--none));color:var(--pc,var(--none))}
+.pri.plain{border-style:dashed}
+.delta{font-size:12px;font-weight:600;min-width:24px;text-align:left}
+.delta.up{color:var(--good)} .delta.dn{color:var(--bad)}
+.stars{display:inline-flex;gap:1px}
+.stars button{font:inherit;font-size:19px;line-height:1;background:none;border:0;padding:2px 1px;cursor:pointer;color:var(--line);transition:transform .12s,color .12s}
+.stars button.on{color:#e5a100}
+.stars button:hover{transform:scale(1.25);color:#e5a100}
+.libset{display:inline-flex;gap:4px;margin-left:6px;vertical-align:1px}
+.libset button{--c:var(--played);font:inherit;font-size:12px;line-height:1.5;color:var(--muted);background:transparent;border:1px solid var(--line);border-radius:999px;padding:0 8px;cursor:pointer;white-space:nowrap}
+.libset button.no{--c:var(--bad)}
+.libset button:hover{color:var(--c);border-color:var(--c)}
+.libset button[aria-pressed=true]{background:var(--c);border-color:var(--c);color:#fff;font-weight:600}
+tr.nolib .title a{color:var(--muted);text-decoration:line-through}
+tr.nolib .title a:hover{text-decoration:line-through underline}
+.flag.leave{color:var(--bad)}
+.flag.own{color:var(--bounced)}
+.flag.cl{color:var(--classic)}
+.prog{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:6px;font-size:12.5px;color:var(--muted)}
+.prog .seg5{display:inline-flex;gap:3px}
+.prog .seg5 button{width:26px;height:10px;border-radius:999px;border:0;background:var(--chip);cursor:pointer;padding:0;transition:background .15s}
+.prog .seg5 button.on{background:var(--playing)}
+.prog .seg5 button:hover{outline:2px solid var(--playing);outline-offset:1px}
+.prog input{width:64px;font:inherit;font-size:12.5px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:2px 6px}
+.why{display:flex;flex-wrap:wrap;align-items:center;gap:4px 5px;margin-top:6px;font-size:12.5px;color:var(--muted)}
+.why button{font:inherit;font-size:12px;line-height:1.5;color:var(--muted);background:transparent;border:1px solid var(--line);border-radius:999px;padding:0 8px;cursor:pointer}
+.why button:hover{color:var(--bounced);border-color:var(--bounced)}
+.why button[aria-pressed=true]{background:var(--bounced);border-color:var(--bounced);color:#fff;font-weight:600}
+.addpanel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:10px 0 4px;display:flex;flex-direction:column;gap:12px}
+.addpanel h3{font-family:var(--display);font-weight:800;font-size:20px;letter-spacing:.06em;text-transform:uppercase;margin:0}
+.addgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 16px}
+.addgrid .grp input{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+.addpanel .stars button{font-size:26px}
+.addmsg{font-size:13.5px;color:var(--muted);min-height:1.3em}
+.lnk{font:inherit;font-size:12.5px;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--accent) 40%,transparent);text-underline-offset:2px}
+.lnk:hover{text-decoration-color:var(--accent)}
+.note{font-size:13px;margin-top:5px;padding:5px 9px;border-left:3px solid var(--monthly);background:color-mix(in srgb,var(--monthly) 9%,transparent);border-radius:0 6px 6px 0;max-width:62ch;white-space:pre-wrap}
+.noteedit{margin-top:6px;display:flex;flex-direction:column;gap:6px;max-width:62ch}
+.noteedit textarea{font:inherit;font-size:13.5px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:74px;resize:vertical}
+.noteedit div{display:flex;gap:6px}
+.ctx{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;background:color-mix(in srgb,var(--accent) 10%,var(--panel));border:1px solid var(--accent);border-radius:10px;padding:9px 12px;margin-top:8px;font-size:14px}
+.ctx b{font-family:var(--display);font-weight:800;font-size:18px;letter-spacing:.05em;text-transform:uppercase}
+.ctx .sp{flex:1}
+/* taste profile */
+.taste{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-bottom:20px}
+.taste>summary{cursor:pointer;list-style:none;display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:14px 18px}
+.taste>summary::-webkit-details-marker{display:none}
+.taste>summary h2{font-family:var(--display);font-weight:800;font-size:26px;letter-spacing:.06em;text-transform:uppercase;margin:0;line-height:1}
+.taste>summary span{color:var(--muted);font-size:13px}
+.taste>summary::after{content:"+";color:var(--accent);font-size:24px;line-height:1;font-family:var(--display)}
+.taste[open]>summary::after{content:"–"}
+.tbody{padding:0 18px 18px;display:flex;flex-direction:column;gap:18px}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px 28px}
+.tcol h3{font-family:var(--display);font-weight:700;font-size:16px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.tbar{display:grid;grid-template-columns:104px 1fr 34px;align-items:center;gap:8px;font-size:13.5px;margin:4px 0}
+.tbar .tr{height:10px;border-radius:999px;background:var(--chip);position:relative;overflow:hidden}
+.tbar .tr i{position:absolute;top:0;bottom:0;border-radius:999px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.tbar .tr i.pos{left:50%;background:hsl(var(--h) 62% 46%)}
+.tbar .tr i.neg{right:50%;background:var(--none)}
+.tbar .tr::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--muted);opacity:.5}
+.tbar .tv{font-variant-numeric:tabular-nums;color:var(--muted);font-size:12.5px;text-align:right}
+.tfact{font-size:14px;margin:0 0 7px}
+.tfact b{font-weight:600}
+.big{font-family:var(--display);font-weight:800;font-size:30px;line-height:1;margin-right:6px;color:var(--accent)}
+.ask{border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:8px}
+.ask h3{font-family:var(--display);font-weight:800;font-size:20px;letter-spacing:.06em;text-transform:uppercase;margin:0}
+.askrow{display:flex;flex-wrap:wrap;gap:8px}
+.askrow input{flex:1 1 260px;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.btn:disabled{opacity:.55;cursor:default}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.askout{white-space:pre-wrap;font-size:14.5px;line-height:1.55;max-width:74ch;background:var(--bg);border-radius:10px;padding:12px 14px}
+.acctrow{display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap;margin:-6px 0 10px;font-size:13.5px;color:var(--hero-muted)}
+.acctrow b{color:var(--hero-ink);font-weight:600}
+.acctrow .btn{color:var(--hero-ink);border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.08);border-radius:999px;padding:5px 12px}
+.acctrow .btn:hover{border-color:#fff}
+.acctrow .dotok{display:inline-block;width:8px;height:8px;border-radius:50%;background:#58c684;margin-right:6px}
+dialog.dlgbox{border:1px solid var(--line);border-radius:14px;padding:0;background:var(--panel);color:var(--ink);width:min(460px,calc(100vw - 32px));box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog.dlgbox::backdrop{background:rgba(5,8,20,.6)}
+.dlg{padding:20px 22px;display:flex;flex-direction:column;gap:12px}
+.dlg h2{font-family:var(--display);font-weight:800;font-size:28px;letter-spacing:.05em;text-transform:uppercase;margin:0;line-height:1}
+.dlg p{margin:0;font-size:14px;line-height:1.5}
+.dlg label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:600}
+.dlg input{font:inherit;font-weight:400;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px}
+.dlg .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.dlg .small{font-size:12.5px;color:var(--muted)}
+.dlgtabs{display:flex;gap:6px}
+.dlgtabs button{font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:transparent;border:0;border-bottom:3px solid transparent;padding:4px 6px;cursor:pointer}
+.dlgtabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent)}
+.err{color:var(--bad);font-size:13.5px;min-height:1.3em}
+.ok{color:var(--good)}
+.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 50%,var(--line))}
+.ainfo{font-size:13px;color:var(--muted)}
+.empty{padding:36px 16px;text-align:center;color:var(--muted)}
+.sync{font-size:12.5px;color:var(--muted)}
+footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:78ch;display:flex;flex-direction:column;gap:8px}
+
+/* ---------- motion ---------- */
+@media (prefers-reduced-motion:no-preference){
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+  .askout.thinking{animation:pulse 1.4s ease-in-out infinite}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes drop{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
+  @keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.18)}100%{transform:scale(1)}}
+  @keyframes drift{from{background-position:0 0}to{background-position:34px 68px}}
+  .hero::before{animation:drift 14s linear infinite}
+  .hero h1{animation:drop .55s cubic-bezier(.2,.8,.2,1) both}
+  .card{animation:rise .5s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0) * 45ms + 120ms)}
+  tbody.anim tr{animation:rise .32s ease-out both;animation-delay:calc(var(--i,0) * 16ms)}
+  .marks button.popped{animation:pop .28s ease-out}
+}
+@media (max-width:1640px){.marks button .ml{display:none}.marks button{padding:7px 9px;font-size:14px}}
+@media (max-width:980px){
+  .layout{grid-template-columns:1fr}
+  .rail{position:static;max-height:none;padding:0}
+  .rail summary{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:12px 14px;font-family:var(--display);font-weight:800;font-size:20px;letter-spacing:.08em;text-transform:uppercase;list-style:none}
+  .rail summary::-webkit-details-marker{display:none}
+  .rail summary::after{content:"+";color:var(--accent);font-size:22px;line-height:1}
+  .rail[open] summary::after{content:"–"}
+  .rail .inner{padding:2px 14px 14px}
+  .railhead{display:none}
+}
+@media (max-width:760px){
+  .hero{padding:20px 16px 16px;border-radius:12px}
+  thead{display:none}
+  table,tbody{display:block}
+  tr.band{display:block}
+  tr.band th{display:block}
+  tr.game{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;padding:10px 12px;border-bottom:1px solid var(--line);box-shadow:inset 4px 0 0 var(--st)}
+  tr.game td{padding:0;border:0;box-shadow:none !important}
+  td.title{grid-column:1;grid-row:1 / span 2}
+  td.sc{grid-column:2;grid-row:1;text-align:right}
+  td.tm{grid-column:2;grid-row:2;text-align:right}
+  td.pl{grid-column:1;grid-row:3}
+  td.fyc{grid-column:2;grid-row:3;text-align:right}
+  td.mk{grid-column:1 / -1;grid-row:4}
+  .marks{flex-wrap:wrap;white-space:normal}
+  .marks button .ml{display:inline}.marks button{font-size:12.5px;padding:6px 8px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="acctrow" id="acct" hidden></div>
+    <div class="herotop">
+      <h1>PS Plus <em>Catalogue</em><br>Sorter</h1>
+      <div class="sub">The Extra and Premium Game Catalogue as of <span id="asof">17 November 2026</span>, plus the Premium Classics and four years of Essential monthly games. Mark what you want, rate what you have played, and the list learns what to put in front of you.</div>
+    </div>
+    <div class="progress">
+      <div class="plabel"><div id="ptext">Sorted 0 of 0</div><span id="pleft"></span></div>
+      <div class="pbar" role="img" aria-label="Progress through the catalogue" id="pbar"><i class="sg"></i><i class="sw"></i><i class="sp"></i><i class="sb"></i><i class="sx"></i></div>
+      <div class="legend">
+        <span><i style="background:#f59a4a"></i>Now playing <b id="lg">0</b></span>
+        <span><i style="background:#6d9bff"></i>Want to play <b id="lw">0</b></span>
+        <span><i style="background:#58c684"></i>Played <b id="lp">0</b></span>
+        <span><i style="background:#b98cf5"></i>Bounced off <b id="lb">0</b></span>
+        <span><i style="background:#8f9ab3"></i>Not interested <b id="lx">0</b></span>
+      </div>
+    </div>
+    <div class="legend" id="leavealert" hidden></div>
+    <div class="deckhead"><h2 class="eyebrow">On deck</h2><span id="decknote"></span></div>
+    <div class="deck" id="deck"></div>
+  </header>
+
+  <details class="taste" id="taste">
+    <summary><h2>Your taste profile</h2><span id="tastesum"></span></summary>
+    <div class="tbody">
+      <div class="tgrid" id="tastegrid"></div>
+      <div class="ask" id="askbox">
+        <h3>Get picks from an AI assistant</h3>
+        <span class="hint">Copies a ready-made prompt with your ratings, marks, notes and your 60 best-matched playable games. Paste it into Claude or another assistant to get five picks with reasons. Nothing leaves this page unless you paste it somewhere.</span>
+        <div class="askrow">
+          <input type="text" id="askq" placeholder="Optional: anything specific? e.g. something short for this week" autocomplete="off">
+          <button class="btn primary" id="askcopy" type="button">Copy prompt</button>
+        </div>
+        <div class="hint" id="askmsg" aria-live="polite"></div>
+        <textarea id="askfallback" readonly hidden style="min-height:120px;font:inherit;font-size:12.5px;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--bg);color:var(--ink)"></textarea>
+      </div>
+    </div>
+  </details>
+
+  <div class="layout">
+    <details class="rail" id="rail" open>
+      <summary>Filters and sorting</summary>
+      <div class="inner">
+        <h2 class="railhead">Filters</h2>
+        <div class="grp">
+          <label for="q">Search</label>
+          <input type="search" id="q" placeholder="Title or keyword…" autocomplete="off">
+          <label class="check"><input type="checkbox" id="syn"> Show a synopsis under each game</label>
+        </div>
+        <div class="grp">
+          <label for="sort">Sort by</label>
+          <div class="row2">
+            <select id="sort">
+              <option value="m">Metacritic score</option>
+              <option value="pri">Priority for me</option>
+              <option value="time">Completion time</option>
+              <option value="p">Platform</option>
+              <option value="g">Game style</option>
+              <option value="t">Title</option>
+              <option value="y">PlayStation release year</option>
+              <option value="date">Date I started or finished</option>
+            </select>
+            <button class="btn" id="dir" type="button" aria-label="Reverse sort order">↓</button>
+          </div>
+        </div>
+        <div class="grp">
+          <span class="lab">My games</span>
+          <label class="check"><input type="checkbox" id="hidep"> Hide games I've played</label>
+          <label class="check"><input type="checkbox" id="hideb"> Hide games I bounced off</label>
+          <label class="check"><input type="checkbox" id="hidew"> Hide games on my want-to-play list</label>
+          <label class="check"><input type="checkbox" id="onlyleave"> Only games confirmed to be leaving</label>
+          <span class="hint">Games marked Not interested are always hidden from Browse.</span>
+          <span class="hint" id="leavenote"></span>
+        </div>
+        <div class="grp">
+          <span class="lab">Where it comes from</span>
+          <div class="seg" id="src" role="group" aria-label="Source">
+            <button type="button" data-v="all">Everything</button>
+            <button type="button" data-v="c">Game Catalogue</button>
+            <button type="button" data-v="e">Monthly games</button>
+            <button type="button" data-v="cl">Classics</button>
+            <button type="button" data-v="mine">Added by me</button>
+          </div>
+          <label class="check"><input type="checkbox" id="hidelib"> Also hide monthly games I haven't tagged yet</label>
+          <span class="lab" style="margin-top:4px">Classics by original system</span>
+          <div class="seg" id="sysf" role="group" aria-label="Original system">
+            <button type="button" data-v="all">All</button>
+            <button type="button" data-v="PS1">PS1</button>
+            <button type="button" data-v="PS2">PS2</button>
+            <button type="button" data-v="PSP">PSP</button>
+            <button type="button" data-v="PS4 remaster">PS4 remasters</button>
+            <button type="button" data-v="Arcade">Arcade</button>
+          </div>
+          <span class="hint">Picking a system shows only Classics from it. Classics need PS Plus Premium.</span>
+          <span class="hint">Each monthly game has two tags: "In my library" and "Not in my library". Games tagged Not in my library drop out of Browse and wait in their own tab.</span>
+          <button class="btn" id="bulkno" type="button">Tag all untagged monthly games as not in my library</button>
+        </div>
+        <div class="grp">
+          <span class="lab">Platform</span>
+          <div class="seg" id="plat" role="group" aria-label="Platform">
+            <button type="button" data-v="all">All</button>
+            <button type="button" data-v="PS5">PS5 version</button>
+            <button type="button" data-v="PS4">PS4 version</button>
+            <button type="button" data-v="only5">PS5 only</button>
+          </div>
+        </div>
+        <div class="grp">
+          <span class="lab">Perspective</span>
+          <div class="seg" id="pvs" role="group" aria-label="Perspective"></div>
+          <span class="hint">Pick one or more camera views.</span>
+        </div>
+        <div class="grp">
+          <label for="minm">Metacritic at least <b id="minv">any</b></label>
+          <input type="range" id="minm" min="0" max="95" step="5" value="0">
+          <label class="check"><input type="checkbox" id="hideun"> Hide games with no Metascore</label>
+        </div>
+        <div class="grp">
+          <label for="tmode">Completion time</label>
+          <select id="tmode">
+            <option value="h">Main story</option>
+            <option value="x">Main story + extras</option>
+            <option value="c">Completionist</option>
+          </select>
+          <div class="seg" id="tlen" role="group" aria-label="Length">
+            <button type="button" data-v="all">Any</button>
+            <button type="button" data-v="0-5">Under 5 h</button>
+            <button type="button" data-v="5-10">5–10 h</button>
+            <button type="button" data-v="10-20">10–20 h</button>
+            <button type="button" data-v="20-40">20–40 h</button>
+            <button type="button" data-v="40-9999">40 h+</button>
+          </div>
+        </div>
+        <div class="grp">
+          <span class="lab">Game style</span>
+          <div class="chips" id="styles" role="group" aria-label="Game style"></div>
+          <span class="hint">Each style has its own colour, used on the tiles. Pick several to find games that match all of them.</span>
+        </div>
+        <div class="grp">
+          <span class="lab">Your data</span>
+          <div class="seg"><button type="button" id="backup">Download backup</button><button type="button" id="restorebtn">Restore a backup</button></div>
+          <input type="file" id="restorefile" accept="application/json,.json" hidden>
+          <span class="hint" id="datamsg">A backup is a small file with your marks, ratings, notes and added games.</span>
+        </div>
+        <button class="btn" id="reset" type="button">Reset filters</button>
+        <span class="hint">Resetting filters keeps all your marks.</span>
+      </div>
+    </details>
+
+    <main>
+      <div class="shelfhead"><h2>The shelf</h2><div class="hint" id="sortnote"></div></div>
+      <button class="btn" id="addopen" type="button" aria-expanded="false">＋ Add a game that isn't listed</button>
+      <div class="addpanel" id="addpanel" hidden>
+        <h3>Add a game</h3>
+        <span class="hint">For anything not in the list: new arrivals, games you own, other platforms, older favourites. Paste its PlayStation Store link to fill in the details, or type them in. Games you add are yours alone, and a rated one counts towards your taste profile.</span>
+        <div class="grp"><label for="aurl">PlayStation Store link (optional)</label>
+          <div class="askrow"><input type="url" id="aurl" inputmode="url" autocomplete="off" placeholder="https://store.playstation.com/en-ca/concept/…"><button class="btn" id="alook" type="button">Look up</button></div>
+          <span class="ainfo" id="ainfo"></span>
+        </div>
+        <div class="addgrid">
+          <div class="grp"><label for="at">Title</label><input type="text" id="at" maxlength="120" autocomplete="off" placeholder="e.g. Elden Ring"></div>
+          <div class="grp"><label for="ast">My status</label><select id="ast"><option value="p">Played</option><option value="g">Playing now</option><option value="w">Want to play</option><option value="">Just add it</option></select></div>
+          <div class="grp" id="astarsgrp"><span class="lab">My rating</span><span class="stars" id="astars" role="group" aria-label="My rating"></span></div>
+          <div class="grp"><label for="apv">Perspective</label><select id="apv"></select></div>
+          <div class="grp"><label for="ah">Main story hours (optional)</label><input type="number" id="ah" min="0" max="2000" step="0.5" placeholder="e.g. 30"></div>
+        </div>
+        <div class="grp"><span class="lab">Styles (pick one to three, main one first)</span><div class="chips" id="astyles" role="group" aria-label="Styles"></div></div>
+        <div class="grp"><label for="anote">Note (optional)</label><input type="text" id="anote" maxlength="2000" autocomplete="off" placeholder="What you loved or didn't" style="font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px"></div>
+        <div class="askrow">
+          <button class="btn primary" id="aadd" type="button">Add game</button>
+          <button class="btn" id="acancel" type="button">Close</button>
+        </div>
+        <div class="addmsg" id="amsg" aria-live="polite"></div>
+      </div>
+      <div class="tabs" role="tablist" id="tabs">
+        <button type="button" role="tab" data-v="browse">Browse</button>
+        <button type="button" role="tab" data-v="g">▶ Now playing<b id="ng">0</b></button>
+        <button type="button" role="tab" data-v="w">★ Want to play<b id="nw">0</b></button>
+        <button type="button" role="tab" data-v="p">✓ Played<b id="np">0</b></button>
+        <button type="button" role="tab" data-v="b">↩ Bounced off<b id="nb">0</b></button>
+        <button type="button" role="tab" data-v="x">✕ Not interested<b id="nx">0</b></button>
+        <button type="button" role="tab" data-v="n">Not in library<b id="nn">0</b></button>
+      </div>
+      <div class="count" id="count" aria-live="polite"></div>
+      <div class="ctx" id="ctx" hidden></div>
+      <div class="tablebox" style="margin-top:8px">
+        <table>
+          <thead>
+            <tr>
+              <th data-k="t"><button type="button">Game</button></th>
+              <th data-k="p"><button type="button">Platform</button></th>
+              <th data-k="m" class="num"><button type="button">Metacritic</button></th>
+              <th data-k="time" class="num"><button type="button">Time</button></th>
+              <th data-k="pri"><button type="button" title="Your star rating for games you've played; a personal priority score for the rest">For me</button></th>
+              <th class="plain">Mark as</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <div class="empty" id="empty" hidden></div>
+      </div>
+      <p class="sync" id="sync">Your marks are saved in this browser.</p>
+    </main>
+  </div>
+
+  <footer>
+    <div><b>Where the numbers come from.</b> Game Catalogue: Sony's PlayStation Plus feed (October 2026 snapshot), updated by hand with the October and November 2026 additions and removals. Monthly games: the Essential line-ups from November 2022 to November 2026 as reported by Game Rant, Insider Gaming and Beebom. Metacritic: Metascores collected July 2026, with about 150 gaps checked on metacritic.com on 16 November 2026. Completion times: HowLongToBeat averages collected March 2026.</div>
+    <div><b>How "Priority for me" works.</b> It starts from a game's Metascore (68 when there is none) and moves it up or down by as much as about 20 points according to your taste. Taste comes from the styles and lengths of the games you have marked: a 5-star rating counts strongly for those styles, 3 stars is neutral, 1 star and Bounced count against, and Want and Not interested count a little. The small number beside the score is how far your taste moved it. It switches on once you have rated or bounced off three games, and it is a rough guide based on broad style tags, so treat it as a nudge.</div>
+    <div><b>Classics.</b> The 174 games in Sony's Canadian Premium Classics list as of 17 November 2026: PS1, PS2 and PSP games, PS4 remasters and two arcade fighters. The PS3 games Premium streams are not in Sony's list, so they are not here. Metacritic reviewed few PS1-era games, so many Classics have no Metascore, and some scores are for another platform's release. Times are HowLongToBeat averages for the original release.</div>
+    <div><b>Games you add.</b> A game you add carries only what you enter, or what its PlayStation Store page shows if you paste the link (title, platforms, genres and release year). Added games have no Metascore, are never recommended back to you, and are saved with your marks.</div>
+    <div><b>Notes, dates and AI picks.</b> Marking a game Now playing or Played records the date. Notes are yours and are saved with your marks. The Copy prompt button only puts text on your clipboard: what you paste, and where, is up to you, and any picks you get back are suggestions, not facts.</div>
+    <div><b>Accounts and privacy.</b> You can use this site without an account; your marks then stay in this browser. An account only needs a made-up username and a password: no email address, no name. Your marks are encrypted in your browser with a key made from your password before they are sent, so the server keeps only an unreadable copy. That also means nobody can reset a forgotten password, so download a backup now and then. The site sets no cookies and loads no trackers.</div>
+    <div><b>Keeping it current.</b> The game lists live in the site's data files and are updated by hand or by a scheduled job; the date in the header shows the last update. Games that have left the catalogue disappear from Browse but stay in your tabs if you had marked them.</div>
+    <div><b>Progress and bounce reasons.</b> On a game you are playing you can record how far in you are and your hours; on a game you bounced off you can say why. Reasons about the kind of game (combat, story, controls, repetition, not your kind of game) count against its styles in your taste profile; "too long" counts against that length; "too hard" or "performance" alone counts only lightly.</div>
+    <div><b>Perspective and synopses.</b> The synopses were written by Claude from general knowledge of each game, not taken from the store, and have not been checked one by one. Perspective comes from HowLongToBeat where it lists one and was filled in by hand for the rest; "Multiple views" covers racing, sports and other games where you switch cameras.</div>
+    <div><b>Things to know.</b> The coloured tiles are generated from each game's main style and initials; they are not the games' cover art. Metacritic now shows one Metascore per game, usually for its lead platform, so a few scores reflect the PC or Switch release. Special editions use the base game's score and playtime when they have none of their own. "tbd" means Metacritic has too few reviews to give a score. A time shown with ≈ has no main-story figure, so it uses the all-play-styles average; a time in grey comes from fewer than 10 player reports. The Premium Classics catalogue (PS1, PS2, PSP, PS3) is not included. The catalogue differs slightly by country and changes monthly, so check the PlayStation Store before you plan around a game.</div>
+    <div><b>Not affiliated with Sony.</b> PlayStation and PS Plus are trademarks of Sony Interactive Entertainment. This is an independent fan-made tool. Metascores are from Metacritic and completion times from HowLongToBeat, both as noted above.</div>
+  </footer>
+
+  <dialog class="dlgbox" id="acctdlg" aria-labelledby="acctttl">
+    <form class="dlg" id="acctform" novalidate>
+      <h2 id="acctttl">Your account</h2>
+      <div id="acctbody" style="display:flex;flex-direction:column;gap:12px"></div>
+    </form>
+  </dialog>
+</div>
+
+<script src="config.js"></script>
+<script>
+(async function main(){
+"use strict";
+let GAMES,META;
+try{
+  const get=u=>fetch(u,{cache:"no-cache"}).then(r=>{if(!r.ok)throw new Error(u+" "+r.status);return r.json();});
+  [GAMES,META]=await Promise.all([get("data/games.json"),get("data/catalogue.json")]);
+}catch(e){
+  document.getElementById("count").textContent="Couldn't load the game list. Check your connection and reload the page.";
+  return;
+}
+/* data/catalogue.json: asOf (shown in the header), added (new games, same shape as data/games.json entries),
+   removed (ids that have left), leaving (id -> ISO date it goes), leaveNote (one sentence). */
+const AS_OF=String(META.asOf||"");
+const ADDED=Array.isArray(META.added)?META.added:[];
+const REMOVED=Array.isArray(META.removed)?META.removed:[];
+const LEAVING=META.leaving&&typeof META.leaving==="object"?META.leaving:{};
+const LEAVE_NOTE=String(META.leaveNote||"");
+{const have=new Set(GAMES.map(g=>g.id));ADDED.forEach(a=>{if(a&&a.id&&!have.has(a.id)){GAMES.push(a);have.add(a.id);}});
+ const gone=new Set(REMOVED);GAMES.forEach(g=>{if(gone.has(g.id)){g.cat=0;delete g.new;if(!g.e)g.gone=1;}});}
+const WHY=[["long","Too long"],["hard","Too hard"],["combat","Combat"],["story","Story"],["controls","Controls"],["repeat","Repetitive"],["perf","Performance or bugs"],["style","Not my kind of game"]];
+const WHYNAME=Object.fromEntries(WHY);
+const TASTEWHY=new Set(["combat","story","controls","repeat","style"]); // reasons that say something about the kind of game
+const PGNAME=["","Just started","A quarter in","About halfway","Three quarters in","Nearly done"];
+const PORDER={"PS5":0,"PS4/PS5":1,"PS4":2,"Elsewhere":3};
+const PNAME={"PS5":"PS5 only","PS4/PS5":"PS4 and PS5","PS4":"PS4 only","Elsewhere":"Added by me"};
+const HUE={"Action":14,"Adventure":172,"RPG":268,"Shooter":212,"Open World":142,"Platformer":44,"Strategy":236,"Simulation":190,"Horror":350,"Survival":84,"Puzzle":312,"Racing":28,"Sports":108,"Fighting":2,"Family":332,"Party":290,"Roguelike":58,"Metroidvania":252,"Stealth":200,"Hack & Slash":20,"Narrative":160,"Arcade":322,"Soulslike":280,"Other":220};
+const SERIES=[["Jak|Daxter","Jak and Daxter"],["Sly ","Sly Cooper"],["Syphon Filter","Syphon Filter"],["Tekken","Tekken"],["Twisted Metal","Twisted Metal"],["Wild Arms","Wild Arms"],["TimeSplitters","TimeSplitters"],["Resident Evil","Resident Evil"],["Worms","Worms"],["Ape Escape|Ape Academy","Ape Escape"],["Armored Core","Armored Core"],["Patapon","Patapon"],["LocoRoco","LocoRoco"],["Metro","Metro"],["MediEvil","MediEvil"],["Ridge Racer|R4: Ridge Racer","Ridge Racer"],["Legacy of Kain|Blood Omen","Legacy of Kain"],["Dark Cloud","Dark Cloud"],["Pursuit Force","Pursuit Force"],["Kurushi","Kurushi"],["Thrillville","Thrillville"],["Ratchet|Secret Agent Clank","Ratchet & Clank"],["Dino Crisis","Dino Crisis"],["Gravity Rush","Gravity Rush"],["Myst|Riven","Myst"],["Jet Rider","Jet Rider"],["Alone in the Dark","Alone in the Dark"],["Everybody's Golf|Hot Shots","Everybody's Golf"],["Atari Flashback","Atari Flashback"],["Disney","Disney"],["Echochrome|echochrome|echoshift","Echochrome"]].concat([["LEGO|The LEGO","LEGO"],["Assassin's Creed","Assassin's Creed"],["Far Cry","Far Cry"],["PAW Patrol","PAW Patrol"],["Tom Clancy's Ghost Recon","Ghost Recon"],["Tom Clancy's Rainbow Six","Rainbow Six"],["Tom Clancy's The Division","The Division"],["Wolfenstein","Wolfenstein"],["Earth Defense Force","Earth Defense Force"],["Story of Seasons","Story of Seasons"],["Warhammer 40,000","Warhammer 40,000"],["Warhammer:","Warhammer Fantasy"],["Uncharted","Uncharted"],["Marvel's Spider-Man","Marvel's Spider-Man"],["The Last of Us","The Last of Us"],["God of War","God of War"],["Horizon","Horizon"],["Final Fantasy","Final Fantasy"],["Persona","Persona"],["Death Stranding","Death Stranding"],["Dying Light","Dying Light"],["Sniper Elite|Zombie Army","Sniper Elite"],["Watch Dogs","Watch Dogs"],["Mafia","Mafia"],["Destiny 2","Destiny 2"],["Tomb Raider|Rise of the Tomb Raider|Shadow of the Tomb Raider","Tomb Raider"],["Trials","Trials"],["Two Point","Two Point"],["Cat Quest","Cat Quest"],["Monster Hunter","Monster Hunter"],["Like a Dragon","Like a Dragon"],["Kingdom Come","Kingdom Come"],["Dishonored","Dishonored"],["Call of Duty","Call of Duty"],["Alan Wake","Alan Wake"],["Five Nights at Freddy's","Five Nights at Freddy's"],["Poppy Playtime","Poppy Playtime"],["Hotline Miami","Hotline Miami"],["Coffee Talk","Coffee Talk"],["Citizen Sleeper","Citizen Sleeper"],["Ben 10","Ben 10"],["Rabbids","Rabbids"],["Monopoly","Monopoly"],["Dynasty Warriors|Samurai Warriors|Warriors:","Warriors"],["Until Dawn","Until Dawn"],["Hello Neighbor|Secret Neighbor","Hello Neighbor"],["Killing Floor","Killing Floor"],["Outlast|The Outlast","Outlast"],["Overpass","Overpass"],["World War Z","World War Z"],["Nioh","Nioh"],["NBA 2K","NBA 2K"],["PGA Tour","PGA Tour 2K"],["WWE 2K","WWE 2K"],["MLB The Show","MLB The Show"],["EA Sports FC","EA Sports FC"],["F1 ","F1"],["Need for Speed","Need for Speed"],["Monster Train","Monster Train"],["Fallout","Fallout"],["DOOM","Doom"],["Sonic","Sonic"],["Aliens","Aliens"],["The Elder Scrolls","The Elder Scrolls"],["Oddworld","Oddworld"],["The Crew","The Crew"],["Planet ","Planet"],["The Surge","The Surge"],["Ys ","Ys"],["Prince of Persia|The Rogue Prince of Persia","Prince of Persia"],["Minecraft","Minecraft"],["South Park","South Park"],["Farming Simulator","Farming Simulator"],["Star Wars","Star Wars"],["For The King","For The King"],["Mighty Morphin Power Rangers|Power Rangers","Power Rangers"]]).map(([p,n])=>[new RegExp("^(?:"+p.replace(/[.*+?^${}()[\]\\]/g,m=>m==="|"?m:"\\"+m)+")","i"),n]);
+const DEF={q:"",sort:"m",desc:true,plat:"all",minm:0,hideun:false,tmode:"h",tlen:"all",styles:[],src:"all",hidep:true,hideb:true,hidew:false,hidelib:false,sys:"all",onlyleave:false,syn:true,pv:[],view:"browse"};
+let S=Object.assign({},DEF,{styles:[],pv:[]});
+let MARKS={}; // game id -> "w" want | "p" played | "b" bounced off | "x" not interested
+try{const s=JSON.parse(localStorage.getItem("psplus-sorter")||"null");if(s&&typeof s==="object")S=Object.assign(S,s);if(!Array.isArray(S.styles))S.styles=[];if(!Array.isArray(S.pv))S.pv=[];}catch(e){}
+let RATE={}; // game id -> 1..5 stars, for played games
+let CUSTOM={}; // games the viewer added: id -> {t,g,pv,h,y,d}
+let NOTES={}; // game id -> the viewer's own note
+let DATES={}; // game id -> {s: date started, f: date finished}, ISO days
+let CTX={ser:null,like:null}; // temporary views: one series, or games similar to one game
+let OPEN_NOTE=null;
+let LIB={};  // monthly games: game id -> 1 in the viewer's library, -1 not in it, absent = not tagged yet
+try{const m=JSON.parse(localStorage.getItem("psplus-marks")||"null");if(m&&typeof m==="object")MARKS=m;}catch(e){}
+try{const m=JSON.parse(localStorage.getItem("psplus-rate")||"null");if(m&&typeof m==="object")RATE=m;}catch(e){}
+try{const m=JSON.parse(localStorage.getItem("psplus-lib")||"null");if(m&&typeof m==="object")LIB=m;}catch(e){}
+try{const m=JSON.parse(localStorage.getItem("psplus-notes")||"null");if(m&&typeof m==="object")NOTES=m;}catch(e){}
+try{const m=JSON.parse(localStorage.getItem("psplus-dates")||"null");if(m&&typeof m==="object")DATES=m;}catch(e){}
+try{const m=JSON.parse(localStorage.getItem("psplus-custom")||"null");if(m&&typeof m==="object")CUSTOM=m;}catch(e){}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const IDS=new Set(GAMES.map(g=>g.id));
+const STOP=new Set(["the","a","an","of","and","in","to","for","on","at","is"]);
+function prep(g){
+  g.pk=g.p.join("/");g.lt=g.t.toLowerCase();g.ls=(g.t+" "+(g.d||"")).toLowerCase();g.st=g.lt.replace(/^(the|a) /,"");
+  const words=g.t.replace(/\(.*?\)/g," ").replace(/[^A-Za-z0-9 ]+/g," ").split(/\s+/).filter(Boolean);
+  const sig=words.filter(w=>!STOP.has(w.toLowerCase()));const use=sig.length?sig:words;
+  g.ini=(use.length>1?use[0][0]+use[1][0]:(use[0]||"?").slice(0,2)).toUpperCase();
+  let hsh=0;for(const ch of g.id)hsh=(hsh*31+ch.charCodeAt(0))>>>0;
+  g.ser=null;for(const [re,n] of SERIES)if(re.test(g.t)){g.ser=n;break;}
+  g.hue=HUE[g.g[0]]??220;g.ang=100+(hsh%9)*10;
+}
+GAMES.forEach(prep);
+const serCount={};GAMES.forEach(g=>{if(g.ser)serCount[g.ser]=(serCount[g.ser]||0)+1;});
+GAMES.forEach(g=>{if(g.ser&&serCount[g.ser]<2)g.ser=null;});
+const BYID=new Map(GAMES.map(g=>[g.id,g]));
+function syncCustom(){ // rebuild the viewer's own entries inside GAMES from CUSTOM
+  for(let i=GAMES.length-1;i>=0;i--)if(GAMES[i].own){IDS.delete(GAMES[i].id);BYID.delete(GAMES[i].id);GAMES.splice(i,1);}
+  for(const id in CUSTOM){const c=CUSTOM[id];
+    if(!c||typeof c.t!=="string"||!c.t.trim()||!Array.isArray(c.g)||!c.g.length||IDS.has(id))continue;
+    const sp=Array.isArray(c.p)?["PS4","PS5"].filter(x=>c.p.includes(x)):[];const sl=typeof c.u==="string"?parseStoreLink(c.u):null;
+    const g={id,t:c.t.slice(0,120),p:sp.length?sp:["Elsewhere"],m:null,y:Number(c.y)||null,g:c.g.filter(x=>typeof x==="string").slice(0,3),pv:typeof c.pv==="string"?c.pv:"Third-person",d:typeof c.d==="string"?c.d.slice(0,300):"",cat:0,own:1,u:sl?sl.url:"https://store.playstation.com/en-ca/search/"+encodeURIComponent(c.t)};
+    if(!g.g.length)continue;
+    if(Number(c.h)>0)g.h=Number(c.h);
+    prep(g);g.ser=null;GAMES.push(g);IDS.add(id);BYID.set(id,g);}
+}
+syncCustom();
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const fmtD=iso=>{const [y,m,d]=iso.split("-").map(Number);return d+" "+MONTHS[m-1].slice(0,3)+" "+y;};
+const tile=g=>`<span class="tile" style="--h:${g.hue};--a:${g.ang}deg" aria-hidden="true">${esc(g.ini)}</span>`;
+
+function timeOf(g){const v=g[S.tmode];if(v!=null)return [v,false];if(g.a!=null)return [g.a,true];return [null,false];}
+const styleCounts={};GAMES.forEach(g=>g.g.forEach(s=>styleCounts[s]=(styleCounts[s]||0)+1));
+const STYLES=Object.keys(styleCounts).sort((a,b)=>styleCounts[b]-styleCounts[a]);
+const PVORDER=["First-person","Third-person","First or third person","Top-down","Side-on","Multiple views","Fixed view","Visual novel"];
+const pvCounts={};GAMES.forEach(g=>pvCounts[g.pv]=(pvCounts[g.pv]||0)+1);
+$("pvs").innerHTML=PVORDER.filter(v=>pvCounts[v]).map(v=>`<button type="button" data-v="${esc(v)}">${esc(v)}</button>`).join("");
+$("styles").innerHTML=STYLES.map(s=>`<button type="button" data-v="${esc(s)}" style="--h:${HUE[s]??220}"><span class="dot"></span>${esc(s)}<small>${styleCounts[s]}</small></button>`).join("");
+
+/* ---- taste model: what the viewer's ratings say about styles and lengths ---- */
+const lenBand=g=>{const t=g.h??g.a;return t==null?-1:t<5?0:t<10?1:t<20?2:t<40?3:t<80?4:5;};
+let TASTE={on:false,style:{},len:{},n:0};
+function signal(id){const mk=MARKS[id];
+  if(mk==="p")return RATE[id]?[RATE[id]-3,true]:null;
+  if(mk==="b"){const w=(DATES[id]&&DATES[id].why)||[];return [w.length&&!w.some(x=>TASTEWHY.has(x))?-0.4:-1.5,true];}
+  if(mk==="w"||mk==="g")return [0.5,false];
+  if(mk==="x")return [-0.5,false];
+  return null;}
+function learn(){
+  const ss={},sn={},ls={},ln={};let strong=0;
+  for(const g of GAMES){const sg=signal(g.id);if(!sg)continue;const [v,st]=sg;if(st)strong++;
+    g.g.forEach((s,i)=>{const w=i===0?1.5:1;ss[s]=(ss[s]||0)+v*w;sn[s]=(sn[s]||0)+w;});
+    if(st){const b=lenBand(g);const w=MARKS[g.id]==="b"?((DATES[g.id]&&DATES[g.id].why)||[]):null;
+      const lv=w&&w.length?(w.includes("long")?-2:null):v; // a stated reason other than length says nothing about length
+      if(b>=0&&lv!=null){ls[b]=(ls[b]||0)+lv;ln[b]=(ln[b]||0)+1;}}}
+  const style={},len={};
+  for(const s in ss)style[s]=ss[s]/(sn[s]+1.5);
+  for(const b in ls)len[b]=ls[b]/(ln[b]+2);
+  TASTE={on:strong>=3,style,len,n:strong};
+}
+function tasteOf(g){let t=0,w=0;g.g.forEach((s,i)=>{const k=i===0?2:1;t+=(TASTE.style[s]||0)*k;w+=k;});return w?t/w:0;}
+function priority(g){ // [score or null, delta from base, reason]
+  const base=g.m??68;
+  if(!TASTE.on)return [g.m??null,0,""];
+  const adj=Math.round(9*tasteOf(g)+3*(TASTE.len[lenBand(g)]||0));
+  const p=Math.max(1,Math.min(99,base+adj));
+  let best=null,worst=null;for(const s of g.g){const v=TASTE.style[s]||0;if(v>0.3&&(!best||v>TASTE.style[best]))best=s;if(v<-0.3&&(!worst||v<TASTE.style[worst]))worst=s;}
+  const why=[best?`You rate ${best} games highly.`:"",worst?`${worst} games have not worked for you.`:"",g.m==null?"No Metascore, so it starts from 68.":""].filter(Boolean).join(" ");
+  return [p,p-base,why];
+}
+const myVal=g=>MARKS[g.id]==="p"?(RATE[g.id]?RATE[g.id]*20:null):priority(g)[0];
+function cmp(a,b){
+  const k=S.sort,d=S.desc?-1:1;let x,y;
+  if(k==="m"){x=a.m;y=b.m;}
+  else if(k==="pri"){x=myVal(a);y=myVal(b);}
+  else if(k==="date"){const dv=g=>{const t=DATES[g.id];return t?(t.f||t.s||null):null;};x=dv(a);y=dv(b);if(x==null&&y==null)return a.st.localeCompare(b.st);if(x==null)return 1;if(y==null)return -1;if(x!==y)return (x<y?-1:1)*d;return a.st.localeCompare(b.st);}
+  else if(k==="time"){x=timeOf(a)[0];y=timeOf(b)[0];}
+  else if(k==="y"){x=a.y;y=b.y;}
+  else if(k==="p"){x=PORDER[a.pk];y=PORDER[b.pk];if(x!==y)return (x-y)*(S.desc?1:-1);return (b.m??-1)-(a.m??-1);}
+  else if(k==="g"){const c=a.g[0].localeCompare(b.g[0]);if(c)return c*(S.desc?1:-1);return (b.m??-1)-(a.m??-1);}
+  else{const c=a.st.localeCompare(b.st);return c*(S.desc?1:-1);}
+  if(x==null&&y==null)return a.st.localeCompare(b.st);
+  if(x==null)return 1; if(y==null)return -1;
+  if(x!==y)return (x-y)*d;
+  return a.st.localeCompare(b.st);
+}
+/* The header a game sits under for the current sort: [label, note, colour]. */
+function simTo(a,g){ // how alike two games are, 0..1
+  const A=new Set(a.g);let inter=0;g.g.forEach(s=>{if(A.has(s))inter++;});
+  const jac=inter/(A.size+g.g.length-inter||1);
+  const la=lenBand(a),lb=lenBand(g);const ln=la<0||lb<0?0.5:1-Math.abs(la-lb)/5;
+  return jac*0.55+(a.g[0]===g.g[0]?0.1:0)+(a.pv===g.pv?0.17:0)+ln*0.1+(a.ser&&a.ser===g.ser?0.08:0);
+}
+function band(g){
+  const k=S.sort;
+  if(CTX.like){const a=BYID.get(CTX.like);return a?["Most like "+a.t,"closest first","var(--accent)"]:["Similar games","","var(--accent)"];}
+  if(k==="date"){const t=DATES[g.id];const iso=t&&(t.f||t.s);if(!iso)return ["No date recorded","","var(--none)"];const [y,m]=iso.split("-").map(Number);return [MONTHS[m-1]+" "+y,"","var(--accent)"];}
+  if(k==="pri"){
+    if(MARKS[g.id]==="p"){const r=RATE[g.id];return r?[`You gave it ${r} ${r===1?"star":"stars"}`,"","#e5a100"]:["Played, not rated yet","","var(--none)"];}
+    const p=priority(g)[0];
+    if(p==null)return ["Not enough to go on","no Metascore","var(--none)"];
+    if(!TASTE.on){return p>=90?["Universal acclaim","rate three games to personalise this","var(--great)"]:p>=75?["Generally favourable","rate three games to personalise this","var(--good)"]:p>=50?["Mixed or average","","var(--mid)"]:["Generally unfavourable","","var(--bad)"];}
+    if(p>=88)return ["Play these first","priority 88 and up","var(--great)"];
+    if(p>=78)return ["Strong matches","78 to 87","var(--good)"];
+    if(p>=65)return ["Worth a look","65 to 77","var(--mid)"];
+    return ["Probably not for you","under 65","var(--bad)"];}
+  if(k==="m"){const m=g.m;
+    if(m==null)return ["No Metascore yet","too few critic reviews","var(--none)"];
+    if(m>=90)return ["Universal acclaim","90 and up","var(--great)"];
+    if(m>=75)return ["Generally favourable","75 to 89","var(--good)"];
+    if(m>=50)return ["Mixed or average","50 to 74","var(--mid)"];
+    return ["Generally unfavourable","under 50","var(--bad)"];}
+  if(k==="time"){const t=timeOf(g)[0];
+    if(t==null)return ["No time data","","var(--none)"];
+    if(t<5)return ["A weekend or less","under 5 hours","hsl(172 60% 40%)"];
+    if(t<10)return ["Short","5 to 10 hours","hsl(142 50% 40%)"];
+    if(t<20)return ["Medium","10 to 20 hours","hsl(44 80% 42%)"];
+    if(t<40)return ["Long","20 to 40 hours","hsl(24 80% 46%)"];
+    if(t<80)return ["Very long","40 to 80 hours","hsl(350 65% 48%)"];
+    return ["A second job","80 hours and up","hsl(290 50% 46%)"];}
+  if(k==="p")return [PNAME[g.pk],"","var(--accent)"];
+  if(k==="g")return [g.g[0],"main style",`hsl(${g.hue} 62% 45%)`];
+  if(k==="y")return g.y==null?["Year unknown","","var(--none)"]:[String(g.y),"PlayStation release","var(--accent)"];
+  const ch=g.st[0]||"#";return [/[a-z]/.test(ch)?ch.toUpperCase():"0–9","","var(--accent)"];
+}
+function pass(g){
+  const mk=MARKS[g.id];
+  if(CTX.like&&g.id===CTX.like)return false;
+  if(g.gone&&(!MARKS[g.id]||S.view==="browse"))return false;
+  if(CTX.ser&&g.ser!==CTX.ser)return false;
+  if(S.onlyleave&&!LEAVING[g.id])return false;
+  if(CTX.ser){/* a series view shows every entry, whatever its mark */}
+  else if(S.view==="n"){if(LIB[g.id]!==-1)return false;}
+  else if(S.view==="browse"){
+    if(LIB[g.id]===-1&&!g.cat)return false;
+    if(mk==="x")return false;
+    if(S.hidep&&mk==="p")return false;
+    if(S.hideb&&mk==="b")return false;
+    if(S.hidew&&mk==="w")return false;
+    if(S.hidelib&&g.e&&!g.cat&&LIB[g.id]!==1)return false;
+  } else if(mk!==S.view) return false;
+  if(S.src==="c"&&!g.cat)return false;
+  if(S.src==="e"&&!g.e)return false;
+  if(S.src==="mine"&&!g.own)return false;
+  if(S.src==="cl"&&!g.cl)return false;
+  if(S.sys!=="all"&&g.sys!==S.sys)return false;
+  if(S.q){const q=S.q.toLowerCase();if(!g.ls.includes(q)&&!(NOTES[g.id]||"").toLowerCase().includes(q))return false;}
+  if(S.pv.length&&!S.pv.includes(g.pv)&&!(g.pv==="First or third person"&&(S.pv.includes("First-person")||S.pv.includes("Third-person"))))return false;
+  if(S.plat==="PS5"&&!g.p.includes("PS5"))return false;
+  if(S.plat==="PS4"&&!g.p.includes("PS4"))return false;
+  if(S.plat==="only5"&&g.pk!=="PS5")return false;
+  if(S.minm>0&&(g.m==null||g.m<S.minm))return false;
+  if(S.hideun&&g.m==null)return false;
+  if(S.tlen!=="all"){const [lo,hi]=S.tlen.split("-").map(Number);const t=timeOf(g)[0];if(t==null||t<lo||t>=hi)return false;}
+  for(const s of S.styles)if(!g.g.includes(s))return false;
+  return true;
+}
+function fmtT(h){return h>=100?Math.round(h)+" h":(Math.round(h*10)/10).toString().replace(/\.0$/,"")+" h";}
+const scoreHTML=m=>m==null?'<span class="score n" title="No Metascore">tbd</span>':`<span class="score ${m>=90?"s":m>=75?"g":m>=50?"m":"b"}">${m}</span>`;
+const MK=[["g","mg","▶","Playing","I'm playing this now"],["w","mw","★","Want","Add to my want-to-play list"],["p","mp","✓","Played","I have played this"],["b","mb","↩","Bounced","I tried it and bounced off"],["x","mx","✕","Not interested","Hide this game"]];
+function row(g,i){
+  const [t,fb]=timeOf(g);const mk=MARKS[g.id]||"";
+  const low=g.n!=null&&g.n<10;
+  const tm=t==null?'<span class="time est">no data</span>':`<span class="time${low?" est":""}" title="${low?"Based on fewer than 10 player reports. ":""}${fb?"No figure for this play style, showing the all-styles average.":""}">${fb?"≈ ":""}${fmtT(t)}</span>`;
+  const pl=g.pk==="Elsewhere"?"":g.p.map(p=>`<span class="${p==="PS5"?"p5":""}">${p}</span>`).join("");
+  const lv=LIB[g.id]||0;
+  const flags=(g.own?`<span class="flag own">Added by me</span>`:"")+(g.cl?`<span class="flag cl" title="PS Plus Premium Classic, originally ${esc(g.sys==="PS4 remaster"?"a PS4 remaster or port":g.sys==="Arcade"?"an arcade game":"a "+g.sys+" game")}">Classic · ${esc(g.sys==="PS4 remaster"?"PS4":g.sys)}</span>`:"")+(g.new?`<span class="flag new">New ${esc(g.new.split(" ")[0])}</span>`:"")+(g.e?`<span class="flag mon" title="PS Plus Essential monthly game, ${esc(g.el)}${g.cat?". Also in the Game Catalogue, so you can play it either way.":""}">Monthly ${esc(g.el)}</span><span class="libset" role="group" aria-label="Is it in my library?"><button type="button" class="yes" data-lib="${esc(g.id)}" data-lv="1" aria-pressed="${lv===1}" title="I claimed this one">✓ In my library</button><button type="button" class="no" data-lib="${esc(g.id)}" data-lv="-1" aria-pressed="${lv===-1}" title="I never claimed this one">✕ Not in my library</button></span>`:"");
+  let fy;
+  if(mk==="p"){const r=RATE[g.id]||0;fy=`<span class="stars" role="group" aria-label="My rating">${[1,2,3,4,5].map(n=>`<button type="button" class="${n<=r?"on":""}" data-rate="${n}" data-id="${esc(g.id)}" aria-label="${n} ${n===1?"star":"stars"}" aria-pressed="${n===r}" title="${n===r?"Click to clear":"Rate "+n+" out of 5"}">★</button>`).join("")}</span>`;}
+  else if(mk==="b"||mk==="x"){fy='<span class="time est">–</span>';}
+  else{const [p,dl,why]=priority(g);
+    if(p==null)fy='<span class="pri plain" title="No Metascore to start from">–</span>';
+    else{const col=p>=88?"var(--great)":p>=78?"var(--good)":p>=65?"var(--mid)":"var(--bad)";
+      fy=`<span class="fy" title="${TASTE.on?esc(why||"Your ratings do not move this one."):"Rate or bounce off three games to personalise this. For now it is the Metascore."}"><span class="pri${TASTE.on?"":" plain"}" style="--pc:${col}">${p}</span><span class="delta ${dl>0?"up":dl<0?"dn":""}">${dl>0?"+"+dl:dl<0?"−"+(-dl):""}</span></span>`;}}
+  const btns=MK.map(([k,cls,ic,label,tip])=>`<button type="button" class="${cls}" data-id="${esc(g.id)}" data-m="${k}" aria-pressed="${mk===k}" aria-label="${label}" title="${tip}">${ic}<span class="ml"> ${label}</span></button>`).join("");
+  const dt=DATES[g.id];
+  const tags=`<span class="pvt">${esc(g.pv)}</span>`+g.g.map(s=>`<span><span class="dot" style="--h:${HUE[s]??220}"></span>${esc(s)}</span>`).join("")+(g.y?`<span>${g.y}</span>`:"")
+    +(dt&&dt.s&&(mk==="g"||mk==="p")?`<span>Started ${fmtD(dt.s)}</span>`:"")+(dt&&dt.f&&mk==="p"?`<span>Finished ${fmtD(dt.f)}</span>`:"")
+    +(g.ser?`<button type="button" class="lnk" data-ser="${esc(g.ser)}" title="Show every ${esc(g.ser)} game together">${esc(g.ser)} series (${serCount[g.ser]})</button>`:"")
+    +`<button type="button" class="lnk" data-like="${esc(g.id)}" title="Show the games most similar to this one">More like this</button>`;
+  const note=NOTES[g.id];
+  const noteHTML=OPEN_NOTE===g.id?`<div class="noteedit"><textarea id="notebox" aria-label="My note on ${esc(g.t)}" placeholder="Why you liked it, why you bounced, where you left off…">${esc(note||"")}</textarea><div><button type="button" class="btn primary" data-notesave="${esc(g.id)}">Save note</button><button type="button" class="btn" data-notecancel="1">Cancel</button>${note?`<button type="button" class="btn" data-notedel="${esc(g.id)}">Delete note</button>`:""}</div></div>`:(note?`<div class="note">${esc(note)}</div>`:"");
+  let extra="";
+  if(mk==="g"||mk==="p"){const pg=(dt&&dt.pg)||0,hr=dt&&dt.hr,avg=g.h??g.a;
+    extra=`<div class="prog">`+(mk==="g"?`<span class="seg5" role="group" aria-label="How far in">${[1,2,3,4,5].map(n=>`<button type="button" class="${n<=pg?"on":""}" data-pg="${n}" data-id="${esc(g.id)}" aria-pressed="${n===pg}" aria-label="${PGNAME[n]}" title="${PGNAME[n]}"></button>`).join("")}</span><span>${pg?PGNAME[pg]:"How far in?"}</span>`:"")
+      +`<label>${mk==="g"?"Hours so far":"My hours"} <input type="number" min="0" max="5000" step="0.5" data-hr="${esc(g.id)}" value="${hr??""}" aria-label="${mk==="g"?"Hours so far":"My hours"} for ${esc(g.t)}"></label>`
+      +(hr&&avg?`<span>${mk==="g"?`of about ${fmtT(avg)} for the main story`:hr>avg*1.15?`${fmtT(hr-avg)} over the ${fmtT(avg)} average`:hr<avg*0.85?`${fmtT(avg-hr)} under the ${fmtT(avg)} average`:`close to the ${fmtT(avg)} average`}</span>`:"")+`</div>`;}
+  else if(mk==="b"){const w=(dt&&dt.why)||[];
+    extra=`<div class="why" role="group" aria-label="Why I bounced off"><span>Why?</span>${WHY.map(([k,l])=>`<button type="button" data-why="${k}" data-id="${esc(g.id)}" aria-pressed="${w.includes(k)}">${l}</button>`).join("")}</div>`;}
+  const leave=(g.gone?`<span class="flag leave" title="No longer in the Game Catalogue">Left the catalogue</span>`:"")+(LEAVING[g.id]?`<span class="flag leave" title="Confirmed to leave the Game Catalogue">Leaving ${fmtD(LEAVING[g.id])}</span>`:"");
+  return `<tr class="game${mk?" is-"+mk:""}${lv===-1&&!g.cat?" nolib":""}" style="--i:${Math.min(i,28)}"><td class="title"><div class="g">${tile(g)}<div class="gt"><a href="${esc(g.u)}" target="_blank" rel="noopener">${esc(g.t)}</a>${leave}${flags}<div class="tags">${tags}</div>${S.syn&&g.d?`<div class="syn">${esc(g.d)}</div>`:""}${extra}${noteHTML}</div></div></td><td class="pl"><span class="plat">${pl}</span></td><td class="num sc">${scoreHTML(g.m)}</td><td class="num tm">${tm}</td><td class="fyc">${fy}</td><td class="mk"><span class="marks">${btns}${g.own?`<button type="button" class="mn" data-delown="${esc(g.id)}" aria-label="Remove" title="Remove this game I added">⌫<span class="ml"> Remove</span></button>`:""}<button type="button" class="mn" data-note="${esc(g.id)}" aria-pressed="${!!note}" aria-label="Note" title="${note?"Edit my note":"Add a note"}">✎<span class="ml"> Note</span></button></span></td></tr>`;
+}
+const SORTNAME={date:"the date you started or finished",pri:"your priority",m:"Metacritic score",time:"completion time",p:"platform",g:"game style",t:"title",y:"release year"};
+const EMPTY={g:"Nothing in progress. Use ▶ Playing on a game when you start it.",browse:"No games match these filters. Loosen one of them or reset.",w:"Nothing on your want-to-play list matches. Use ★ Want in Browse to add games here.",p:"No played games match. Use ✓ Played in Browse to move games here.",b:"No bounced-off games match. Use ↩ Bounced in Browse for games you tried and dropped.",n:"No games here. Monthly games you tag ✕ Not in my library collect in this tab, and you can untag them from here.",x:"No hidden games match. Games you mark ✕ Not interested land here, and you can bring them back from this tab."};
+function counts(){const c={g:0,w:0,p:0,b:0,x:0};for(const id in MARKS)if(IDS.has(id)&&c[MARKS[id]]!=null)c[MARKS[id]]++;return c;}
+function renderHero(){
+  learn();
+  const c=counts(),tot=GAMES.length,done=c.g+c.w+c.p+c.b+c.x;
+  $("ptext").textContent=`Sorted ${done} of ${tot}`;
+  $("pleft").textContent=done?`${tot-done} still to look at`:"Start marking games and this bar fills in";
+  const bars=$("pbar").children;["g","w","p","b","x"].forEach((k,i)=>bars[i].style.width=(c[k]/tot*100)+"%");
+  $("lg").textContent=c.g;$("ng").textContent=c.g;$("lw").textContent=c.w;$("lp").textContent=c.p;$("lb").textContent=c.b;$("lx").textContent=c.x;
+  $("nw").textContent=c.w;$("np").textContent=c.p;$("nb").textContent=c.b;$("nx").textContent=c.x;
+  const nolib=GAMES.filter(g=>LIB[g.id]===-1).length,untag=GAMES.filter(g=>g.e&&!g.cat&&!LIB[g.id]).length;
+  $("nn").textContent=nolib;
+  const bb=$("bulkno");bb.dataset.n=untag;bb.disabled=!untag;if(!bb.dataset.armed)bb.textContent=untag?`Tag all ${untag} untagged monthly games as not in my library`:"Every monthly game is tagged";
+  const pv=g=>priority(g)[0]??-1;
+  const byScore=(a,b)=>pv(b)-pv(a)||a.st.localeCompare(b.st);
+  const playable=g=>g.cat||g.cl||LIB[g.id]===1;
+  const how=TASTE.on?"ordered by how well they fit your ratings":"ordered by Metascore until you rate three games";
+  $("leavenote").textContent=LEAVE_NOTE;$("asof").textContent=AS_OF;
+  const lv=GAMES.filter(g=>LEAVING[g.id]&&(MARKS[g.id]==="w"||MARKS[g.id]==="g")).sort((a,b)=>LEAVING[a.id]<LEAVING[b.id]?-1:1);
+  const la=$("leavealert");la.hidden=!lv.length;
+  la.textContent=lv.length?"Leaving soon from your list: "+lv.map(g=>g.t+" ("+fmtD(LEAVING[g.id])+")").join(", "):"";
+  renderTaste();
+  let pick=GAMES.filter(g=>MARKS[g.id]==="w"&&playable(g)).sort(byScore),note="from your want-to-play list, "+how;
+  if(!pick.length){pick=GAMES.filter(g=>!MARKS[g.id]&&playable(g)).sort(byScore);note="games you haven't sorted yet, "+how;}
+  $("decknote").textContent=note;
+  $("deck").innerHTML=pick.slice(0,14).map((g,i)=>{const t=g.h??g.a;return `<a class="card" style="--i:${i}" title="${esc(g.d||"")}" href="${esc(g.u)}" target="_blank" rel="noopener">${tile(g)}<span class="ct">${esc(g.t)}</span><span class="cm">${TASTE.on?"Priority "+pv(g):(g.m!=null?"Metascore "+g.m:"No Metascore")}${t!=null?" · "+fmtT(t):""}</span></a>`;}).join("");
+}
+function renderTaste(){
+  const rated=GAMES.filter(g=>MARKS[g.id]==="p"&&RATE[g.id]);
+  const want=GAMES.filter(g=>MARKS[g.id]==="w");
+  const hrs=Math.round(want.reduce((a,g)=>a+(g.h??g.a??0),0));
+  const sum=$("tastesum"),grid=$("tastegrid");
+  if(!TASTE.on){sum.textContent=`Rate or bounce off ${3-TASTE.n} more ${3-TASTE.n===1?"game":"games"} to unlock it`;
+    grid.innerHTML=`<p class="tfact">Once you have rated or bounced off three games, this panel shows which styles, camera views and lengths you favour, and where you part ways with the critics.</p>`;return;}
+  const avg=rated.length?(rated.reduce((a,g)=>a+RATE[g.id],0)/rated.length).toFixed(1):"–";
+  sum.textContent=`${rated.length} rated · average ${avg} stars · ${want.length} on your want list (${hrs} hours)`;
+  const st=Object.entries(TASTE.style).sort((a,b)=>b[1]-a[1]);
+  const mx=Math.max(0.5,...st.map(e=>Math.abs(e[1])));
+  const bar=([n,v],h)=>`<div class="tbar"><span>${esc(n)}</span><span class="tr"><i class="${v>=0?"pos":"neg"}" style="--h:${h??220};width:${Math.abs(v)/mx*50}%"></i></span><span class="tv">${v>0?"+":v<0?"−":""}${Math.abs(v).toFixed(1)}</span></div>`;
+  const top=st.filter(e=>e[1]>0.05).slice(0,6),low=st.filter(e=>e[1]<-0.05).slice(-4);
+  // camera views and lengths, from rated and bounced games only
+  const agg=(key)=>{const m={};for(const g of GAMES){const sg=signal(g.id);if(!sg||!sg[1])continue;const k=key(g);if(k==null)continue;(m[k]=m[k]||[]).push(sg[0]);}
+    return Object.entries(m).map(([k,a])=>[k,a.reduce((x,y)=>x+y,0)/(a.length+1),a.length]).sort((a,b)=>b[1]-a[1]);};
+  const pvs=agg(g=>g.pv);
+  const LEN=["under 5 hours","5 to 10 hours","10 to 20 hours","20 to 40 hours","40 to 80 hours","80 hours and up"];
+  const lens=Object.entries(TASTE.len).map(([k,v])=>[Number(k),v]).sort((x,y)=>y[1]-x[1]);
+  const love=rated.filter(g=>g.m!=null&&RATE[g.id]>=4).map(g=>[g,RATE[g.id]*20-g.m]).sort((a,b)=>b[1]-a[1]).slice(0,3).filter(e=>e[1]>0);
+  const hate=rated.filter(g=>g.m!=null&&RATE[g.id]<=2).map(g=>[g,g.m-RATE[g.id]*20]).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  const stars=n=>"★".repeat(n);
+  grid.innerHTML=
+   `<div class="tcol"><h3>Styles you favour</h3>${top.length?top.map(e=>bar(e,HUE[e[0]])).join(""):'<p class="tfact">Nothing stands out yet.</p>'}</div>`+
+   `<div class="tcol"><h3>Styles that miss</h3>${low.length?low.map(e=>bar(e,HUE[e[0]])).join(""):'<p class="tfact">Nothing has let you down yet.</p>'}</div>`+
+   `<div class="tcol"><h3>Camera and length</h3>${pvs.length&&pvs[0][1]>0?`<p class="tfact">Best with <b>${esc(pvs[0][0].toLowerCase())}</b> games${pvs.length>1&&pvs[pvs.length-1][1]<0?`; least with <b>${esc(pvs[pvs.length-1][0].toLowerCase())}</b>`:""}.</p>`:""}${lens.length&&lens[0][1]>0?`<p class="tfact">Your sweet spot is <b>${LEN[lens[0][0]]}</b>${lens.length>1&&lens[lens.length-1][1]<0?`, and games of <b>${LEN[lens[lens.length-1][0]]}</b> tend to lose you`:""}.</p>`:lens.length&&lens[lens.length-1][1]<0?`<p class="tfact">Games of <b>${LEN[lens[lens.length-1][0]]}</b> tend to lose you.</p>`:""}<p class="tfact"><span class="big">${hrs}</span>hours of main story on your want list across ${want.length} ${want.length===1?"game":"games"}.</p></div>`+
+   (()=>{const tally={};let nb=0;for(const g of GAMES){if(MARKS[g.id]!=="b")continue;const w=(DATES[g.id]&&DATES[g.id].why)||[];if(w.length)nb++;w.forEach(k=>tally[k]=(tally[k]||0)+1);}
+      const rows=Object.entries(tally).sort((a,b)=>b[1]-a[1]);if(!rows.length)return "";const mxw=rows[0][1];
+      return `<div class="tcol"><h3>Why you drop games</h3>${rows.slice(0,6).map(([k,n])=>`<div class="tbar"><span>${esc(WHYNAME[k]||k)}</span><span class="tr"><i class="pos" style="--h:268;left:0;width:${n/mxw*100}%"></i></span><span class="tv">${n}</span></div>`).join("")}<p class="tfact" style="margin-top:8px">From ${nb} bounced ${nb===1?"game":"games"} with a reason given.</p></div>`;})()+
+   `<div class="tcol"><h3>You against the critics</h3>${love.length?`<p class="tfact"><b>Liked more than they did:</b> ${love.map(([g])=>`${esc(g.t)} (${stars(RATE[g.id])} vs ${g.m})`).join(", ")}.</p>`:""}${hate.length?`<p class="tfact"><b>Liked less than they did:</b> ${hate.map(([g])=>`${esc(g.t)} (${stars(RATE[g.id])} vs ${g.m})`).join(", ")}.</p>`:""}${!love.length&&!hate.length?'<p class="tfact">So far you and the critics broadly agree.</p>':""}</div>`;
+}
+function renderCtx(list){
+  const el=$("ctx");
+  if(CTX.ser){const un=list.filter(g=>!MARKS[g.id]).length;
+    el.hidden=false;el.innerHTML=`<b>${esc(CTX.ser)} series</b><span>${list.length} ${list.length===1?"game":"games"} shown, ${un} unmarked.</span>${un?`<span>Mark the unmarked ones:</span><span class="marks">${MK.map(([k,cls,ic,label])=>`<button type="button" class="${cls}" data-bulk="${k}" title="Mark all ${un} unmarked as ${label}">${ic} ${label}</button>`).join("")}</span>`:""}<span class="sp"></span><button type="button" class="btn" data-ctxclear="1">Back to everything</button>`;}
+  else if(CTX.like){const a=BYID.get(CTX.like);
+    el.hidden=false;el.innerHTML=`<b>More like ${esc(a?a.t:"this")}</b><span>The ${list.length} closest matches by style, camera and length. Your filters still apply.</span><span class="sp"></span><button type="button" class="btn" data-ctxclear="1">Back to everything</button>`;}
+  else{el.hidden=true;el.innerHTML="";}
+}
+function render(animate){
+  let list=GAMES.filter(pass);
+  if(CTX.like){const a=BYID.get(CTX.like);list=a?list.map(g=>[g,simTo(a,g)]).sort((x,y)=>y[1]-x[1]||(y[0].m??0)-(x[0].m??0)).slice(0,40).map(e=>e[0]):[];}
+  else list.sort(cmp);
+  renderCtx(list);
+  let html="",last=null,i=0;
+  const tally=new Map();list.forEach(g=>{const b=band(g)[0];tally.set(b,(tally.get(b)||0)+1);});
+  for(const g of list){
+    const [label,note,col]=band(g);
+    if(label!==last){html+=`<tr class="band" style="--bc:${col};--i:${Math.min(i,28)}"><th colspan="6" scope="colgroup">${esc(label)}<small>${note?esc(note)+" · ":""}${tally.get(label)} ${tally.get(label)===1?"game":"games"}</small></th></tr>`;last=label;}
+    html+=row(g,i++);
+  }
+  const tb=$("rows");tb.classList.toggle("anim",animate!==false);tb.innerHTML=html;
+  $("empty").hidden=list.length>0;$("empty").textContent=EMPTY[S.view];
+  const c=counts();const pool=CTX.ser?serCount[CTX.ser]:S.view==="browse"?GAMES.length:S.view==="n"?GAMES.filter(g=>LIB[g.id]===-1).length:c[S.view];
+  $("count").innerHTML=`<b>${list.length}</b> of ${pool} games`;
+  const scored=list.filter(g=>g.m!=null);
+  const avg=scored.length?Math.round(scored.reduce((a,g)=>a+g.m,0)/scored.length):null;
+  $("sortnote").textContent=`Sorted by ${SORTNAME[S.sort]}`+(avg!=null?` · average Metascore ${avg}`:"");
+  $("q").value=S.q;$("sort").value=S.sort;$("tmode").value=S.tmode;$("minm").value=S.minm;$("hideun").checked=S.hideun;$("hidep").checked=S.hidep;$("hideb").checked=S.hideb;$("hidew").checked=S.hidew;$("hidelib").checked=S.hidelib;$("onlyleave").checked=S.onlyleave;$("syn").checked=S.syn;
+  document.querySelectorAll("#pvs button").forEach(b=>b.setAttribute("aria-pressed",S.pv.includes(b.dataset.v)));
+  $("minv").textContent=S.minm>0?S.minm:"any";
+  const asc=!S.desc;$("dir").textContent=asc?"↑":"↓";
+  $("dir").title=asc?"Ascending. Click to reverse.":"Descending. Click to reverse.";
+  const press=(sel,v)=>document.querySelectorAll(sel).forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===v));
+  press("#plat button",S.plat);press("#sysf button",S.sys);press("#tlen button",S.tlen);press("#src button",S.src);
+  document.querySelectorAll("#styles button").forEach(b=>b.setAttribute("aria-pressed",S.styles.includes(b.dataset.v)));
+  document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===S.view));
+  document.querySelectorAll("thead th[data-k]").forEach(th=>{
+    if(th.dataset.k===S.sort){const natural=(S.sort==="p"||S.sort==="g"||S.sort==="t");th.setAttribute("aria-sort",(natural?S.desc:!S.desc)?"ascending":"descending");}
+    else th.removeAttribute("aria-sort");
+  });
+  try{localStorage.setItem("psplus-sorter",JSON.stringify(S));}catch(e){}
+}
+
+/* ---- saving marks: this browser always, plus the account when signed in ---- */
+function setSync(t){$("sync").textContent=t;}
+function saveLocal(){try{localStorage.setItem("psplus-marks",JSON.stringify(MARKS));localStorage.setItem("psplus-rate",JSON.stringify(RATE));localStorage.setItem("psplus-lib",JSON.stringify(LIB));localStorage.setItem("psplus-notes",JSON.stringify(NOTES));localStorage.setItem("psplus-dates",JSON.stringify(DATES));localStorage.setItem("psplus-custom",JSON.stringify(CUSTOM));}catch(e){}}
+function saveMarks(){saveLocal();queuePush();}
+function stamp(id){const mk=MARKS[id];const t=Object.assign({},DATES[id]);
+  if(mk==="g"){if(!t.s)t.s=today();delete t.f;}
+  else if(mk==="p"){if(!t.f)t.f=today();}
+  else{delete t.f;if(mk!=="p"&&mk!=="g"&&mk!=="b")delete t.s;}
+  if(mk!=="b")delete t.why;
+  if(mk!=="g")delete t.pg;
+  if(mk!=="g"&&mk!=="p")delete t.hr;
+  if(t.s||t.f||t.hr||t.pg||(t.why&&t.why.length))DATES[id]=t;else delete DATES[id];}
+function setMeta(id,key,val){const t=Object.assign({},DATES[id]);
+  if(val==null||val===""||(Array.isArray(val)&&!val.length))delete t[key];else t[key]=val;
+  if(Object.keys(t).length)DATES[id]=t;else delete DATES[id];
+  saveMarks();renderHero();render(false);}
+function setMark(id,k){
+  if(MARKS[id]===k)delete MARKS[id];else MARKS[id]=k;
+  if(MARKS[id]!=="p")delete RATE[id];
+  stamp(id);
+  saveMarks();renderHero();render(false);
+  const again=document.querySelector(`.marks button[data-id="${CSS.escape(id)}"][data-m="${k}"]`);
+  if(again){again.focus({preventScroll:true});again.classList.add("popped");}
+}
+function saveNote(id,text){text=(text||"").trim().slice(0,2000);if(text)NOTES[id]=text;else delete NOTES[id];OPEN_NOTE=null;saveMarks();render(false);}
+/* ---- Ask Claude: recommendations that read the viewer's notes ---- */
+let askCtl=null;
+const ASKCOPY={not_granted:"Claude isn't allowed for this page, so this feature is off.",sampling_disabled:"Claude isn't available for this account.",rate_limited:"You've hit a usage limit. Try again later.",session_expired:"Your session expired. Sign in again and retry.",refused:"Claude declined that request. Try rewording your question.",prompt_too_large:"There is too much to send at once. Shorten some notes and retry.",upstream_error:"Something went wrong reaching Claude. Try again."};
+function askPrompt(extra){
+ const line=g=>`${g.t}${g.cl?` (Premium Classic, ${g.sys})`:""} | ${g.g.join(", ")} | ${g.pv} | ${g.h??g.a??"?"} h | Metascore ${g.m??"none"}`;
+  const withNote=g=>line(g)+(NOTES[g.id]?` | My note: ${NOTES[g.id].replace(/\s+/g," ")}`:"");
+  const why=g=>{const w=(DATES[g.id]&&DATES[g.id].why)||[];return w.length?" | Reasons they dropped it: "+w.map(k=>WHYNAME[k]||k).join(", "):"";};
+  const prog=g=>{const t=DATES[g.id]||{};return (t.pg?" | Progress: "+PGNAME[t.pg].toLowerCase():"")+(t.hr?" | Hours played: "+t.hr:"");};
+  const sec=(title,arr,f)=>arr.length?`\n${title}\n`+arr.map(f).join("\n")+"\n":"";
+  const rated=GAMES.filter(g=>MARKS[g.id]==="p"&&RATE[g.id]).sort((a,b)=>RATE[b.id]-RATE[a.id]);
+  const unr=GAMES.filter(g=>MARKS[g.id]==="p"&&!RATE[g.id]);
+  const by=k=>GAMES.filter(g=>MARKS[g.id]===k);
+  const noted=GAMES.filter(g=>NOTES[g.id]&&!MARKS[g.id]);
+  const cand=GAMES.filter(g=>(!MARKS[g.id]||MARKS[g.id]==="w")&&(g.cat||g.cl||LIB[g.id]===1)).sort((a,b)=>(priority(b)[0]??0)-(priority(a)[0]??0)).slice(0,60);
+  return "You are helping one person choose what to play next from their PlayStation Plus library. Everything you know about them is below.\n"
+   +"Each game line reads: title | styles | camera | main-story hours | Metascore | their own note if any.\n"
+   +sec("GAMES THEY PLAYED AND RATED (stars out of 5 first):",rated,g=>RATE[g.id]+" stars: "+withNote(g))
+   +sec("PLAYED BUT NOT RATED:",unr,withNote)
+   +sec("TRIED AND BOUNCED OFF:",by("b"),g=>withNote(g)+why(g))
+   +sec("PLAYING NOW:",by("g"),g=>withNote(g)+prog(g))
+   +sec("ON THEIR WANT-TO-PLAY LIST:",by("w"),withNote)
+   +sec("NOT INTERESTED IN:",by("x").slice(0,60),g=>g.t)
+   +sec("NOTES ON OTHER GAMES:",noted,withNote)
+   +"\nCANDIDATES (they can play these now; each line ends with a one-line synopsis):\n"+cand.map(g=>line(g)+" | "+(g.d||"")).join("\n")+"\n"
+   +(extra?`\nTheir request right now: ${extra}\n`:"")
+   +"\nRecommend exactly five games, chosen only from the CANDIDATES list, best first. For each, write the title on its own line, then two or three sentences on why it suits this person, pointing to specific things in their ratings and notes where you can. Treat their notes as the strongest evidence, above star ratings and Metascores. Then add one line starting 'Skip for now:' naming one candidate they would probably not enjoy and why. If they have given few ratings or notes, say so in one sentence and lean on Metascore. Plain text only, no markdown, no preamble.";
+}
+/* ---- copy a prompt for an AI assistant ---- */
+$("askcopy").addEventListener("click",async()=>{
+  const text=askPrompt($("askq").value.trim().slice(0,300));
+  const fb=$("askfallback");
+  try{await navigator.clipboard.writeText(text);$("askmsg").textContent="Copied. Paste it into Claude or another assistant.";fb.hidden=true;}
+  catch(e){fb.value=text;fb.hidden=false;fb.focus();fb.select();$("askmsg").textContent="Your browser blocked copying, so the prompt is below. Select it all and copy it.";}
+});
+
+/* ---- backups ---- */
+$("backup").addEventListener("click",()=>{
+  const blob=new Blob([JSON.stringify({app:"psplus-sorter",v:1,exported:new Date().toISOString(),data:snapshot()},null,1)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="psplus-sorter-backup-"+today()+".json";
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);
+  $("datamsg").textContent="Backup downloaded.";
+});
+$("restorebtn").addEventListener("click",()=>$("restorefile").click());
+$("restorefile").addEventListener("change",async e=>{
+  const f=e.target.files&&e.target.files[0];e.target.value="";if(!f)return;
+  try{
+    if(f.size>5e6)throw new Error("too big");
+    const j=JSON.parse(await f.text());
+    if(!j||j.app!=="psplus-sorter"||!j.data||typeof j.data!=="object")throw new Error("not a backup");
+    if(!confirm("Replace your current marks, ratings, notes and added games with this backup from "+String(j.exported||"an unknown date").slice(0,10)+"?"))return;
+    applySnap(j.data);queuePush(0);
+    $("datamsg").textContent="Backup restored.";
+  }catch(err){$("datamsg").textContent="That file isn't a backup from this site.";}
+});
+
+/* ---- accounts: a made-up username and a password, no personal details.
+   The browser turns the username and password into three things with PBKDF2:
+   an account id (hash of the username), a login token, and an AES-GCM key.
+   Marks are encrypted with that key before they leave the browser, so the server
+   only ever holds the id, a hash of the token and an encrypted blob. ---- */
+const CFG=Object.assign({apiBase:""},window.SORTER_CONFIG||{});
+const API=String(CFG.apiBase||"").trim().replace(/\/+$/,"");
+const TE=new TextEncoder(),TD=new TextDecoder();
+const toHex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
+const fromHex=h=>new Uint8Array(String(h).match(/../g).map(x=>parseInt(x,16)));
+const toB64=b=>{const a=new Uint8Array(b);let t="";for(let i=0;i<a.length;i+=0x8000)t+=String.fromCharCode.apply(null,a.subarray(i,i+0x8000));return btoa(t);};
+const fromB64=v=>Uint8Array.from(atob(v),c=>c.charCodeAt(0));
+const canon=v=>JSON.stringify(v,(k,x)=>x&&typeof x==="object"&&!Array.isArray(x)?Object.keys(x).sort().reduce((o,kk)=>(o[kk]=x[kk],o),{}):x);
+const MAPKEYS=["m","r","l","n","d","c"];
+const USER_RE=/^[a-z0-9][a-z0-9._-]{2,31}$/;
+const normUser=u=>String(u||"").normalize("NFKC").trim().toLowerCase();
+let ACCT=null,pushTimer=null,pushing=false,pushAgain=false,lastPull=0,dirty=false,retryTimer=null;
+
+function snapshot(){return JSON.parse(JSON.stringify({m:MARKS,r:RATE,l:LIB,n:NOTES,d:DATES,c:CUSTOM}));}
+function applySnap(x){const o=v=>v&&typeof v==="object"&&!Array.isArray(v)?v:{};
+  MARKS=o(x.m);RATE=o(x.r);LIB=o(x.l);NOTES=o(x.n);DATES=o(x.d);CUSTOM=o(x.c);
+  syncCustom();saveLocal();renderHero();render(false);}
+function merge3(base,local,server){ // keep this browser's changes since the last sync; take everything else from the account
+  const out={};
+  for(const k of MAPKEYS){const b=(base&&base[k])||{},l=local[k]||{},sv=(server&&server[k])||{},r={};
+    for(const id of new Set([...Object.keys(b),...Object.keys(l),...Object.keys(sv)])){
+      const v=canon(l[id])!==canon(b[id])?l[id]:sv[id];
+      if(v!==undefined)r[id]=v;}
+    out[k]=r;}
+  return out;
+}
+function union(local,server){const out={};for(const k of MAPKEYS)out[k]=Object.assign({},local[k]||{},(server&&server[k])||{});return out;}
+const sameSnap=(a,b)=>MAPKEYS.every(k=>canon((a&&a[k])||{})===canon((b&&b[k])||{}));
+
+async function deriveAccount(user,pw){
+  const u=normUser(user);
+  const base=await crypto.subtle.importKey("raw",TE.encode(pw),"PBKDF2",false,["deriveBits"]);
+  const bits=salt=>crypto.subtle.deriveBits({name:"PBKDF2",salt:TE.encode(salt),iterations:310000,hash:"SHA-256"},base,256);
+  const [a,k,id]=await Promise.all([bits("psplus-sorter/v1/auth/"+u),bits("psplus-sorter/v1/key/"+u),crypto.subtle.digest("SHA-256",TE.encode("psplus-sorter/v1/user/"+u))]);
+  return {user:u,uid:toHex(id),auth:toHex(a),k:toHex(k)};
+}
+const keyFrom=kHex=>crypto.subtle.importKey("raw",fromHex(kHex),"AES-GCM",false,["encrypt","decrypt"]);
+async function seal(obj){const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},ACCT.key,TE.encode(JSON.stringify(obj)));return {ct:toB64(ct),iv:toB64(iv)};}
+async function unseal(ct,iv,key){if(!ct)return {};const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:fromB64(iv)},key||ACCT.key,fromB64(ct));return JSON.parse(TD.decode(pt));}
+async function api(path,body){
+  let r;
+  try{r=await fetch(API+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});}
+  catch(e){throw {status:0};}
+  const j=await r.json().catch(()=>null);
+  if(!r.ok)throw Object.assign({status:r.status},j||{});
+  return j;
+}
+function remember(){try{localStorage.setItem("psplus-acct",JSON.stringify({user:ACCT.user,uid:ACCT.uid,auth:ACCT.auth,k:ACCT.k,ver:ACCT.ver,base:ACCT.base}));}catch(e){}}
+const SYNCOK=()=>`Signed in as ${ACCT.user}. Your marks are encrypted and synced to your account.`;
+function syncError(e){
+  if(!ACCT)return;
+  if(e&&e.status===401){signOut(false);setSync("You've been signed out because the account no longer accepts this login. Your marks are still saved in this browser.");return;}
+  if(e&&e.status===429){setSync("Too many sign-in attempts on this account. Saving will try again in a few minutes.");}
+  else if(e&&e.status===413){setSync("Your data is too large to save to your account. It's still saved in this browser.");return;}
+  else setSync("Couldn't reach the server. Your changes are saved in this browser and will sync when it's back.");
+  clearTimeout(retryTimer);retryTimer=setTimeout(()=>{if(dirty)push();else pull().catch(()=>{});},60000);
+}
+function queuePush(ms=1500){if(!ACCT)return;dirty=true;clearTimeout(pushTimer);setSync("Saving to your account…");pushTimer=setTimeout(push,ms);}
+async function push(){
+  if(!ACCT)return;
+  if(pushing){pushAgain=true;return;}
+  pushing=true;pushAgain=false;
+  try{
+    for(let tries=0;tries<3;tries++){
+      const snap=snapshot();
+      if(sameSnap(snap,ACCT.base)&&ACCT.ver>0){dirty=false;setSync(SYNCOK());break;}
+      const {ct,iv}=await seal(snap);
+      try{
+        const r=await api("/api/data/put",{uid:ACCT.uid,auth:ACCT.auth,ct,iv,base:ACCT.ver});
+        ACCT.ver=r.ver;ACCT.base=snap;remember();dirty=false;setSync(SYNCOK());break;
+      }catch(e){
+        if(e.status!==409)throw e;
+        const server=await unseal(e.ct,e.iv);
+        const merged=merge3(ACCT.base,snapshot(),server);
+        ACCT.ver=e.ver;ACCT.base=server;applySnap(merged);remember();
+      }
+    }
+  }catch(e){syncError(e);}
+  pushing=false;
+  if(pushAgain)queuePush(300);
+}
+async function pull(){
+  if(!ACCT)return;
+  lastPull=Date.now();
+  const r=await api("/api/data/get",{uid:ACCT.uid,auth:ACCT.auth});
+  if(r.ver!==ACCT.ver){
+    const server=await unseal(r.ct,r.iv);
+    const merged=merge3(ACCT.base,snapshot(),server);
+    ACCT.ver=r.ver;ACCT.base=server;applySnap(merged);remember();
+  }
+  if(!sameSnap(snapshot(),ACCT.base))queuePush(0);else{dirty=false;setSync(SYNCOK());}
+}
+async function createAccount(user,pw){
+  const d=await deriveAccount(user,pw);
+  await api("/api/account/create",{uid:d.uid,auth:d.auth});
+  ACCT=Object.assign(d,{key:await keyFrom(d.k),ver:0,base:{}});remember();
+  await push();
+}
+async function signIn(user,pw){
+  const d=await deriveAccount(user,pw);
+  const r=await api("/api/data/get",{uid:d.uid,auth:d.auth});
+  const key=await keyFrom(d.k);
+  let server;
+  try{server=await unseal(r.ct,r.iv,key);}catch(e){throw {status:401};}
+  const local=snapshot();
+  const added=MAPKEYS.reduce((n,k)=>n+Object.keys(local[k]||{}).filter(id=>!(server[k]||{})[id]).length,0);
+  ACCT=Object.assign(d,{key,ver:r.ver,base:server});
+  const merged=union(local,server);
+  applySnap(merged);remember();
+  if(!sameSnap(merged,server))await push();else setSync(SYNCOK());
+  return added;
+}
+function signOut(clear){
+  ACCT=null;clearTimeout(pushTimer);clearTimeout(retryTimer);dirty=false;
+  try{localStorage.removeItem("psplus-acct");}catch(e){}
+  if(clear){applySnap({});try{["psplus-marks","psplus-rate","psplus-lib","psplus-notes","psplus-dates","psplus-custom","psplus-sorter"].forEach(k=>localStorage.removeItem(k));}catch(e){}}
+  setSync(clear?"Signed out, and your marks were cleared from this browser.":"Signed out. Your marks are still saved in this browser.");
+  acctUI();
+}
+
+/* account bar and dialog */
+function acctUI(){
+  const el=$("acct");
+  if(!API){el.hidden=true;return;}
+  el.hidden=false;
+  el.innerHTML=ACCT?`<span><span class="dotok"></span>Signed in as <b></b></span><button type="button" class="btn" id="acctopen">Account</button>`
+                   :`<span>Not signed in. Your marks are saved in this browser only.</span><button type="button" class="btn" id="acctopen">Sign in or create an account</button>`;
+  if(ACCT)el.querySelector("b").textContent=ACCT.user;
+  $("acctopen").addEventListener("click",()=>openAcct(ACCT?"me":"in"));
+}
+let DLGMODE="in";
+function openAcct(mode){DLGMODE=mode;renderDlg();const d=$("acctdlg");if(!d.open)d.showModal();const f=d.querySelector("input");if(f)f.focus();}
+function renderDlg(){
+  const b=$("acctbody");
+  if(DLGMODE==="me"){
+    b.innerHTML=`<p>Signed in as <b id="dlguser"></b>. Your marks, ratings, notes and added games are encrypted in this browser and synced to your account, so you can sign in on another device and pick up where you left off.</p>
+      <div class="row"><button type="button" class="btn primary" data-act="sync">Sync now</button><button type="button" class="btn" data-act="out">Sign out</button><button type="button" class="btn" data-act="outclear">Sign out and clear this browser</button></div>
+      <p class="small">Use "Sign out and clear this browser" on a shared or public computer.</p>
+      <div class="row"><button type="button" class="btn danger" data-act="del">Delete my account</button></div>
+      <div class="err" id="dlgmsg" aria-live="polite"></div>
+      <div class="row" style="justify-content:flex-end"><button type="button" class="btn" data-act="close">Close</button></div>`;
+    $("dlguser").textContent=ACCT.user;return;
+  }
+  const create=DLGMODE==="new";
+  b.innerHTML=`<div class="dlgtabs" role="tablist"><button type="button" role="tab" data-mode="in" aria-selected="${!create}">Sign in</button><button type="button" role="tab" data-mode="new" aria-selected="${create}">Create account</button></div>
+    ${create?`<p>No email, no name. Pick a username that isn't your real name or email address, and a password you don't use elsewhere.</p>`:`<p>Sign in to sync your marks across devices. Anything you've marked in this browser is kept and added to your account.</p>`}
+    <label>Username<input type="text" id="dlgu" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="32" required></label>
+    <label>Password<input type="password" id="dlgp" autocomplete="${create?"new-password":"current-password"}" maxlength="200" required></label>
+    ${create?`<label>Password again<input type="password" id="dlgp2" autocomplete="new-password" maxlength="200" required></label>
+    <p class="small">Your marks are encrypted with a key made from your password before they're saved. Nobody, including whoever runs this site, can read them or reset your password, so if you forget it the account can't be recovered. Download a backup now and then from the Your data section.</p>`:""}
+    <div class="err" id="dlgmsg" aria-live="polite"></div>
+    <div class="row" style="justify-content:flex-end"><button type="button" class="btn" data-act="close">Cancel</button><button type="submit" class="btn primary" id="dlggo">${create?"Create account":"Sign in"}</button></div>`;
+}
+const dlgMsg=(t,ok)=>{const m=$("dlgmsg");if(m){m.textContent=t;m.classList.toggle("ok",!!ok);}};
+$("acctdlg").addEventListener("click",async e=>{
+  const t=e.target.closest("button");if(!t)return;
+  if(t.dataset.mode){DLGMODE=t.dataset.mode;renderDlg();$("dlgu").focus();return;}
+  const act=t.dataset.act;if(!act)return;
+  if(act==="close"){$("acctdlg").close();return;}
+  if(act==="sync"){dlgMsg("Syncing…",true);try{await pull();if(dirty)await push();dlgMsg("Up to date.",true);}catch(err){syncError(err);dlgMsg("Couldn't reach the server. Try again shortly.");}return;}
+  if(act==="out"||act==="outclear"){signOut(act==="outclear");$("acctdlg").close();return;}
+  if(act==="del"){
+    if(!t.dataset.armed){t.dataset.armed="1";t.textContent="Click again to delete your account for good";return;}
+    try{await api("/api/account/delete",{uid:ACCT.uid,auth:ACCT.auth});signOut(false);setSync("Your account was deleted. Your marks are still saved in this browser.");$("acctdlg").close();}
+    catch(err){dlgMsg("Couldn't delete the account just now. Try again shortly.");}
+  }
+});
+$("acctform").addEventListener("submit",async e=>{
+  e.preventDefault();
+  if(DLGMODE==="me")return;
+  const u=normUser($("dlgu").value),p=$("dlgp").value,go=$("dlggo");
+  if(!USER_RE.test(u))return dlgMsg("Usernames are 3 to 32 characters: letters, numbers, dots, dashes and underscores, starting with a letter or number.");
+  if(u.includes("@"))return dlgMsg("Please don't use an email address as your username.");
+  if(DLGMODE==="new"){
+    if(p.length<10)return dlgMsg("Use a password of at least 10 characters.");
+    if(p!==$("dlgp2").value)return dlgMsg("The two passwords don't match.");
+    if(p.toLowerCase().includes(u))return dlgMsg("Your password shouldn't contain your username.");
+  }else if(!p)return dlgMsg("Enter your password.");
+  go.disabled=true;dlgMsg(DLGMODE==="new"?"Creating your account…":"Signing in…",true);
+  try{
+    if(DLGMODE==="new"){await createAccount(u,p);dlgMsg("Account created.",true);}
+    else{const n=await signIn(u,p);dlgMsg(n?`Signed in. ${n} ${n===1?"entry":"entries"} from this browser ${n===1?"was":"were"} added to your account.`:"Signed in.",true);}
+    acctUI();setTimeout(()=>{if($("acctdlg").open)$("acctdlg").close();},900);
+  }catch(err){
+    ACCT=null;
+    const st=err&&err.status;
+    dlgMsg(st===409?"That username is taken. Try another."
+      :st===401?"That username and password don't match an account."
+      :st===429?`Too many attempts on this account. Try again in ${Math.ceil((err.retryAfter||60)/60)} minute${(err.retryAfter||60)>60?"s":""}.`
+      :st===503?"Sign-ups are paused for today. Try again tomorrow."
+      :st===0?"Couldn't reach the server. Check your connection and try again."
+      :"Something went wrong. Try again.");
+  }
+  go.disabled=false;
+});
+async function initAccount(){
+  if(API){
+    try{
+      const s=JSON.parse(localStorage.getItem("psplus-acct")||"null");
+      if(s&&HEX64.test(s.uid)&&HEX64.test(s.auth)&&HEX64.test(s.k))
+        ACCT={user:String(s.user||""),uid:s.uid,auth:s.auth,k:s.k,key:await keyFrom(s.k),ver:Number(s.ver)||0,base:s.base&&typeof s.base==="object"?s.base:{}};
+    }catch(e){ACCT=null;}
+    if(ACCT){setSync("Syncing with your account…");pull().catch(syncError);}
+    window.addEventListener("focus",()=>{if(ACCT&&!pushing&&Date.now()-lastPull>60000)pull().catch(syncError);});
+    window.addEventListener("online",()=>{if(ACCT)(dirty?push():pull()).catch(syncError);});
+  }
+  acctUI();
+}
+const HEX64=/^[0-9a-f]{64}$/;
+function parseStoreLink(input){
+  let u;try{u=new URL(String(input||"").trim());}catch(e){return null;}
+  if(u.protocol!=="https:"||u.hostname.toLowerCase()!=="store.playstation.com")return null;
+  const m=u.pathname.match(/^\/(?:([a-z]{2}-[a-z]{2})\/)?(concept|product)\/([A-Za-z0-9_-]{1,64})\/?$/i);
+  if(!m)return null;
+  const loc=(m[1]||"en-ca").toLowerCase(),kind=m[2].toLowerCase();
+  return {kind,id:m[3],url:`https://store.playstation.com/${loc}/${kind}/${m[3]}`};
+}
+function platformsFromId(id){const o=[];if(/CUSA\d/i.test(id))o.push("PS4");if(/PPSA\d/i.test(id))o.push("PS5");return o;}
+
+function setRating(id,n){
+  if(RATE[id]===n)delete RATE[id];else RATE[id]=n;
+  saveMarks();renderHero();render(false);
+  const again=document.querySelector(`.stars button[data-id="${CSS.escape(id)}"][data-rate="${n}"]`);if(again)again.focus({preventScroll:true});
+}
+function toggleLib(id,v){
+  if(LIB[id]===v)delete LIB[id];else LIB[id]=v;
+  saveMarks();renderHero();render(false);
+  const again=document.querySelector(`.libset button[data-lib="${CSS.escape(id)}"][data-lv="${v}"]`);if(again)again.focus({preventScroll:true});
+}
+
+function defaultDesc(k){return k!=="time";}
+function setSort(k){if(S.sort===k)S.desc=!S.desc;else{S.sort=k;S.desc=defaultDesc(k);}render();}
+$("q").addEventListener("input",e=>{S.q=e.target.value;const pos=e.target.selectionStart;render(false);e.target.setSelectionRange(pos,pos);});
+$("sort").addEventListener("change",e=>{S.sort=e.target.value;S.desc=defaultDesc(S.sort);render();});
+$("dir").addEventListener("click",()=>{S.desc=!S.desc;render();});
+$("tmode").addEventListener("change",e=>{S.tmode=e.target.value;render();});
+$("minm").addEventListener("input",e=>{S.minm=+e.target.value;render(false);});
+const chk=(id)=>$(id).addEventListener("change",e=>{S[id]=e.target.checked;render();});
+chk("hideun");chk("hidep");chk("hideb");chk("hidew");chk("hidelib");chk("onlyleave");chk("syn");
+$("pvs").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const v=b.dataset.v;S.pv=S.pv.includes(v)?S.pv.filter(x=>x!==v):S.pv.concat(v);render();});
+const segClick=(id,key)=>$(id).addEventListener("click",e=>{const b=e.target.closest("button");if(b){S[key]=b.dataset.v;render();}});
+segClick("plat","plat");segClick("sysf","sys");segClick("tlen","tlen");segClick("src","src");$("tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(b){CTX={ser:null,like:null};S.view=b.dataset.v;render();}});
+$("styles").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const v=b.dataset.v;S.styles=S.styles.includes(v)?S.styles.filter(s=>s!==v):S.styles.concat(v);render();});
+$("bulkno").addEventListener("click",e=>{const b=e.currentTarget;
+  if(!b.dataset.armed){b.dataset.armed="1";b.textContent=`Click again to confirm: ${b.dataset.n} games will be tagged`;setTimeout(()=>{delete b.dataset.armed;renderHero();},5000);return;}
+  delete b.dataset.armed;GAMES.forEach(g=>{if(g.e&&!g.cat&&!LIB[g.id])LIB[g.id]=-1;});saveMarks();renderHero();render();});
+$("rows").addEventListener("change",e=>{const i=e.target.closest("input[data-hr]");if(!i)return;const v=Number(i.value);setMeta(i.dataset.hr,"hr",v>0?Math.min(5000,Math.round(v*2)/2):null);});
+$("ctx").addEventListener("click",e=>{const t=e.target.closest("button");if(!t)return;
+  if(t.dataset.ctxclear){CTX={ser:null,like:null};render();return;}
+  if(t.dataset.bulk&&CTX.ser){const k=t.dataset.bulk;GAMES.filter(pass).forEach(g=>{if(!MARKS[g.id]){MARKS[g.id]=k;stamp(g.id);}});saveMarks();renderHero();render(false);}
+});
+/* ---- adding a game that isn't in the list ---- */
+const ADD={stars:0,styles:[],y:null,d:"",u:"",p:[]};
+const ADDSTYLES=Object.keys(HUE).filter(x=>x!=="Other");
+$("apv").innerHTML=PVORDER.map(v=>`<option>${esc(v)}</option>`).join("");$("apv").value="Third-person";
+function renderAdd(){
+  $("astarsgrp").hidden=$("ast").value!=="p";
+  $("ainfo").textContent=[ADD.p.length?"Platforms: "+ADD.p.join(", "):"",ADD.y?"Released "+ADD.y:"",ADD.u?"Store link saved":""].filter(Boolean).join(" · ");
+  $("astars").innerHTML=[1,2,3,4,5].map(n=>`<button type="button" class="${n<=ADD.stars?"on":""}" data-n="${n}" aria-label="${n} ${n===1?"star":"stars"}" aria-pressed="${n===ADD.stars}">★</button>`).join("");
+  $("astyles").innerHTML=ADDSTYLES.map(x=>`<button type="button" data-v="${esc(x)}" style="--h:${HUE[x]}" aria-pressed="${ADD.styles.includes(x)}"><span class="dot"></span>${esc(x)}${ADD.styles[0]===x?" (main)":""}</button>`).join("");
+}
+renderAdd();
+const addMsg=t=>{$("amsg").textContent=t;};
+const slug=t=>t.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+$("addopen").addEventListener("click",()=>{const p=$("addpanel");p.hidden=!p.hidden;$("addopen").setAttribute("aria-expanded",String(!p.hidden));if(!p.hidden)$("at").focus();});
+$("acancel").addEventListener("click",()=>{$("addpanel").hidden=true;$("addopen").setAttribute("aria-expanded","false");});
+$("astars").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const n=+b.dataset.n;ADD.stars=ADD.stars===n?0:n;renderAdd();});
+$("astyles").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const v=b.dataset.v;
+  if(ADD.styles.includes(v))ADD.styles=ADD.styles.filter(x=>x!==v);else if(ADD.styles.length<3)ADD.styles.push(v);else return addMsg("Three styles is the limit. Unpick one first.");
+  renderAdd();});
+$("ast").addEventListener("change",renderAdd);
+$("aurl").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("alook").click();}});
+const GENRE_STYLE=[[/role.?playing|\brpg\b/i,"RPG"],[/shoot/i,"Shooter"],[/horror/i,"Horror"],[/platform/i,"Platformer"],[/puzzle|brain/i,"Puzzle"],[/racing|driving/i,"Racing"],[/sport/i,"Sports"],[/fight/i,"Fighting"],[/strateg/i,"Strategy"],[/simulat/i,"Simulation"],[/family|educational/i,"Family"],[/party/i,"Party"],[/music|rhythm|arcade|casual/i,"Arcade"],[/adventure/i,"Adventure"],[/action/i,"Action"]];
+function mapGenres(list){
+  const out=[];for(const raw of (Array.isArray(list)?list:[])){const t=String(raw).replace(/_/g," ");for(const [re,st] of GENRE_STYLE)if(re.test(t)&&!out.includes(st))out.push(st);}
+  const broad=new Set(["Action","Adventure","Arcade"]);
+  return out.sort((a,b)=>(broad.has(a)?1:0)-(broad.has(b)?1:0)).slice(0,3);
+}
+const LOOKUP_ERR={not_a_store_link:"That isn't a PlayStation Store game page.",not_found:"The store says that page doesn't exist. Check the link.",no_listing:"Found the page but couldn't read the game's details. Fill them in by hand.",store_unreachable:"The PlayStation Store didn't respond. Try again, or fill in the details by hand."};
+$("alook").addEventListener("click",async()=>{
+  const link=parseStoreLink($("aurl").value);
+  if(!link)return addMsg("That doesn't look like a PlayStation Store game page. It should start with https://store.playstation.com/ and contain /concept/ or /product/.");
+  const dup=GAMES.find(g=>!g.own&&typeof g.u==="string"&&g.u.endsWith("/"+link.kind+"/"+link.id));
+  if(dup)return addMsg(`${dup.t} is already in the list. Search for it instead.`);
+  ADD.u=link.url;ADD.p=platformsFromId(link.id);renderAdd();
+  if(!API)return addMsg("Link saved. Store lookups aren't switched on for this copy of the site, so fill in the title and details by hand.");
+  const b=$("alook");b.disabled=true;addMsg("Looking it up on the PlayStation Store…");
+  try{
+    const r=await fetch(API+"/api/store?url="+encodeURIComponent(link.url));
+    const j=await r.json().catch(()=>null);
+    if(!r.ok||!j||!j.title)addMsg(LOOKUP_ERR[j&&j.error]||"Couldn't look that up just now. Fill in the details by hand.");
+    else{
+      $("at").value=String(j.title).slice(0,120);
+      if(Array.isArray(j.platforms)&&j.platforms.length)ADD.p=["PS4","PS5"].filter(x=>j.platforms.includes(x));
+      if(Number(j.year)>1970&&Number(j.year)<2100)ADD.y=Number(j.year);
+      const st=mapGenres(j.genres);if(st.length)ADD.styles=st;
+      renderAdd();
+      const ex=BYID.get(slug(j.title));
+      addMsg(ex&&!ex.own?`${ex.t} is already in the list. Search for it instead.`:`Found ${j.title}. Check the styles, pick a camera view and your status, then add it.`);
+    }
+  }catch(e){addMsg("Couldn't reach the lookup service. Fill in the details by hand.");}
+  b.disabled=false;
+});
+$("aadd").addEventListener("click",()=>{
+  const t=$("at").value.trim().slice(0,120);
+  const st=$("ast").value;
+  if(!t)return addMsg("Give the game a title.");
+  if(!ADD.styles.length)return addMsg("Pick at least one style.");
+  if(st==="p"&&!ADD.stars)return addMsg("Give it a star rating, or change your status.");
+  const base=slug(t);
+  if(!base)return addMsg("That title needs at least one letter or number.");
+  if(IDS.has(base)){const ex=BYID.get(base);return addMsg(`${ex.t} is already in the list. Search for it instead.`);}
+  const id="my-"+base;
+  if(IDS.has(id))return addMsg("You've already added that one.");
+  CUSTOM[id]={t,g:ADD.styles.slice(),pv:$("apv").value,h:Number($("ah").value)>0?Number($("ah").value):null,y:ADD.y,d:ADD.d,p:ADD.p.slice(),u:ADD.u||null};
+  if(st){MARKS[id]=st;stamp(id);}
+  if(st==="p")RATE[id]=ADD.stars;
+  const note=$("anote").value.trim().slice(0,2000);if(note)NOTES[id]=note;
+  syncCustom();saveMarks();renderHero();render(false);
+  const where={p:"your Played tab",g:"your Now playing tab",w:"your Want to play list","":"Browse, tagged Added by me"}[st];
+  addMsg(`Added ${t}. It's in ${where}.`);
+  $("at").value="";$("ah").value="";$("anote").value="";$("aurl").value="";
+  ADD.stars=0;ADD.styles=[];ADD.y=null;ADD.d="";ADD.u="";ADD.p=[];renderAdd();$("aurl").focus();
+});
+$("reset").addEventListener("click",()=>{const view=S.view;S=Object.assign({},DEF,{styles:[],pv:[],view});render();});
+$("rows").addEventListener("click",e=>{
+  const b=e.target.closest(".marks button[data-m]");if(b)return setMark(b.dataset.id,b.dataset.m);
+  const st=e.target.closest(".stars button");if(st)return setRating(st.dataset.id,+st.dataset.rate);
+  const lb=e.target.closest(".libset button");if(lb)return toggleLib(lb.dataset.lib,+lb.dataset.lv);
+  const t=e.target.closest("button");if(!t)return;
+  if(t.dataset.ser){CTX={ser:t.dataset.ser,like:null};render();$("ctx").scrollIntoView({block:"nearest"});}
+  else if(t.dataset.like){CTX={ser:null,like:t.dataset.like};render();$("ctx").scrollIntoView({block:"nearest"});}
+  else if(t.dataset.note){OPEN_NOTE=OPEN_NOTE===t.dataset.note?null:t.dataset.note;render(false);const nb=$("notebox");if(nb)nb.focus();}
+  else if(t.dataset.notesave){saveNote(t.dataset.notesave,$("notebox").value);}
+  else if(t.dataset.notecancel){OPEN_NOTE=null;render(false);}
+  else if(t.dataset.notedel){saveNote(t.dataset.notedel,"");}
+  else if(t.dataset.pg){const id=t.dataset.id,n=+t.dataset.pg;setMeta(id,"pg",(DATES[id]&&DATES[id].pg)===n?null:n);}
+  else if(t.dataset.why){const id=t.dataset.id,k=t.dataset.why;const w=((DATES[id]&&DATES[id].why)||[]).slice();const i=w.indexOf(k);if(i>=0)w.splice(i,1);else w.push(k);setMeta(id,"why",w);
+    const again=document.querySelector(`.why button[data-id="${CSS.escape(id)}"][data-why="${k}"]`);if(again)again.focus({preventScroll:true});}
+  else if(t.dataset.delown){const id=t.dataset.delown;
+    if(t.dataset.armed){delete CUSTOM[id];delete MARKS[id];delete RATE[id];delete NOTES[id];delete DATES[id];syncCustom();saveMarks();renderHero();render(false);}
+    else{t.dataset.armed="1";t.innerHTML="Click again to remove";}}
+});
+document.querySelector("thead").addEventListener("click",e=>{const th=e.target.closest("th[data-k]");if(th)setSort(th.dataset.k);});
+if(window.matchMedia("(max-width:980px)").matches)$("rail").removeAttribute("open");
+renderHero();render();
+initAccount();
+})();
+</script>
+</body>
+</html>
