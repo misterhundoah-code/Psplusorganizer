@@ -611,10 +611,10 @@ footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:78ch;display:
 <script>
 (async function main(){
 "use strict";
-let GAMES,META,ARTLIST;
+let GAMES,META,ARTLIST,LINKS;
 try{
   const get=u=>fetch(u,{cache:"no-cache"}).then(r=>{if(!r.ok)throw new Error(u+" "+r.status);return r.json();});
-  [GAMES,META,ARTLIST]=await Promise.all([get("data/games.json"),get("data/catalogue.json"),get("data/art.json").catch(()=>[])]);
+  [GAMES,META,ARTLIST,LINKS]=await Promise.all([get("data/games.json"),get("data/catalogue.json"),get("data/art.json").catch(()=>[]),get("data/links.json").catch(()=>({}))]);
 }catch(e){
   document.getElementById("count").textContent="Couldn't load the game list. Check your connection and reload the page.";
   return;
@@ -667,6 +667,8 @@ function autoRegion(){
   return "en-ca";
 }
 const regionNow=()=>REGION_CODES.has(S.region)?S.region:autoRegion();
+// games that only had a store search link get a direct one once tools/fetch_art.py has found their store id
+const gameUrl=g=>storeUrl(LINKS&&/^\d+$/.test(String(LINKS[g.id]||""))&&!/\/(concept|product)\//.test(g.u||"")?"https://store.playstation.com/en-ca/concept/"+LINKS[g.id]:g.u);
 const storeUrl=u=>String(u||"").replace(/^(https:\/\/store\.playstation\.com\/)[a-z]{2}-[a-z]{2}\//,`$1${regionNow()}/`);
 /* search: case, accents and punctuation are ignored, so "spiderman", "spider man" and "Spider-Man" all match */
 function qnorm(x){return String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/['’]/g,"").replace(/&/g," and ").replace(/[^a-z0-9]+/g," ").trim();}
@@ -878,7 +880,7 @@ function row(g,i){
   else if(mk==="b"){const w=(dt&&dt.why)||[];
     extra=`<div class="why" role="group" aria-label="Why I bounced off"><span>Why?</span>${WHY.map(([k,l])=>`<button type="button" data-why="${k}" data-id="${esc(g.id)}" aria-pressed="${w.includes(k)}">${l}</button>`).join("")}</div>`;}
   const leave=(g.gone?`<span class="flag leave" title="No longer in the Game Catalogue">Left the catalogue</span>`:"")+(LEAVING[g.id]?`<span class="flag leave" title="Confirmed to leave the Game Catalogue">Leaving ${fmtD(LEAVING[g.id])}</span>`:"");
-  return `<tr class="game${mk?" is-"+mk:""}${lv===-1&&!g.cat?" nolib":""}" style="--i:${Math.min(i,28)}"><td class="title"><div class="g">${tile(g)}<div class="gt"><a href="${esc(storeUrl(g.u))}" target="_blank" rel="noopener">${hl(g.t)}</a>${leave}${flags}<div class="tags">${tags}</div>${S.syn&&g.d?`<div class="syn">${esc(g.d)}</div>`:""}${extra}${noteHTML}</div></div></td><td class="pl"><span class="plat">${pl}</span></td><td class="num sc">${scoreHTML(g.m)}</td><td class="num tm">${tm}</td><td class="fyc">${fy}</td><td class="mk"><span class="marks">${btns}${g.own?`<button type="button" class="mn" data-delown="${esc(g.id)}" aria-label="Remove" title="Remove this game I added">⌫<span class="ml"> Remove</span></button>`:""}<button type="button" class="mn" data-note="${esc(g.id)}" aria-pressed="${!!note}" aria-label="Note" title="${note?"Edit my note":"Add a note"}">✎<span class="ml"> Note</span></button></span></td></tr>`;
+  return `<tr class="game${mk?" is-"+mk:""}${lv===-1&&!g.cat?" nolib":""}" style="--i:${Math.min(i,28)}"><td class="title"><div class="g">${tile(g)}<div class="gt"><a href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${hl(g.t)}</a>${leave}${flags}<div class="tags">${tags}</div>${S.syn&&g.d?`<div class="syn">${esc(g.d)}</div>`:""}${extra}${noteHTML}</div></div></td><td class="pl"><span class="plat">${pl}</span></td><td class="num sc">${scoreHTML(g.m)}</td><td class="num tm">${tm}</td><td class="fyc">${fy}</td><td class="mk"><span class="marks">${btns}${g.own?`<button type="button" class="mn" data-delown="${esc(g.id)}" aria-label="Remove" title="Remove this game I added">⌫<span class="ml"> Remove</span></button>`:""}<button type="button" class="mn" data-note="${esc(g.id)}" aria-pressed="${!!note}" aria-label="Note" title="${note?"Edit my note":"Add a note"}">✎<span class="ml"> Note</span></button></span></td></tr>`;
 }
 const SORTNAME={date:"the date you started or finished",pri:"your priority",m:"Metacritic score",time:"completion time",p:"platform",g:"game style",t:"title",y:"release year"};
 const EMPTY={g:"Nothing in progress. Use ▶ Playing on a game when you start it.",browse:"No games match these filters. Loosen one of them or reset.",w:"Nothing on your want-to-play list matches. Use ★ Want in Browse to add games here.",p:"No played games match. Use ✓ Played in Browse to move games here.",b:"No bounced-off games match. Use ↩ Bounced in Browse for games you tried and dropped.",n:"No games here. Monthly games you tag ✕ Not in my library collect in this tab, and you can untag them from here.",x:"No hidden games match. Games you mark ✕ Not interested land here, and you can bring them back from this tab."};
@@ -906,7 +908,7 @@ function renderHero(){
   let pick=GAMES.filter(g=>MARKS[g.id]==="w"&&playable(g)).sort(byScore),note="from your want-to-play list, "+how;
   if(!pick.length){pick=GAMES.filter(g=>!MARKS[g.id]&&playable(g)).sort(byScore);note="games you haven't sorted yet, "+how;}
   $("decknote").textContent=note;
-  $("deck").innerHTML=pick.slice(0,14).map((g,i)=>{const t=g.h??g.a;return `<a class="card" style="--i:${i}" title="${esc(g.d||"")}" href="${esc(storeUrl(g.u))}" target="_blank" rel="noopener">${tile(g)}<span class="ct">${esc(g.t)}</span><span class="cm">${TASTE.on?"Priority "+pv(g):(g.m!=null?"Metascore "+g.m:"No Metascore")}${t!=null?" · "+fmtT(t):""}</span></a>`;}).join("");
+  $("deck").innerHTML=pick.slice(0,14).map((g,i)=>{const t=g.h??g.a;return `<a class="card" style="--i:${i}" title="${esc(g.d||"")}" href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${tile(g)}<span class="ct">${esc(g.t)}</span><span class="cm">${TASTE.on?"Priority "+pv(g):(g.m!=null?"Metascore "+g.m:"No Metascore")}${t!=null?" · "+fmtT(t):""}</span></a>`;}).join("");
 }
 function renderTaste(){
   const rated=GAMES.filter(g=>MARKS[g.id]==="p"&&RATE[g.id]);
