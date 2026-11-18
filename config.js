@@ -4,5 +4,5 @@
 //   apiBase: "https://psplus-sorter-api.your-subdomain.workers.dev"
 // Leave it empty and the site still works, saving everything in each visitor's browser.
 window.SORTER_CONFIG = {
-  apiBase: ""
+  apiBase: "https://psplus-sorter-api.misterhundo-ah.workers.dev"
 };
