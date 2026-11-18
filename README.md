@@ -1,6 +1,6 @@
 # PS Plus Catalogue Sorter
 
-A single-page site for sorting and tracking the PlayStation Plus Game Catalogue, the Premium Classics and four years of Essential monthly games (779 games as of 17 November 2026).
+A single-page site for sorting and tracking the PlayStation Plus Game Catalogue, the Premium Classics and every PS4 and PS5 monthly game since November 2013 (1,045 games as of 18 November 2026). Visitors can say when they joined PS Plus to hide monthly games from before then.
 
 - Sort and filter by Metacritic score, completion time, platform, style, camera view and original system
 - Mark games as Now playing, Want to play, Played, Bounced off or Not interested
@@ -126,7 +126,7 @@ Paste a `https://store.playstation.com/.../concept/...` or `.../product/...` lin
 | `n` | Number of HowLongToBeat reports |
 | `cat` | 1 if in the Game Catalogue |
 | `cl`, `sys` | Premium Classic and its original system |
-| `e`, `el` | Essential monthly game and its month |
+| `e`, `el` | Monthly game and its month (the most recent, if it was offered twice) |
 
 People's marks are keyed by `id`, so don't change an existing game's id.
 
@@ -146,7 +146,7 @@ To try the whole site locally against that Worker, set `apiBase` in `config.js` 
 
 - **Game lists:**
   - Sony's PlayStation Plus Game Catalogue and Premium Classics lists (Canada).
-  - Essential monthly games as reported by Game Rant, Insider Gaming and Beebom.
+  - Monthly games: November 2013 to October 2022 from the [PlayStation Fandom wiki](https://playstation.fandom.com/wiki/List_of_PlayStation_Plus_monthly_games_(North_America))'s North American lists; November 2022 on as reported by Game Rant, Insider Gaming and Beebom.
 - **Scores:** Metacritic, via public datasets on GitHub plus manual checks on metacritic.com.
 - **Completion times:** HowLongToBeat, via a public dataset on GitHub (March 2026).
 - **Synopses, camera views and style tags:** written for this project. They haven't all been checked one by one.

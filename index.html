@@ -117,6 +117,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .shelfhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 16px;margin-bottom:6px}
 .shelfhead h2{font-family:var(--display);font-weight:800;font-size:30px;letter-spacing:.05em;text-transform:uppercase;margin:0;line-height:1}
 .tabs{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 12px}
+.row2.since{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .searchbar{position:sticky;top:8px;z-index:20;display:flex;align-items:center;gap:10px;margin:12px 0 4px;background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:0 10px 0 14px;box-shadow:0 6px 20px rgba(10,16,48,.08);transition:border-color .15s,box-shadow .15s}
 .searchbar:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 18%,transparent),0 6px 20px rgba(10,16,48,.1)}
 .searchbar svg{width:20px;height:20px;color:var(--muted);flex:none}
@@ -359,7 +360,7 @@ footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:78ch;display:
     </div>
     <div class="herotop">
       <h1>PS Plus <em>Catalogue</em><br>Sorter</h1>
-      <div class="sub">The Extra and Premium Game Catalogue as of <span id="asof">17 November 2026</span>, plus the Premium Classics and four years of Essential monthly games. Mark what you want, rate what you have played, and the list learns what to put in front of you.</div>
+      <div class="sub">The Extra and Premium Game Catalogue as of <span id="asof">17 November 2026</span>, plus the Premium Classics and every PS4 and PS5 monthly game since 2013. Mark what you want, rate what you have played, and the list learns what to put in front of you.</div>
     </div>
     <div class="progress">
       <div class="plabel"><div id="ptext">Sorted 0 of 0</div><span id="pleft"></span></div>
@@ -442,6 +443,9 @@ footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:78ch;display:
             <button type="button" data-v="mine">Added by me</button>
           </div>
           <label class="check"><input type="checkbox" id="hidelib"> Also hide monthly games I haven't tagged yet</label>
+          <span class="lab" style="margin-top:4px">PS Plus member since</span>
+          <div class="row2 since"><select id="sincem" aria-label="Month you joined PS Plus"></select><select id="sincey" aria-label="Year you joined PS Plus"></select></div>
+          <span class="hint" id="sincehint"></span>
           <span class="lab" style="margin-top:4px">Classics by original system</span>
           <div class="seg" id="sysf" role="group" aria-label="Original system">
             <button type="button" data-v="all">All</button>
@@ -570,7 +574,7 @@ footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:78ch;display:
   </div>
 
   <footer>
-    <div><b>Where the numbers come from.</b> Game Catalogue: Sony's PlayStation Plus feed (October 2026 snapshot), updated by hand with the October and November 2026 additions and removals. Monthly games: the Essential line-ups from November 2022 to November 2026 as reported by Game Rant, Insider Gaming and Beebom. Metacritic: Metascores collected July 2026, with about 150 gaps checked on metacritic.com on 16 November 2026. Completion times: HowLongToBeat averages collected March 2026.</div>
+    <div><b>Where the numbers come from.</b> Game Catalogue: Sony's PlayStation Plus feed (October 2026 snapshot), updated by hand with the October and November 2026 additions and removals. Monthly games: every PS4 and PS5 monthly game in North America, from the November 2013 PS4 launch to October 2022 as listed by the PlayStation Fandom wiki, and the Essential line-ups from November 2022 to November 2026 as reported by Game Rant, Insider Gaming and Beebom. PS3 and PS Vita monthly games aren't included. A game offered twice shows its most recent month. Many older monthly games no longer have Metascores or completion times here, and a few have been delisted from the store. Metacritic: Metascores collected July 2026, with about 150 gaps checked on metacritic.com on 16 November 2026. Completion times: HowLongToBeat averages collected March 2026.</div>
     <div><b>How "Priority for me" works.</b> It starts from a game's Metascore (68 when there is none) and moves it up or down by as much as about 20 points according to your taste. Taste comes from the styles and lengths of the games you have marked: a 5-star rating counts strongly for those styles, 3 stars is neutral, 1 star and Bounced count against, and Want and Not interested count a little. The small number beside the score is how far your taste moved it. It switches on once you have rated or bounced off three games, and it is a rough guide based on broad style tags, so treat it as a nudge.</div>
     <div><b>Classics.</b> The 174 games in Sony's Canadian Premium Classics list as of 17 November 2026: PS1, PS2 and PSP games, PS4 remasters and two arcade fighters. The PS3 games Premium streams are not in Sony's list, so they are not here. Metacritic reviewed few PS1-era games, so many Classics have no Metascore, and some scores are for another platform's release. Times are HowLongToBeat averages for the original release.</div>
     <div><b>Games you add.</b> A game you add carries only what you enter, or what its PlayStation Store page shows if you paste the link (title, platforms, genres and release year). Added games have no Metascore, are never recommended back to you, and are saved with your marks.</div>
@@ -637,7 +641,7 @@ const PORDER={"PS5":0,"PS4/PS5":1,"PS4":2,"Elsewhere":3};
 const PNAME={"PS5":"PS5 only","PS4/PS5":"PS4 and PS5","PS4":"PS4 only","Elsewhere":"Added by me"};
 const HUE={"Action":14,"Adventure":172,"RPG":268,"Shooter":212,"Open World":142,"Platformer":44,"Strategy":236,"Simulation":190,"Horror":350,"Survival":84,"Puzzle":312,"Racing":28,"Sports":108,"Fighting":2,"Family":332,"Party":290,"Roguelike":58,"Metroidvania":252,"Stealth":200,"Hack & Slash":20,"Narrative":160,"Arcade":322,"Soulslike":280,"Other":220};
 const SERIES=[["Jak|Daxter","Jak and Daxter"],["Sly ","Sly Cooper"],["Syphon Filter","Syphon Filter"],["Tekken","Tekken"],["Twisted Metal","Twisted Metal"],["Wild Arms","Wild Arms"],["TimeSplitters","TimeSplitters"],["Resident Evil","Resident Evil"],["Worms","Worms"],["Ape Escape|Ape Academy","Ape Escape"],["Armored Core","Armored Core"],["Patapon","Patapon"],["LocoRoco","LocoRoco"],["Metro","Metro"],["MediEvil","MediEvil"],["Ridge Racer|R4: Ridge Racer","Ridge Racer"],["Legacy of Kain|Blood Omen","Legacy of Kain"],["Dark Cloud","Dark Cloud"],["Pursuit Force","Pursuit Force"],["Kurushi","Kurushi"],["Thrillville","Thrillville"],["Ratchet|Secret Agent Clank","Ratchet & Clank"],["Dino Crisis","Dino Crisis"],["Gravity Rush","Gravity Rush"],["Myst|Riven","Myst"],["Jet Rider","Jet Rider"],["Alone in the Dark","Alone in the Dark"],["Everybody's Golf|Hot Shots","Everybody's Golf"],["Atari Flashback","Atari Flashback"],["Disney","Disney"],["Echochrome|echochrome|echoshift","Echochrome"]].concat([["LEGO|The LEGO","LEGO"],["Assassin's Creed","Assassin's Creed"],["Far Cry","Far Cry"],["PAW Patrol","PAW Patrol"],["Tom Clancy's Ghost Recon","Ghost Recon"],["Tom Clancy's Rainbow Six","Rainbow Six"],["Tom Clancy's The Division","The Division"],["Wolfenstein","Wolfenstein"],["Earth Defense Force","Earth Defense Force"],["Story of Seasons","Story of Seasons"],["Warhammer 40,000","Warhammer 40,000"],["Warhammer:","Warhammer Fantasy"],["Uncharted","Uncharted"],["Marvel's Spider-Man","Marvel's Spider-Man"],["The Last of Us","The Last of Us"],["God of War","God of War"],["Horizon","Horizon"],["Final Fantasy","Final Fantasy"],["Persona","Persona"],["Death Stranding","Death Stranding"],["Dying Light","Dying Light"],["Sniper Elite|Zombie Army","Sniper Elite"],["Watch Dogs","Watch Dogs"],["Mafia","Mafia"],["Destiny 2","Destiny 2"],["Tomb Raider|Rise of the Tomb Raider|Shadow of the Tomb Raider","Tomb Raider"],["Trials","Trials"],["Two Point","Two Point"],["Cat Quest","Cat Quest"],["Monster Hunter","Monster Hunter"],["Like a Dragon","Like a Dragon"],["Kingdom Come","Kingdom Come"],["Dishonored","Dishonored"],["Call of Duty","Call of Duty"],["Alan Wake","Alan Wake"],["Five Nights at Freddy's","Five Nights at Freddy's"],["Poppy Playtime","Poppy Playtime"],["Hotline Miami","Hotline Miami"],["Coffee Talk","Coffee Talk"],["Citizen Sleeper","Citizen Sleeper"],["Ben 10","Ben 10"],["Rabbids","Rabbids"],["Monopoly","Monopoly"],["Dynasty Warriors|Samurai Warriors|Warriors:","Warriors"],["Until Dawn","Until Dawn"],["Hello Neighbor|Secret Neighbor","Hello Neighbor"],["Killing Floor","Killing Floor"],["Outlast|The Outlast","Outlast"],["Overpass","Overpass"],["World War Z","World War Z"],["Nioh","Nioh"],["NBA 2K","NBA 2K"],["PGA Tour","PGA Tour 2K"],["WWE 2K","WWE 2K"],["MLB The Show","MLB The Show"],["EA Sports FC","EA Sports FC"],["F1 ","F1"],["Need for Speed","Need for Speed"],["Monster Train","Monster Train"],["Fallout","Fallout"],["DOOM","Doom"],["Sonic","Sonic"],["Aliens","Aliens"],["The Elder Scrolls","The Elder Scrolls"],["Oddworld","Oddworld"],["The Crew","The Crew"],["Planet ","Planet"],["The Surge","The Surge"],["Ys ","Ys"],["Prince of Persia|The Rogue Prince of Persia","Prince of Persia"],["Minecraft","Minecraft"],["South Park","South Park"],["Farming Simulator","Farming Simulator"],["Star Wars","Star Wars"],["For The King","For The King"],["Mighty Morphin Power Rangers|Power Rangers","Power Rangers"]]).map(([p,n])=>[new RegExp("^(?:"+p.replace(/[.*+?^${}()[\]\\]/g,m=>m==="|"?m:"\\"+m)+")","i"),n]);
-const DEF={region:"",q:"",sort:"m",desc:true,plat:"all",minm:0,hideun:false,tmode:"h",tlen:"all",styles:[],src:"all",hidep:true,hideb:true,hidew:false,hidelib:false,sys:"all",onlyleave:false,syn:true,pv:[],view:"browse"};
+const DEF={since:"",region:"",q:"",sort:"m",desc:true,plat:"all",minm:0,hideun:false,tmode:"h",tlen:"all",styles:[],src:"all",hidep:true,hideb:true,hidew:false,hidelib:false,sys:"all",onlyleave:false,syn:true,pv:[],view:"browse"};
 let S=Object.assign({},DEF,{styles:[],pv:[]});
 let MARKS={}; // game id -> "w" want | "p" played | "b" bounced off | "x" not interested
 try{const s=JSON.parse(localStorage.getItem("psplus-sorter")||"null");if(s&&typeof s==="object")S=Object.assign(S,s);if(!Array.isArray(S.styles))S.styles=[];if(!Array.isArray(S.pv))S.pv=[];}catch(e){}
@@ -816,7 +820,11 @@ function band(g){
   if(k==="y")return g.y==null?["Year unknown","","var(--none)"]:[String(g.y),"PlayStation release","var(--accent)"];
   const ch=g.st[0]||"#";return [/[a-z]/.test(ch)?ch.toUpperCase():"0–9","","var(--accent)"];
 }
+/* "member since": a monthly game from before you joined couldn't have been claimed, so it is hidden, unless it is
+   also in the Game Catalogue or the Classics, you added it yourself, or you've marked it or tagged it as in your library */
+function preJoin(g){return !!(S.since&&g.e&&g.e<S.since&&!(g.cat&&!g.gone)&&!g.cl&&!g.own&&!MARKS[g.id]&&LIB[g.id]!==1);}
 function pass(g){
+  if(preJoin(g))return false;
   const mk=MARKS[g.id];
   if(CTX.like&&g.id===CTX.like)return false;
   if(g.gone&&(!MARKS[g.id]||S.view==="browse"))return false;
@@ -887,14 +895,14 @@ const SORTNAME={date:"the date you started or finished",pri:"your priority",m:"M
 const EMPTY={g:"Nothing in progress. Use ▶ Playing on a game when you start it.",browse:"No games match these filters. Loosen one of them or reset.",w:"Nothing on your want-to-play list matches. Use ★ Want in Browse to add games here.",p:"No played games match. Use ✓ Played in Browse to move games here.",b:"No bounced-off games match. Use ↩ Bounced in Browse for games you tried and dropped.",n:"No games here. Monthly games you tag ✕ Not in my library collect in this tab, and you can untag them from here.",x:"No hidden games match. Games you mark ✕ Not interested land here, and you can bring them back from this tab."};
 function counts(){const c={g:0,w:0,p:0,b:0,x:0};for(const id in MARKS)if(IDS.has(id)&&c[MARKS[id]]!=null)c[MARKS[id]]++;return c;}
 function renderHero(){
-  learn();
-  const c=counts(),tot=GAMES.length,done=c.g+c.w+c.p+c.b+c.x;
+  learn();if(typeof sinceHint==="function"&&$("sincehint"))try{sinceHint();}catch(e){}
+  const c=counts(),tot=GAMES.filter(g=>!preJoin(g)).length,done=c.g+c.w+c.p+c.b+c.x;
   $("ptext").textContent=`Sorted ${done} of ${tot}`;
   $("pleft").textContent=done?`${tot-done} still to look at`:"Start marking games and this bar fills in";
   const bars=$("pbar").children;["g","w","p","b","x"].forEach((k,i)=>bars[i].style.width=(c[k]/tot*100)+"%");
   $("lg").textContent=c.g;$("ng").textContent=c.g;$("lw").textContent=c.w;$("lp").textContent=c.p;$("lb").textContent=c.b;$("lx").textContent=c.x;
   $("nw").textContent=c.w;$("np").textContent=c.p;$("nb").textContent=c.b;$("nx").textContent=c.x;
-  const nolib=GAMES.filter(g=>LIB[g.id]===-1).length,untag=GAMES.filter(g=>g.e&&!g.cat&&!LIB[g.id]).length;
+  const nolib=GAMES.filter(g=>LIB[g.id]===-1).length,untag=GAMES.filter(g=>g.e&&!g.cat&&!LIB[g.id]&&!preJoin(g)).length;
   $("nn").textContent=nolib;
   const bb=$("bulkno");bb.dataset.n=untag;bb.disabled=!untag;if(!bb.dataset.armed)bb.textContent=untag?`Tag all ${untag} untagged monthly games as not in my library`:"Every monthly game is tagged";
   const pv=g=>priority(g)[0]??-1;
@@ -960,9 +968,11 @@ function searchHints(here){
   S.view=keep;
   const terms=qterms(q);
   const any=GAMES.some(g=>!g.gone&&qhit(g,terms));
+  const early=!here&&!other.length?GAMES.filter(g=>preJoin(g)&&qhit(g,terms)).length:0;
   let h="";
   if(other.length)h+=`<span>${here?"Also in":"Found in"}</span>`+other.map(([v,n])=>`<button type="button" data-qview="${v}">${esc(VIEWNAME[v])} <b>${n}</b></button>`).join("");
-  if(!here&&!other.length)h+=any?`<span>Your filters are hiding the matches.</span><button type="button" data-qreset="1">Search with no filters</button>`
+  if(early)h+=`<span>${early===1?"A match is a monthly game":early+" matches are monthly games"} from before you joined PS Plus.</span><button type="button" data-qsince="1">Clear my join date</button>`;
+  else if(!here&&!other.length)h+=any?`<span>Your filters are hiding the matches.</span><button type="button" data-qreset="1">Search with no filters</button>`
                                 :`<span>Nothing in the list matches. Is it missing?</span><button type="button" data-qadd="1">＋ Add it</button>`;
   el.innerHTML=h;el.hidden=!h;
 }
@@ -991,7 +1001,7 @@ function render(animate){
   const tb=$("rows");tb.classList.toggle("anim",animate!==false);tb.innerHTML=html;
   $("empty").hidden=list.length>0;$("empty").textContent=S.q&&!list.length?`No games here match "${S.q.trim()}".`:EMPTY[S.view];
   searchHints(list.length);
-  const c=counts();const pool=CTX.ser?serCount[CTX.ser]:S.view==="browse"?GAMES.length:S.view==="n"?GAMES.filter(g=>LIB[g.id]===-1).length:c[S.view];
+  const c=counts();const pool=CTX.ser?serCount[CTX.ser]:S.view==="browse"?GAMES.filter(g=>!preJoin(g)).length:S.view==="n"?GAMES.filter(g=>LIB[g.id]===-1).length:c[S.view];
   $("count").innerHTML=`<b>${list.length}</b> of ${pool} games`;
   const scored=list.filter(g=>g.m!=null);
   const avg=scored.length?Math.round(scored.reduce((a,g)=>a+g.m,0)/scored.length):null;
@@ -1333,6 +1343,20 @@ function defaultDesc(k){return k!=="time";}
 function setSort(k){if(S.sort===k)S.desc=!S.desc;else{S.sort=k;S.desc=defaultDesc(k);}render();}
 {const sel=$("region");sel.innerHTML=`<option value="">Automatic (${esc((REGIONS.find(r=>r[0]===autoRegion())||[0,"Canada (English)"])[1])})</option>`+REGIONS.map(([c,n])=>`<option value="${c}">${esc(n)}</option>`).join("");sel.value=REGION_CODES.has(S.region)?S.region:"";
   sel.addEventListener("change",e=>{S.region=e.target.value;render(false);renderHero();});}
+{const MN=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const sm=$("sincem"),sy=$("sincey"),now=new Date().getFullYear();
+  sm.innerHTML=MN.map((n,i)=>`<option value="${String(i+1).padStart(2,"0")}">${n}</option>`).join("");
+  sy.innerHTML=`<option value="">Not set</option>`+Array.from({length:now-2010+1},(_,i)=>now-i).map(y=>`<option value="${y}">${y}</option>`).join("");
+  const show=()=>{const ok=/^\d{4}-\d{2}$/.test(S.since||"");sy.value=ok?S.since.slice(0,4):"";sm.value=ok?S.since.slice(5):"01";sm.disabled=!ok;};
+  const set=()=>{S.since=sy.value?`${sy.value}-${sm.value}`:"";sm.disabled=!sy.value;render(false);renderHero();sinceHint();};
+  sm.addEventListener("change",set);sy.addEventListener("change",set);show();sinceHint();}
+function sinceHint(){
+  const el=$("sincehint");
+  if(!S.since){el.textContent="Set this to hide monthly games from before you joined, which you couldn't have claimed. Games also in the Game Catalogue or Classics, and any you've marked, always stay.";return;}
+  const n=GAMES.filter(preJoin).length,[y,m]=S.since.split("-");
+  const when=new Date(+y,+m-1,1).toLocaleDateString("en-CA",{month:"long",year:"numeric"});
+  el.textContent=`Hiding ${n} monthly ${n===1?"game":"games"} from before ${when}. Monthly games that are also in the Game Catalogue or Classics stay, as do any you've marked or tagged as in your library. If your membership lapsed for a while, tag those months' games "Not in my library".`;
+}
 let qTimer=null;
 $("q").addEventListener("input",e=>{S.q=e.target.value;$("qclear").hidden=!S.q;clearTimeout(qTimer);qTimer=setTimeout(()=>{const el=$("q"),pos=el.selectionStart;render(false);if(document.activeElement===el)el.setSelectionRange(pos,pos);},120);});
 $("q").addEventListener("keydown",e=>{
@@ -1344,7 +1368,8 @@ $("qclear").addEventListener("click",clearSearch);
 $("qelse").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.qview){CTX={ser:null,like:null};S.view=b.dataset.qview;render(false);}
-  else if(b.dataset.qreset){const q=S.q,view=S.view,region=S.region;S=Object.assign({},DEF,{styles:[],pv:[],view,q,region});render(false);}
+  else if(b.dataset.qsince){S.since="";$("sincey").value="";$("sincem").disabled=true;render(false);renderHero();sinceHint();}
+  else if(b.dataset.qreset){const q=S.q,view=S.view,region=S.region,since=S.since;S=Object.assign({},DEF,{styles:[],pv:[],view,q,region,since});render(false);}
   else if(b.dataset.qadd){const t=$("addopen");if(t.getAttribute("aria-expanded")!=="true")t.click();const at=$("at");if(at&&!at.value.trim())at.value=S.q.trim();const f=$("aurl");if(f){f.focus();f.scrollIntoView({block:"center",behavior:"smooth"});}}
 });
 document.addEventListener("keydown",e=>{
@@ -1444,7 +1469,7 @@ $("aadd").addEventListener("click",()=>{
   $("at").value="";$("ah").value="";$("anote").value="";$("aurl").value="";
   ADD.stars=0;ADD.styles=[];ADD.y=null;ADD.d="";ADD.u="";ADD.p=[];renderAdd();$("aurl").focus();
 });
-$("reset").addEventListener("click",()=>{const view=S.view,region=S.region;S=Object.assign({},DEF,{styles:[],pv:[],view,region});render();});
+$("reset").addEventListener("click",()=>{const view=S.view,region=S.region,since=S.since;S=Object.assign({},DEF,{styles:[],pv:[],view,region,since});render();});
 $("rows").addEventListener("click",e=>{
   const b=e.target.closest(".marks button[data-m]");if(b)return setMark(b.dataset.id,b.dataset.m);
   const st=e.target.closest(".stars button");if(st)return setRating(st.dataset.id,+st.dataset.rate);
