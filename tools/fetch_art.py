@@ -141,6 +141,20 @@ def from_games_page(title):
     return None, None
 
 
+def save(img_url, out):
+    sep = "&" if "?" in img_url else "?"
+    r = S.get(img_url + sep + "w=440", timeout=40)
+    if r.status_code != 200:
+        r = S.get(img_url, timeout=40)
+    r.raise_for_status()
+    im = Image.open(io.BytesIO(r.content)).convert("RGB")
+    w, h = im.size
+    side = min(w, h)
+    im = im.crop(((w - side) // 2, (h - side) // 2, (w - side) // 2 + side, (h - side) // 2 + side))
+    im = im.resize((SIZE, SIZE), Image.LANCZOS)
+    im.save(out, "WEBP", quality=78, method=6)
+
+
 def slug(title):
     t = unicodedata.normalize("NFD", str(title)).encode("ascii", "ignore").decode().lower()
     t = re.sub(r"[’'™®©.!]", "", t).replace("&", "and")
