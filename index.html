@@ -113,6 +113,23 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .shelfhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 16px;margin-bottom:6px}
 .shelfhead h2{font-family:var(--display);font-weight:800;font-size:30px;letter-spacing:.05em;text-transform:uppercase;margin:0;line-height:1}
 .tabs{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 12px}
+.searchbar{position:sticky;top:8px;z-index:20;display:flex;align-items:center;gap:10px;margin:12px 0 4px;background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:0 10px 0 14px;box-shadow:0 6px 20px rgba(10,16,48,.08);transition:border-color .15s,box-shadow .15s}
+.searchbar:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 18%,transparent),0 6px 20px rgba(10,16,48,.1)}
+.searchbar svg{width:20px;height:20px;color:var(--muted);flex:none}
+.searchbar:focus-within svg{color:var(--accent)}
+.searchbar input[type=search]{flex:1;min-width:0;border:0;background:transparent;font-size:17px;padding:13px 0;outline:none;color:var(--ink);border-radius:0}
+.searchbar input::-webkit-search-cancel-button{display:none}
+.searchbar input::placeholder{color:var(--muted);opacity:.85}
+.searchbar kbd{font-family:var(--body);font-size:12px;color:var(--muted);border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:1px 7px;flex:none}
+.searchbar:focus-within kbd{display:none}
+.searchbar button{flex:none;font:inherit;font-size:14px;color:var(--muted);background:var(--chip);border:0;border-radius:999px;width:28px;height:28px;cursor:pointer}
+.searchbar button:hover{color:var(--ink)}
+@media (hover:none){.searchbar kbd{display:none}}
+.qelse{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;font-size:13.5px;color:var(--muted);margin:6px 2px 0}
+.qelse button{font:inherit;font-size:13px;color:var(--ink);background:var(--chip);border:1px solid transparent;border-radius:999px;padding:3px 11px;cursor:pointer}
+.qelse button:hover{border-color:var(--accent)}
+.qelse b{color:var(--ink)}
+mark.hit{background:color-mix(in srgb,var(--mid) 35%,transparent);color:inherit;border-radius:3px;padding:0 1px}
 .tabs button{--c:var(--accent);font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 14px;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
 .tabs button[data-v=g]{--c:var(--playing)}.tabs button[data-v=w]{--c:var(--want)}.tabs button[data-v=p]{--c:var(--played)}.tabs button[data-v=b]{--c:var(--bounced)}.tabs button[data-v=x]{--c:var(--skip)}.tabs button[data-v=n]{--c:var(--bad)}
 .tabs button:hover{color:var(--ink);border-color:var(--c)}
@@ -379,8 +396,6 @@ footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:78ch;display:
       <div class="inner">
         <h2 class="railhead">Filters</h2>
         <div class="grp">
-          <label for="q">Search</label>
-          <input type="search" id="q" placeholder="Title or keyword…" autocomplete="off">
           <label class="check"><input type="checkbox" id="syn"> Show a synopsis under each game</label>
         </div>
         <div class="grp">
@@ -484,6 +499,13 @@ footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:78ch;display:
 
     <main>
       <div class="shelfhead"><h2>The shelf</h2><div class="hint" id="sortnote"></div></div>
+      <div class="searchbar" role="search">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.8" fill="none" stroke="currentColor" stroke-width="2"/><path d="m13 13 4.5 4.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+        <input type="search" id="q" placeholder="Search by title, style, series or your notes" aria-label="Search games" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
+        <kbd id="qkey" title="Press / to search">/</kbd>
+        <button type="button" id="qclear" aria-label="Clear search" hidden>✕</button>
+      </div>
+      <div class="qelse" id="qelse" aria-live="polite" hidden></div>
       <button class="btn" id="addopen" type="button" aria-expanded="false">＋ Add a game that isn't listed</button>
       <div class="addpanel" id="addpanel" hidden>
         <h3>Add a game</h3>
@@ -627,8 +649,29 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const IDS=new Set(GAMES.map(g=>g.id));
 const STOP=new Set(["the","a","an","of","and","in","to","for","on","at","is"]);
+/* search: case, accents and punctuation are ignored, so "spiderman", "spider man" and "Spider-Man" all match */
+function qnorm(x){return String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/['’]/g,"").replace(/&/g," and ").replace(/[^a-z0-9]+/g," ").trim();}
+function qterms(q){return qnorm(q).split(" ").filter(Boolean);}
+function qhit(g,terms){
+  if(!terms.length)return true;
+  const ser=g.ser?qnorm(g.ser):"",note=NOTES[g.id]?qnorm(NOTES[g.id]):"";
+  const hay=" "+g.qs+" "+ser+" "+note+" ",flat=hay.replace(/ /g,"");
+  return terms.every(t=>hay.includes(t)||flat.includes(t));
+}
+function hl(text){ // highlight search terms in a title, ignoring case, accents and punctuation
+  const terms=S.q?qterms(S.q):[];if(!terms.length)return esc(text);
+  const base=[...text].map(c=>c.normalize("NFD")[0]).join("");
+  const spans=[];
+  for(const t of terms){const re=new RegExp([...t].map(ch=>ch.replace(/[^a-z0-9]/g,"")).filter(Boolean).join("[^a-z0-9]*"),"gi");let m;while((m=re.exec(base))){if(!m[0].length){re.lastIndex++;continue;}spans.push([m.index,m.index+m[0].length]);}}
+  if(!spans.length)return esc(text);
+  spans.sort((a,b)=>a[0]-b[0]);const merged=[];for(const sp of spans){const l=merged[merged.length-1];if(l&&sp[0]<=l[1])l[1]=Math.max(l[1],sp[1]);else merged.push(sp.slice());}
+  const chars=[...text];let out="",pos=0;
+  for(const [a,b] of merged){out+=esc(chars.slice(pos,a).join(""))+'<mark class="hit">'+esc(chars.slice(a,b).join(""))+"</mark>";pos=b;}
+  return out+esc(chars.slice(pos).join(""));
+}
 function prep(g){
   g.pk=g.p.join("/");g.lt=g.t.toLowerCase();g.ls=(g.t+" "+(g.d||"")).toLowerCase();g.st=g.lt.replace(/^(the|a) /,"");
+  g.qt=qnorm(g.t);g.qs=qnorm([g.t,g.d,(g.g||[]).join(" "),g.pv,g.sys,g.y,(g.p||[]).join(" "),g.cl?"classic classics premium":"",g.e?"essential monthly":""].filter(Boolean).join(" "));
   const words=g.t.replace(/\(.*?\)/g," ").replace(/[^A-Za-z0-9 ]+/g," ").split(/\s+/).filter(Boolean);
   const sig=words.filter(w=>!STOP.has(w.toLowerCase()));const use=sig.length?sig:words;
   g.ini=(use.length>1?use[0][0]+use[1][0]:(use[0]||"?").slice(0,2)).toUpperCase();
@@ -771,7 +814,7 @@ function pass(g){
   if(S.src==="mine"&&!g.own)return false;
   if(S.src==="cl"&&!g.cl)return false;
   if(S.sys!=="all"&&g.sys!==S.sys)return false;
-  if(S.q){const q=S.q.toLowerCase();if(!g.ls.includes(q)&&!(NOTES[g.id]||"").toLowerCase().includes(q))return false;}
+  if(S.q&&!qhit(g,qterms(S.q)))return false;
   if(S.pv.length&&!S.pv.includes(g.pv)&&!(g.pv==="First or third person"&&(S.pv.includes("First-person")||S.pv.includes("Third-person"))))return false;
   if(S.plat==="PS5"&&!g.p.includes("PS5"))return false;
   if(S.plat==="PS4"&&!g.p.includes("PS4"))return false;
@@ -815,7 +858,7 @@ function row(g,i){
   else if(mk==="b"){const w=(dt&&dt.why)||[];
     extra=`<div class="why" role="group" aria-label="Why I bounced off"><span>Why?</span>${WHY.map(([k,l])=>`<button type="button" data-why="${k}" data-id="${esc(g.id)}" aria-pressed="${w.includes(k)}">${l}</button>`).join("")}</div>`;}
   const leave=(g.gone?`<span class="flag leave" title="No longer in the Game Catalogue">Left the catalogue</span>`:"")+(LEAVING[g.id]?`<span class="flag leave" title="Confirmed to leave the Game Catalogue">Leaving ${fmtD(LEAVING[g.id])}</span>`:"");
-  return `<tr class="game${mk?" is-"+mk:""}${lv===-1&&!g.cat?" nolib":""}" style="--i:${Math.min(i,28)}"><td class="title"><div class="g">${tile(g)}<div class="gt"><a href="${esc(g.u)}" target="_blank" rel="noopener">${esc(g.t)}</a>${leave}${flags}<div class="tags">${tags}</div>${S.syn&&g.d?`<div class="syn">${esc(g.d)}</div>`:""}${extra}${noteHTML}</div></div></td><td class="pl"><span class="plat">${pl}</span></td><td class="num sc">${scoreHTML(g.m)}</td><td class="num tm">${tm}</td><td class="fyc">${fy}</td><td class="mk"><span class="marks">${btns}${g.own?`<button type="button" class="mn" data-delown="${esc(g.id)}" aria-label="Remove" title="Remove this game I added">⌫<span class="ml"> Remove</span></button>`:""}<button type="button" class="mn" data-note="${esc(g.id)}" aria-pressed="${!!note}" aria-label="Note" title="${note?"Edit my note":"Add a note"}">✎<span class="ml"> Note</span></button></span></td></tr>`;
+  return `<tr class="game${mk?" is-"+mk:""}${lv===-1&&!g.cat?" nolib":""}" style="--i:${Math.min(i,28)}"><td class="title"><div class="g">${tile(g)}<div class="gt"><a href="${esc(g.u)}" target="_blank" rel="noopener">${hl(g.t)}</a>${leave}${flags}<div class="tags">${tags}</div>${S.syn&&g.d?`<div class="syn">${esc(g.d)}</div>`:""}${extra}${noteHTML}</div></div></td><td class="pl"><span class="plat">${pl}</span></td><td class="num sc">${scoreHTML(g.m)}</td><td class="num tm">${tm}</td><td class="fyc">${fy}</td><td class="mk"><span class="marks">${btns}${g.own?`<button type="button" class="mn" data-delown="${esc(g.id)}" aria-label="Remove" title="Remove this game I added">⌫<span class="ml"> Remove</span></button>`:""}<button type="button" class="mn" data-note="${esc(g.id)}" aria-pressed="${!!note}" aria-label="Note" title="${note?"Edit my note":"Add a note"}">✎<span class="ml"> Note</span></button></span></td></tr>`;
 }
 const SORTNAME={date:"the date you started or finished",pri:"your priority",m:"Metacritic score",time:"completion time",p:"platform",g:"game style",t:"title",y:"release year"};
 const EMPTY={g:"Nothing in progress. Use ▶ Playing on a game when you start it.",browse:"No games match these filters. Loosen one of them or reset.",w:"Nothing on your want-to-play list matches. Use ★ Want in Browse to add games here.",p:"No played games match. Use ✓ Played in Browse to move games here.",b:"No bounced-off games match. Use ↩ Bounced in Browse for games you tried and dropped.",n:"No games here. Monthly games you tag ✕ Not in my library collect in this tab, and you can untag them from here.",x:"No hidden games match. Games you mark ✕ Not interested land here, and you can bring them back from this tab."};
@@ -884,20 +927,47 @@ function renderCtx(list){
     el.hidden=false;el.innerHTML=`<b>More like ${esc(a?a.t:"this")}</b><span>The ${list.length} closest matches by style, camera and length. Your filters still apply.</span><span class="sp"></span><button type="button" class="btn" data-ctxclear="1">Back to everything</button>`;}
   else{el.hidden=true;el.innerHTML="";}
 }
+const VIEWNAME={browse:"Browse",g:"Now playing",w:"Want to play",p:"Played",b:"Bounced off",x:"Not interested",n:"Not in library"};
+function searchHints(here){
+  const el=$("qelse"),q=S.q.trim();
+  $("qclear").hidden=!q;
+  if(!q||CTX.ser||CTX.like){el.hidden=true;el.innerHTML="";return;}
+  const keep=S.view,other=[];
+  for(const v of Object.keys(VIEWNAME)){if(v===keep)continue;S.view=v;const n=GAMES.filter(pass).length;if(n)other.push([v,n]);}
+  S.view=keep;
+  const terms=qterms(q);
+  const any=GAMES.some(g=>!g.gone&&qhit(g,terms));
+  let h="";
+  if(other.length)h+=`<span>${here?"Also in":"Found in"}</span>`+other.map(([v,n])=>`<button type="button" data-qview="${v}">${esc(VIEWNAME[v])} <b>${n}</b></button>`).join("");
+  if(!here&&!other.length)h+=any?`<span>Your filters are hiding the matches.</span><button type="button" data-qreset="1">Search with no filters</button>`
+                                :`<span>Nothing in the list matches. Is it missing?</span><button type="button" data-qadd="1">＋ Add it</button>`;
+  el.innerHTML=h;el.hidden=!h;
+}
 function render(animate){
   let list=GAMES.filter(pass);
   if(CTX.like){const a=BYID.get(CTX.like);list=a?list.map(g=>[g,simTo(a,g)]).sort((x,y)=>y[1]-x[1]||(y[0].m??0)-(x[0].m??0)).slice(0,40).map(e=>e[0]):[];}
   else list.sort(cmp);
+  // when searching, games whose title matches come first, then games that match on synopsis, style or notes
+  let bandOf=band;
+  const terms=!CTX.like&&S.q?qterms(S.q):[];
+  if(terms.length){
+    const inTitle=new Set(list.filter(g=>{const h=" "+g.qt+" ",f=h.replace(/ /g,"");return terms.every(t=>h.includes(t)||f.includes(t));}).map(g=>g.id));
+    if(inTitle.size&&inTitle.size<list.length){
+      list=list.filter(g=>inTitle.has(g.id)).concat(list.filter(g=>!inTitle.has(g.id)));
+      bandOf=g=>inTitle.has(g.id)?["Title matches","",'var(--accent)']:["Other matches","synopsis, style, series or your notes",'var(--muted)'];
+    }
+  }
   renderCtx(list);
   let html="",last=null,i=0;
-  const tally=new Map();list.forEach(g=>{const b=band(g)[0];tally.set(b,(tally.get(b)||0)+1);});
+  const tally=new Map();list.forEach(g=>{const b=bandOf(g)[0];tally.set(b,(tally.get(b)||0)+1);});
   for(const g of list){
-    const [label,note,col]=band(g);
+    const [label,note,col]=bandOf(g);
     if(label!==last){html+=`<tr class="band" style="--bc:${col};--i:${Math.min(i,28)}"><th colspan="6" scope="colgroup">${esc(label)}<small>${note?esc(note)+" · ":""}${tally.get(label)} ${tally.get(label)===1?"game":"games"}</small></th></tr>`;last=label;}
     html+=row(g,i++);
   }
   const tb=$("rows");tb.classList.toggle("anim",animate!==false);tb.innerHTML=html;
-  $("empty").hidden=list.length>0;$("empty").textContent=EMPTY[S.view];
+  $("empty").hidden=list.length>0;$("empty").textContent=S.q&&!list.length?`No games here match "${S.q.trim()}".`:EMPTY[S.view];
+  searchHints(list.length);
   const c=counts();const pool=CTX.ser?serCount[CTX.ser]:S.view==="browse"?GAMES.length:S.view==="n"?GAMES.filter(g=>LIB[g.id]===-1).length:c[S.view];
   $("count").innerHTML=`<b>${list.length}</b> of ${pool} games`;
   const scored=list.filter(g=>g.m!=null);
@@ -1238,7 +1308,26 @@ function toggleLib(id,v){
 
 function defaultDesc(k){return k!=="time";}
 function setSort(k){if(S.sort===k)S.desc=!S.desc;else{S.sort=k;S.desc=defaultDesc(k);}render();}
-$("q").addEventListener("input",e=>{S.q=e.target.value;const pos=e.target.selectionStart;render(false);e.target.setSelectionRange(pos,pos);});
+let qTimer=null;
+$("q").addEventListener("input",e=>{S.q=e.target.value;$("qclear").hidden=!S.q;clearTimeout(qTimer);qTimer=setTimeout(()=>{const el=$("q"),pos=el.selectionStart;render(false);if(document.activeElement===el)el.setSelectionRange(pos,pos);},120);});
+$("q").addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&S.q){e.preventDefault();clearSearch();}
+  else if(e.key==="Enter"){e.preventDefault();clearTimeout(qTimer);render(false);if(window.matchMedia("(hover:none)").matches)$("q").blur();}
+});
+function clearSearch(){S.q="";$("q").value="";clearTimeout(qTimer);render(false);$("q").focus();}
+$("qclear").addEventListener("click",clearSearch);
+$("qelse").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.qview){CTX={ser:null,like:null};S.view=b.dataset.qview;render(false);}
+  else if(b.dataset.qreset){const q=S.q,view=S.view;S=Object.assign({},DEF,{styles:[],pv:[],view,q});render(false);}
+  else if(b.dataset.qadd){const t=$("addopen");if(t.getAttribute("aria-expanded")!=="true")t.click();const at=$("at");if(at&&!at.value.trim())at.value=S.q.trim();const f=$("aurl");if(f){f.focus();f.scrollIntoView({block:"center",behavior:"smooth"});}}
+});
+document.addEventListener("keydown",e=>{
+  if(e.key!=="/"||e.ctrlKey||e.metaKey||e.altKey)return;
+  const t=e.target;if(t.closest&&t.closest("input,textarea,select,[contenteditable=true]"))return;
+  if(document.querySelector("dialog[open]"))return;
+  e.preventDefault();const q=$("q");q.focus();q.select();q.scrollIntoView({block:"nearest"});
+});
 $("sort").addEventListener("change",e=>{S.sort=e.target.value;S.desc=defaultDesc(S.sort);render();});
 $("dir").addEventListener("click",()=>{S.desc=!S.desc;render();});
 $("tmode").addEventListener("change",e=>{S.tmode=e.target.value;render();});
