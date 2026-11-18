@@ -10,6 +10,10 @@ on:
         description: "Download every image again"
         type: boolean
         default: false
+      probe:
+        description: "Debug only: show what a store search returns for this title"
+        type: string
+        default: ""
   schedule:
     - cron: "23 9 * * 1"
   push:
@@ -34,8 +38,14 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install requests pillow
-      - run: python tools/fetch_art.py ${{ inputs.refresh && '--refresh' || '' }}
+      - if: inputs.probe != ''
+        run: python tools/fetch_art.py --probe "$PROBE"
+        env:
+          PROBE: ${{ inputs.probe }}
+      - if: inputs.probe == ''
+        run: python tools/fetch_art.py ${{ inputs.refresh && '--refresh' || '' }}
       - name: Commit any new artwork
+        if: inputs.probe == ''
         id: commit
         run: |
           git add art data/art.json

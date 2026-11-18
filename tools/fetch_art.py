@@ -150,7 +150,29 @@ def save(img_url, out):
     im.save(out, "WEBP", quality=78, method=6)
 
 
+def probe(title):
+    """Print what the store's search page returns, to debug lookups."""
+    from urllib.parse import quote
+    for url in ("https://store.playstation.com/en-ca/search/" + quote(title),):
+        try:
+            r = S.get(url, timeout=30)
+        except Exception as e:
+            print(url, "error", e)
+            continue
+        h = r.text
+        print(url, r.status_code, len(h))
+        print("  concept links:", re.findall(r"/concept/(\d+)", h)[:8])
+        print("  product links:", re.findall(r"/product/([A-Z0-9_-]+)", h)[:8])
+        print("  images:", re.findall(r"https://image\.api\.playstation\.com/[^\"\s\\]+", h)[:4])
+        print("  conceptId fields:", re.findall(r'conceptId\\?":\\?"?(\d+)', h)[:8])
+        print("  has __NEXT_DATA__:", "__NEXT_DATA__" in h, " apollo:", "apolloState" in h or "__APOLLO" in h)
+        print("  snippet:", re.sub(r"\s+", " ", h[:300]))
+
+
 def main():
+    if "--probe" in sys.argv:
+        probe(sys.argv[sys.argv.index("--probe") + 1])
+        return
     refresh = "--refresh" in sys.argv
     ART.mkdir(exist_ok=True)
     games = load_games()
