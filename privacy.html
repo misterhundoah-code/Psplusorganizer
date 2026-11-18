@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Privacy Policy · PS Plus Catalogue Sorter</title>
+<script src="theme.js"></script>
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="legal.css">
+</head>
+<body>
+<div class="wrap">
+<header>
+  <a href="./">← Back to the sorter</a>
+  <h1>Privacy Policy</h1>
+  <p class="meta">Effective 17 November 2026</p>
+</header>
+<main>
+  <div class="summary">
+    <p><b>In short:</b> you can use this site without an account, and nothing you mark leaves your browser. If you create an account, you choose a made-up username and a password. Your marks are encrypted in your browser before they're sent, so the server stores only scrambled data it can't read. There are no cookies, ads, analytics or trackers.</p>
+  </div>
+
+  <h2>Who runs this site</h2>
+  <p>The PS Plus Catalogue Sorter (the "site") is a free, personal, non-commercial project run by an individual (the "operator", "we" or "us"). You can reach the operator through the project's <a href="https://github.com/misterhundoah-code/Psplusorganizer/issues">GitHub issues page</a>. Please don't post your password or anything private there, because issues are public.</p>
+
+  <h2>What this policy covers</h2>
+  <p>This policy explains what information the site handles, where it goes and what choices you have. It applies to the site at <code>misterhundoah-code.github.io/Psplusorganizer</code> and to the small server (the "account service") that handles accounts and PlayStation Store lookups.</p>
+
+  <h2>Using the site without an account</h2>
+  <p>Everything you do on the site (your marks, ratings, notes, play log, games you add, filters and theme) is saved in your own browser's local storage. It isn't sent to us. Local storage is a feature of your browser that lets a page keep information on your device. Only this site can read what it saves there, and you can erase it at any time by clearing your browser's site data.</p>
+  <p>The site keeps these items in your browser:</p>
+  <table>
+    <tr><th>Item</th><th>What it holds</th></tr>
+    <tr><td><code>psplus-marks</code>, <code>psplus-rate</code>, <code>psplus-lib</code>, <code>psplus-notes</code>, <code>psplus-dates</code>, <code>psplus-custom</code></td><td>Your marks, star ratings, library tags, notes, play-log dates and the games you've added</td></tr>
+    <tr><td><code>psplus-sorter</code></td><td>Your filter and sort choices</td></tr>
+    <tr><td><code>psplus-theme</code></td><td>Light or dark mode, if you've picked one</td></tr>
+    <tr><td><code>psplus-welcomed</code>, <code>psplus-notice</code></td><td>Whether you've seen the welcome box and the storage notice, so they don't keep coming back</td></tr>
+    <tr><td><code>psplus-acct</code></td><td>Only while you're signed in: your account id, login token, encryption key and sync status, so you stay signed in. Signing out removes it.</td></tr>
+  </table>
+
+  <h2>Cookies and tracking</h2>
+  <p>The site sets no cookies. It has no advertising, no analytics, no social media buttons and no tracking pixels. The fonts are stored with the site itself, so your browser doesn't contact a font service. The local storage items listed above are needed for the site to work the way you've asked it to, and none of them is used to track you.</p>
+
+  <h2>If you create an account</h2>
+  <p>An account lets you sync your records between devices. We don't ask for your name, email address, phone number or any other contact details. Usernames containing <code>@</code> are refused so that email addresses aren't used by mistake. Please pick a username that doesn't identify you.</p>
+  <p>When you sign up or sign in, your browser turns your username and password into three values: an account id, a login token and an encryption key. Your browser encrypts your records with the key before sending them. The key and your password never leave your browser. The account service stores only:</p>
+  <ul>
+    <li>the account id, which is a one-way hash of your username;</li>
+    <li>a one-way hash of the login token;</li>
+    <li>your records in encrypted form, with a version number;</li>
+    <li>the dates the account was created and last updated; and</li>
+    <li>a count of recent failed sign-in attempts and, if there have been too many, the time a temporary lock ends.</li>
+  </ul>
+  <p>The account service also keeps a count of how many accounts were created each day, with no details about any account, so it can cap sign-ups. Those counts are deleted after a week.</p>
+  <p>The account service doesn't store your username, your password, your IP address or any readable version of your records. Because we can't read your records or see your password, we can't recover a forgotten password or restore an account whose password is lost.</p>
+
+  <h2>Adding a game from a PlayStation Store link</h2>
+  <p>When you paste a PlayStation Store link and press Look up, the link is sent to the account service. The account service fetches that one public store page, reads the title, platforms, genres and release year, and sends them back to your browser. It doesn't save the link or the result. The game you add is then saved like the rest of your records: in your browser, and in encrypted form in your account if you have one.</p>
+
+  <h2>Copying a prompt for an AI assistant</h2>
+  <p>The Copy prompt button puts a request, including the ratings and notes it draws on, on your device's clipboard. Nothing is sent anywhere by the site. If you paste it into another service, that service's own privacy policy applies.</p>
+
+  <h2>Service providers</h2>
+  <p>Two companies host parts of the site. They handle network information, such as your IP address, as any website host does when your device connects to it.</p>
+  <ul>
+    <li><b>GitHub</b> (GitHub Pages) serves the site's pages and game data. GitHub logs visitors' IP addresses for security purposes, as described in the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub General Privacy Statement</a>.</li>
+    <li><b>Cloudflare</b> (Workers and D1) runs the account service and its database. Cloudflare processes request information to deliver and protect the service, as described in the <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare Privacy Policy</a>. Cloudflare's servers may be outside Canada, including in the United States, where local laws may allow authorities to access data. The account data stored there is encrypted and doesn't name you.</li>
+  </ul>
+  <p>We don't sell, rent or share information with anyone else, and we don't use it for advertising.</p>
+  <p>Links on the site to the PlayStation Store, Metacritic and HowLongToBeat take you to other websites with their own privacy policies.</p>
+
+  <h2>How long information is kept</h2>
+  <p>Information in your browser stays until you clear it, or use "Sign out and clear this browser". Account data stays until you delete the account. When you press Delete my account, the account's record is removed from the database straight away. Cloudflare keeps short-term recovery copies of the database for a limited period (currently up to 30 days), after which deleted data is gone for good. We may also delete accounts if the site is shut down.</p>
+
+  <h2>Security</h2>
+  <p>Passwords are stretched with PBKDF2 (310,000 rounds of SHA-256) in your browser, records are encrypted with AES-GCM before they leave it, and all connections use HTTPS. Repeated wrong passwords lock an account for a while. No system is perfectly secure, so please use a password you don't use anywhere else, and download a backup now and then from the Your data section.</p>
+
+  <h2>Your choices and rights</h2>
+  <ul>
+    <li><b>See your data:</b> everything the site holds about you is visible on the site. Your data → Download backup gives you a complete copy.</li>
+    <li><b>Correct it:</b> change any mark, rating, note or added game on the site.</li>
+    <li><b>Delete it:</b> use Account → Delete my account, and clear your browser's site data.</li>
+    <li><b>Take it elsewhere:</b> the backup file is plain JSON.</li>
+  </ul>
+  <p>Because the account service only holds an id derived from your username and data it can't decrypt, we can't find or identify your account from anything other than your username and password. If you have a question or concern about your privacy, contact us through the GitHub issues page and we'll respond as best we can. Canadian residents may also contact the <a href="https://www.priv.gc.ca/">Office of the Privacy Commissioner of Canada</a>.</p>
+
+  <h2>Children</h2>
+  <p>The site isn't directed at children under 13. If you're under the age of majority where you live, please check with a parent or guardian before creating an account.</p>
+
+  <h2>Changes to this policy</h2>
+  <p>If this policy changes, we'll post the new version here with a new effective date. If a change affects how account data is handled, we'll also note it on the site.</p>
+</main>
+<footer><a href="./">PS Plus Catalogue Sorter</a><a href="terms.html">Terms of Service</a><span>Not affiliated with Sony Interactive Entertainment.</span></footer>
+</div>
+</body>
+</html>

@@ -16,6 +16,10 @@ It runs as plain static files, so GitHub Pages can host it. Accounts and store l
 ```
 index.html            the app
 config.js             site settings: the Worker's address, if you deploy one
+terms.html            Terms of Service
+privacy.html          Privacy Policy
+legal.css, theme.js   shared styles for those pages, and the saved light/dark choice
+fonts/                the two typefaces, self-hosted (SIL Open Font License)
 data/games.json       the game list, one game per line
 data/catalogue.json   last-updated date, leaving-soon dates and small monthly changes
 worker/               the optional Cloudflare Worker (accounts and store lookups)
@@ -74,7 +78,7 @@ When someone signs in, their browser turns the username and password into three 
 | Login token | Only a SHA-256 hash of it |
 | Encryption key | Nothing. It never leaves the browser |
 
-Marks, ratings, notes and added games are encrypted with AES-GCM in the browser before they are sent. The database therefore holds only an account id, a hashed token, an encrypted blob, a version number and timestamps. There are no usernames, passwords, emails, names or IP addresses in it (see [`worker/schema.sql`](worker/schema.sql)). The site sets no cookies and loads no analytics. Cloudflare keeps its own short-lived request logs as part of running any Worker; this project doesn't add to them.
+Marks, ratings, notes and added games are encrypted with AES-GCM in the browser before they are sent. The database therefore holds only an account id, a hashed token, an encrypted blob, a version number and timestamps. There are no usernames, passwords, emails, names or IP addresses in it (see [`worker/schema.sql`](worker/schema.sql)). The site sets no cookies, loads no analytics and serves its own fonts, so visitors' browsers contact no third-party services. The full details are in [privacy.html](privacy.html). Cloudflare keeps its own short-lived request logs as part of running any Worker; this project doesn't add to them.
 
 The trade-offs:
 

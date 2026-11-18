@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PS Plus Catalogue Sorter</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800;900&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="theme.js"></script>
+<link rel="stylesheet" href="fonts/fonts.css">
 <style>
 /* Layout idea: a night-sky marquee up top showing the viewer's progress and what is on deck, then a filter rail beside one long shelf of games, each with a colour-coded spine tile keyed to its style. */
 :root{
@@ -238,7 +238,14 @@ tr.nolib .title a:hover{text-decoration:line-through underline}
 .btn:disabled{opacity:.55;cursor:default}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
 .askout{white-space:pre-wrap;font-size:14.5px;line-height:1.55;max-width:74ch;background:var(--bg);border-radius:10px;padding:12px 14px}
-.acctrow{display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap;margin:-6px 0 10px;font-size:13.5px;color:var(--hero-muted)}
+.toprow{display:flex;justify-content:flex-end;align-items:center;gap:10px 16px;flex-wrap:wrap;margin:-6px 0 10px}
+.acctrow{display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap;font-size:13.5px;color:var(--hero-muted)}
+.themesw{display:inline-flex;border:1px solid rgba(255,255,255,.35);border-radius:999px;overflow:hidden;background:rgba(255,255,255,.06)}
+.themesw button{font:inherit;font-size:12.5px;color:var(--hero-muted);background:transparent;border:0;padding:5px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.themesw button+button{border-left:1px solid rgba(255,255,255,.2)}
+.themesw button:hover{color:var(--hero-ink)}
+.themesw button[aria-pressed=true]{background:rgba(255,255,255,.9);color:#0a1030;font-weight:600}
+.themesw svg{width:13px;height:13px;flex:none}
 .acctrow b{color:var(--hero-ink);font-weight:600}
 .acctrow .btn{color:var(--hero-ink);border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.08);border-radius:999px;padding:5px 12px}
 .acctrow .btn:hover{border-color:#fff}
@@ -262,6 +269,21 @@ dialog.dlgbox::backdrop{background:rgba(5,8,20,.6)}
 .empty{padding:36px 16px;text-align:center;color:var(--muted)}
 .sync{font-size:12.5px;color:var(--muted)}
 footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:78ch;display:flex;flex-direction:column;gap:8px}
+.legalnav{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13.5px;padding-top:6px;border-top:1px solid var(--line)}
+.legalnav a,.legalnav button{color:var(--ink);font:inherit;background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.legalnav a:hover,.legalnav button:hover{text-decoration-color:currentColor}
+.dlg label.agree{flex-direction:row;align-items:flex-start;gap:9px;font-weight:400;color:var(--ink);font-size:13.5px;line-height:1.45}
+.dlg label.agree input{margin:2px 0 0;width:17px;height:17px;flex:none;accent-color:var(--accent);padding:0}
+.dlg a{color:var(--accent)}
+.welcome h2{font-size:34px}
+.welcome ul{margin:0;padding-left:20px;font-size:14px;line-height:1.5;display:flex;flex-direction:column;gap:4px}
+.welcome .stack{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.welcome .stack .btn{justify-content:center;text-align:center;padding:10px 14px;font-size:15px}
+.notice{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:50;width:min(760px,calc(100vw - 24px));display:flex;gap:12px 16px;align-items:center;flex-wrap:wrap;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:12px 14px 12px 16px;box-shadow:0 14px 44px rgba(0,0,0,.28);font-size:13.5px;line-height:1.45}
+.notice p{margin:0;flex:1 1 320px}
+.notice a{color:var(--accent)}
+.notice .row{display:flex;gap:8px;margin-left:auto}
+@media (prefers-reduced-motion:no-preference){.notice{animation:noticein .35s ease-out}@keyframes noticein{from{opacity:0;transform:translate(-50%,16px)}to{opacity:1;transform:translate(-50%,0)}}}
 
 /* ---------- motion ---------- */
 @media (prefers-reduced-motion:no-preference){
@@ -310,7 +332,10 @@ footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:78ch;display:
 <body>
 <div class="wrap">
   <header class="hero">
-    <div class="acctrow" id="acct" hidden></div>
+    <div class="toprow">
+      <div class="acctrow" id="acct" hidden></div>
+      <div class="themesw" role="group" aria-label="Colour theme"><button type="button" data-theme-set="auto" title="Match your device"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 1.8a6.2 6.2 0 0 1 0 12.4z" fill="currentColor"/></svg>Auto</button><button type="button" data-theme-set="light"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3.2" fill="currentColor"/><g stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9 13 13M3 13l1.1-1.1M11.9 4.1 13 3"/></g></svg>Light</button><button type="button" data-theme-set="dark"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13.6 10.2A6 6 0 0 1 5.8 2.4a6 6 0 1 0 7.8 7.8z" fill="currentColor"/></svg>Dark</button></div>
+    </div>
     <div class="herotop">
       <h1>PS Plus <em>Catalogue</em><br>Sorter</h1>
       <div class="sub">The Extra and Premium Game Catalogue as of <span id="asof">17 November 2026</span>, plus the Premium Classics and four years of Essential monthly games. Mark what you want, rate what you have played, and the list learns what to put in front of you.</div>
@@ -519,13 +544,30 @@ footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:78ch;display:
     <div><b>Classics.</b> The 174 games in Sony's Canadian Premium Classics list as of 17 November 2026: PS1, PS2 and PSP games, PS4 remasters and two arcade fighters. The PS3 games Premium streams are not in Sony's list, so they are not here. Metacritic reviewed few PS1-era games, so many Classics have no Metascore, and some scores are for another platform's release. Times are HowLongToBeat averages for the original release.</div>
     <div><b>Games you add.</b> A game you add carries only what you enter, or what its PlayStation Store page shows if you paste the link (title, platforms, genres and release year). Added games have no Metascore, are never recommended back to you, and are saved with your marks.</div>
     <div><b>Notes, dates and AI picks.</b> Marking a game Now playing or Played records the date. Notes are yours and are saved with your marks. The Copy prompt button only puts text on your clipboard: what you paste, and where, is up to you, and any picks you get back are suggestions, not facts.</div>
-    <div><b>Accounts and privacy.</b> You can use this site without an account; your marks then stay in this browser. An account only needs a made-up username and a password: no email address, no name. Your marks are encrypted in your browser with a key made from your password before they are sent, so the server keeps only an unreadable copy. That also means nobody can reset a forgotten password, so download a backup now and then. The site sets no cookies and loads no trackers.</div>
+    <div><b>Accounts and privacy.</b> You can use this site without an account; your marks then stay in this browser. An account only needs a made-up username and a password: no email address, no name. Your marks are encrypted in your browser with a key made from your password before they are sent, so the server keeps only an unreadable copy. That also means nobody can reset a forgotten password, so download a backup now and then. The site sets no cookies and loads no trackers. See the <a href="privacy.html">Privacy Policy</a> for the details.</div>
     <div><b>Keeping it current.</b> The game lists live in the site's data files and are updated by hand or by a scheduled job; the date in the header shows the last update. Games that have left the catalogue disappear from Browse but stay in your tabs if you had marked them.</div>
     <div><b>Progress and bounce reasons.</b> On a game you are playing you can record how far in you are and your hours; on a game you bounced off you can say why. Reasons about the kind of game (combat, story, controls, repetition, not your kind of game) count against its styles in your taste profile; "too long" counts against that length; "too hard" or "performance" alone counts only lightly.</div>
     <div><b>Perspective and synopses.</b> The synopses were written by Claude from general knowledge of each game, not taken from the store, and have not been checked one by one. Perspective comes from HowLongToBeat where it lists one and was filled in by hand for the rest; "Multiple views" covers racing, sports and other games where you switch cameras.</div>
-    <div><b>Things to know.</b> The coloured tiles are generated from each game's main style and initials; they are not the games' cover art. Metacritic now shows one Metascore per game, usually for its lead platform, so a few scores reflect the PC or Switch release. Special editions use the base game's score and playtime when they have none of their own. "tbd" means Metacritic has too few reviews to give a score. A time shown with ≈ has no main-story figure, so it uses the all-play-styles average; a time in grey comes from fewer than 10 player reports. The Premium Classics catalogue (PS1, PS2, PSP, PS3) is not included. The catalogue differs slightly by country and changes monthly, so check the PlayStation Store before you plan around a game.</div>
+    <div><b>Things to know.</b> The coloured tiles are generated from each game's main style and initials; they are not the games' cover art. Metacritic now shows one Metascore per game, usually for its lead platform, so a few scores reflect the PC or Switch release. Special editions use the base game's score and playtime when they have none of their own. "tbd" means Metacritic has too few reviews to give a score. A time shown with ≈ has no main-story figure, so it uses the all-play-styles average; a time in grey comes from fewer than 10 player reports. The catalogue differs slightly by country and changes monthly, so check the PlayStation Store before you plan around a game.</div>
     <div><b>Not affiliated with Sony.</b> PlayStation and PS Plus are trademarks of Sony Interactive Entertainment. This is an independent fan-made tool. Metascores are from Metacritic and completion times from HowLongToBeat, both as noted above.</div>
+    <nav class="legalnav" aria-label="Site information"><a href="terms.html">Terms of Service</a><a href="privacy.html">Privacy Policy</a><button type="button" id="shownotice">Storage notice</button><a href="https://github.com/misterhundoah-code/Psplusorganizer/issues">Contact</a></nav>
   </footer>
+
+  <dialog class="dlgbox" id="welcomedlg" aria-labelledby="welcomettl">
+    <div class="dlg welcome">
+      <h2 id="welcomettl">Welcome</h2>
+      <p>Sort the PS Plus Game Catalogue, Premium Classics and Essential monthly games by score, length, platform and style, and keep track of what you play.</p>
+      <ul><li>Mark games as playing, played, want to play, bounced off or not interested.</li><li>Rate what you have played and get a priority list tuned to your taste.</li><li>Add games from outside PS Plus with a PlayStation Store link.</li></ul>
+      <p>A free account keeps your records in sync across devices. It needs only a made-up username and a password: no email address and no name.</p>
+      <div class="stack"><button type="button" class="btn primary" data-wact="new">Create a free account</button><button type="button" class="btn" data-wact="in">I already have an account</button><button type="button" class="btn" data-wact="skip">Not now, just use this browser</button></div>
+      <p class="small">By creating an account you agree to the <a href="terms.html" target="_blank">Terms of Service</a>. See the <a href="privacy.html" target="_blank">Privacy Policy</a> for what is stored.</p>
+    </div>
+  </dialog>
+
+  <div class="notice" id="notice" role="region" aria-label="Storage notice" hidden>
+    <p><b>No cookies here.</b> This site saves your marks and settings in your browser's local storage so they are there next time. There are no ads, analytics or trackers. <a href="privacy.html">Privacy Policy</a></p>
+    <div class="row"><button type="button" class="btn primary" id="noticeok">Got it</button></div>
+  </div>
 
   <dialog class="dlgbox" id="acctdlg" aria-labelledby="acctttl">
     <form class="dlg" id="acctform" novalidate>
@@ -1111,7 +1153,8 @@ function renderDlg(){
     <label>Username<input type="text" id="dlgu" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="32" required></label>
     <label>Password<input type="password" id="dlgp" autocomplete="${create?"new-password":"current-password"}" maxlength="200" required></label>
     ${create?`<label>Password again<input type="password" id="dlgp2" autocomplete="new-password" maxlength="200" required></label>
-    <p class="small">Your marks are encrypted with a key made from your password before they're saved. Nobody, including whoever runs this site, can read them or reset your password, so if you forget it the account can't be recovered. Download a backup now and then from the Your data section.</p>`:""}
+    <p class="small">Your marks are encrypted with a key made from your password before they're saved. Nobody, including whoever runs this site, can read them or reset your password, so if you forget it the account can't be recovered. Download a backup now and then from the Your data section.</p>
+    <label class="agree"><input type="checkbox" id="dlgagree"><span>I agree to the <a href="terms.html" target="_blank">Terms of Service</a> and have read the <a href="privacy.html" target="_blank">Privacy Policy</a>.</span></label>`:""}
     <div class="err" id="dlgmsg" aria-live="polite"></div>
     <div class="row" style="justify-content:flex-end"><button type="button" class="btn" data-act="close">Cancel</button><button type="submit" class="btn primary" id="dlggo">${create?"Create account":"Sign in"}</button></div>`;
 }
@@ -1139,6 +1182,7 @@ $("acctform").addEventListener("submit",async e=>{
     if(p.length<10)return dlgMsg("Use a password of at least 10 characters.");
     if(p!==$("dlgp2").value)return dlgMsg("The two passwords don't match.");
     if(p.toLowerCase().includes(u))return dlgMsg("Your password shouldn't contain your username.");
+    if(!$("dlgagree").checked)return dlgMsg("Please agree to the Terms of Service to create an account.");
   }else if(!p)return dlgMsg("Enter your password.");
   go.disabled=true;dlgMsg(DLGMODE==="new"?"Creating your account…":"Signing in…",true);
   try{
@@ -1308,7 +1352,35 @@ $("rows").addEventListener("click",e=>{
 document.querySelector("thead").addEventListener("click",e=>{const th=e.target.closest("th[data-k]");if(th)setSort(th.dataset.k);});
 if(window.matchMedia("(max-width:980px)").matches)$("rail").removeAttribute("open");
 renderHero();render();
-initAccount();
+await initAccount();
+
+/* ---- colour theme: Auto follows the device; Light or Dark is remembered ---- */
+function themeNow(){let t=null;try{t=localStorage.getItem("psplus-theme");}catch(e){}return t==="light"||t==="dark"?t:"auto";}
+function themeUI(){const t=themeNow();document.querySelectorAll("[data-theme-set]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.themeSet===t)));}
+document.querySelector(".themesw").addEventListener("click",e=>{
+  const b=e.target.closest("[data-theme-set]");if(!b)return;
+  const t=b.dataset.themeSet;
+  try{if(t==="auto")localStorage.removeItem("psplus-theme");else localStorage.setItem("psplus-theme",t);}catch(err){}
+  if(t==="auto")document.documentElement.removeAttribute("data-theme");else document.documentElement.setAttribute("data-theme",t);
+  themeUI();
+});
+themeUI();
+
+/* ---- storage notice and first-visit welcome ---- */
+const seen=k=>{try{return localStorage.getItem(k)==="1";}catch(e){return true;}};
+const markSeen=k=>{try{localStorage.setItem(k,"1");}catch(e){}};
+function showNotice(){$("notice").hidden=false;}
+$("noticeok").addEventListener("click",()=>{markSeen("psplus-notice");$("notice").hidden=true;});
+$("shownotice").addEventListener("click",showNotice);
+if(!seen("psplus-notice"))showNotice();
+const wd=$("welcomedlg");
+wd.addEventListener("close",()=>markSeen("psplus-welcomed"));
+wd.addEventListener("click",e=>{
+  const b=e.target.closest("[data-wact]");if(!b)return;
+  wd.close();
+  if(b.dataset.wact!=="skip")openAcct(b.dataset.wact);
+});
+if(API&&!ACCT&&!seen("psplus-welcomed")){wd.showModal();const f=wd.querySelector("[data-wact=new]");if(f)f.focus();}
 })();
 </script>
 </body>
