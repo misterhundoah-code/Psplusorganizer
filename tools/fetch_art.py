@@ -162,8 +162,7 @@ def slug(title):
 
 
 def probe(title):
-    """Print what the store's search page returns, to debug lookups."""
-    from urllib.parse import quote
+    """Print what playstation.com's page for a game returns, to debug lookups."""
     for url in ("https://www.playstation.com/en-ca/games/" + slug(title) + "/",):
         try:
             r = S.get(url, timeout=30)

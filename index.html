@@ -84,6 +84,7 @@ h1 em{font-style:normal;color:transparent;-webkit-text-stroke:2px #7fd4ff}
     linear-gradient(var(--a),hsl(var(--h) 72% 44%),hsl(calc(var(--h) + 38) 78% 26%));
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);transition:transform .18s ease}
 .tile{position:relative;overflow:hidden}
+td.title .tile{width:58px;height:58px;border-radius:10px;font-size:25px}
 .tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit;background:var(--chip)}
 .tile.art{box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),0 1px 3px rgba(0,0,0,.18)}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:hsl(var(--h) 68% 50%);margin-right:5px;vertical-align:1px}
@@ -509,7 +510,7 @@ footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:78ch;display:
       <div class="shelfhead"><h2>The shelf</h2><div class="hint" id="sortnote"></div></div>
       <div class="searchbar" role="search">
         <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.8" fill="none" stroke="currentColor" stroke-width="2"/><path d="m13 13 4.5 4.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-        <input type="search" id="q" placeholder="Search by title, style, series or your notes" aria-label="Search games" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
+        <input type="search" id="q" placeholder="Search games, styles or your notes" aria-label="Search games" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
         <kbd id="qkey" title="Press / to search">/</kbd>
         <button type="button" id="qclear" aria-label="Clear search" hidden>✕</button>
       </div>
