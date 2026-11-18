@@ -544,7 +544,7 @@ footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:78ch;display:
     <div><b>Classics.</b> The 174 games in Sony's Canadian Premium Classics list as of 17 November 2026: PS1, PS2 and PSP games, PS4 remasters and two arcade fighters. The PS3 games Premium streams are not in Sony's list, so they are not here. Metacritic reviewed few PS1-era games, so many Classics have no Metascore, and some scores are for another platform's release. Times are HowLongToBeat averages for the original release.</div>
     <div><b>Games you add.</b> A game you add carries only what you enter, or what its PlayStation Store page shows if you paste the link (title, platforms, genres and release year). Added games have no Metascore, are never recommended back to you, and are saved with your marks.</div>
     <div><b>Notes, dates and AI picks.</b> Marking a game Now playing or Played records the date. Notes are yours and are saved with your marks. The Copy prompt button only puts text on your clipboard: what you paste, and where, is up to you, and any picks you get back are suggestions, not facts.</div>
-    <div><b>Accounts and privacy.</b> You can use this site without an account; your marks then stay in this browser. An account only needs a made-up username and a password: no email address, no name. Your marks are encrypted in your browser with a key made from your password before they are sent, so the server keeps only an unreadable copy. That also means nobody can reset a forgotten password, so download a backup now and then. The site sets no cookies and loads no trackers. See the <a href="privacy.html">Privacy Policy</a> for the details.</div>
+    <div><b>Accounts and privacy.</b> You can use this site without an account; your marks then stay in this browser. An account only needs a made-up username and a password: no email address, no name. Your marks are encrypted in your browser with a key made from your password before they are sent, so the server keeps only an unreadable copy. That also means nobody can reset a forgotten password, so download a backup now and then. The site sets no cookies and loads no trackers. Visits are counted anonymously with Cloudflare Web Analytics, which uses no cookies and doesn't identify you. See the <a href="privacy.html">Privacy Policy</a> for the details.</div>
     <div><b>Keeping it current.</b> The game lists live in the site's data files and are updated by hand or by a scheduled job; the date in the header shows the last update. Games that have left the catalogue disappear from Browse but stay in your tabs if you had marked them.</div>
     <div><b>Progress and bounce reasons.</b> On a game you are playing you can record how far in you are and your hours; on a game you bounced off you can say why. Reasons about the kind of game (combat, story, controls, repetition, not your kind of game) count against its styles in your taste profile; "too long" counts against that length; "too hard" or "performance" alone counts only lightly.</div>
     <div><b>Perspective and synopses.</b> The synopses were written by Claude from general knowledge of each game, not taken from the store, and have not been checked one by one. Perspective comes from HowLongToBeat where it lists one and was filled in by hand for the rest; "Multiple views" covers racing, sports and other games where you switch cameras.</div>
@@ -565,7 +565,7 @@ footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:78ch;display:
   </dialog>
 
   <div class="notice" id="notice" role="region" aria-label="Storage notice" hidden>
-    <p><b>No cookies here.</b> This site saves your marks and settings in your browser's local storage so they are there next time. There are no ads, analytics or trackers. <a href="privacy.html">Privacy Policy</a></p>
+    <p><b>No cookies here.</b> This site saves your marks and settings in your browser's local storage so they are there next time. There are no ads or trackers, and visits are counted anonymously without cookies. <a href="privacy.html">Privacy Policy</a></p>
     <div class="row"><button type="button" class="btn primary" id="noticeok">Got it</button></div>
   </div>
 
@@ -1383,5 +1383,6 @@ wd.addEventListener("click",e=>{
 if(API&&!ACCT&&!seen("psplus-welcomed")){wd.showModal();const f=wd.querySelector("[data-wact=new]");if(f)f.focus();}
 })();
 </script>
+<!-- Cloudflare Web Analytics: counts visits without cookies or local storage. See privacy.html. --><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "beedc080a46745f4acf40f4c5dbf08c8"}'></script>
 </body>
 </html>
