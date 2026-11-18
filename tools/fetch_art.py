@@ -150,10 +150,16 @@ def save(img_url, out):
     im.save(out, "WEBP", quality=78, method=6)
 
 
+def slug(title):
+    t = unicodedata.normalize("NFD", str(title)).encode("ascii", "ignore").decode().lower()
+    t = re.sub(r"[’'™®©.!]", "", t).replace("&", "and")
+    return re.sub(r"[^a-z0-9]+", "-", t).strip("-")
+
+
 def probe(title):
     """Print what the store's search page returns, to debug lookups."""
     from urllib.parse import quote
-    for url in ("https://store.playstation.com/en-ca/search/" + quote(title),):
+    for url in ("https://www.playstation.com/en-ca/games/" + slug(title) + "/",):
         try:
             r = S.get(url, timeout=30)
         except Exception as e:
@@ -165,6 +171,8 @@ def probe(title):
         print("  product links:", re.findall(r"/product/([A-Z0-9_-]+)", h)[:8])
         print("  images:", re.findall(r"https://image\.api\.playstation\.com/[^\"\s\\]+", h)[:4])
         print("  conceptId fields:", re.findall(r'conceptId\\?":\\?"?(\d+)', h)[:8])
+        print("  og:image:", meta(h, "og:image"), " og:title:", meta(h, "og:title"))
+        print("  store links:", re.findall(r"store\.playstation\.com/[a-z-]+/(?:concept|product)/[A-Za-z0-9_-]+", h)[:6])
         print("  has __NEXT_DATA__:", "__NEXT_DATA__" in h, " apollo:", "apolloState" in h or "__APOLLO" in h)
         print("  snippet:", re.sub(r"\s+", " ", h[:300]))
 
