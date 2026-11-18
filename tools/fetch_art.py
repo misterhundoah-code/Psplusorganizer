@@ -87,20 +87,53 @@ def concept_of(g):
     return m.group(1) if m else None
 
 
-def image_from_store_page(cid):
+def get_html(url):
     try:
-        r = S.get(f"https://store.playstation.com/en-ca/concept/{cid}", timeout=30)
-        if r.status_code != 200:
-            return None
-        html = r.text
+        r = S.get(url, timeout=30)
+        return r.text if r.status_code == 200 else None
     except Exception:
         return None
-    m = re.search(r'<meta[^>]+property="og:image"[^>]+content="([^"]+)"', html) or re.search(
-        r'content="([^"]+)"[^>]+property="og:image"', html)
-    if m:
-        return m.group(1)
+
+
+def meta(html, prop):
+    m = re.search(r'<meta[^>]+property="%s"[^>]+content="([^"]+)"' % prop, html) or re.search(
+        r'content="([^"]+)"[^>]+property="%s"' % prop, html)
+    return m.group(1) if m else None
+
+
+def image_from_store_page(cid, want_title=None):
+    """Artwork from a concept page. With want_title, only if the page is for that game."""
+    html = get_html(f"https://store.playstation.com/en-ca/concept/{cid}")
+    if not html:
+        return None
+    if want_title:
+        page = norm(re.sub(r"\s*\|.*$", "", meta(html, "og:title") or ""))
+        want = norm(want_title)
+        if not page or not (page == want or page.startswith(want) or want.startswith(page)):
+            return None
+    img = meta(html, "og:image")
+    if img:
+        return img
     m = re.search(r'https://image\.api\.playstation\.com/[^"\s]+?\.(?:png|jpg|jpeg)', html)
     return m.group(0) if m else None
+
+
+def image_from_search(title):
+    """For games with only a search link: try the first few concepts the store's search returns."""
+    from urllib.parse import quote
+    html = get_html("https://store.playstation.com/en-ca/search/" + quote(title))
+    if not html:
+        return None
+    seen = []
+    for cid in re.findall(r"/concept/(\d+)", html):
+        if cid not in seen:
+            seen.append(cid)
+    for cid in seen[:3]:
+        img = image_from_store_page(cid, want_title=title)
+        time.sleep(0.4)
+        if img:
+            return img
+    return None
 
 
 def save(img_url, out):
@@ -124,7 +157,7 @@ def main():
     print(f"{len(games)} games")
     by_concept, by_title = load_feeds()
     print(f"{len(by_concept)} games with artwork in Sony's lists")
-    got, missing, new = [], [], 0
+    got, missing, new, stats = [], [], 0, {}
     for g in games:
         gid = g["id"]
         out = ART / f"{gid}.webp"
@@ -137,9 +170,16 @@ def main():
             hit = by_title.get(norm(g.get("t", "")))
             if hit:
                 cid, img = cid or hit[0], hit[1]
+        how = "list" if img else ""
         if not img and cid:
             img = image_from_store_page(cid)
+            how = "page"
             time.sleep(0.4)
+        if not img and not cid:
+            img = image_from_search(g.get("t", ""))
+            how = "search"
+        if img:
+            stats[how] = stats.get(how, 0) + 1
         if not img:
             missing.append(g.get("t", gid))
             continue
@@ -153,7 +193,7 @@ def main():
         time.sleep(0.15)
     ids = sorted(set(got) & {g["id"] for g in games})
     (ROOT / "data/art.json").write_text(json.dumps(ids, separators=(",", ":")) + "\n", encoding="utf-8")
-    print(f"artwork for {len(ids)} of {len(games)} games ({new} new)")
+    print(f"artwork for {len(ids)} of {len(games)} games ({new} new; found via {stats})")
     if missing:
         print(f"no artwork found for {len(missing)}: " + "; ".join(missing[:60]) + (" ..." if len(missing) > 60 else ""))
 
