@@ -20,6 +20,8 @@ terms.html            Terms of Service
 privacy.html          Privacy Policy
 legal.css, theme.js   shared styles for those pages, and the saved light/dark choice
 fonts/                the two typefaces, self-hosted (SIL Open Font License)
+art/, data/art.json   game artwork (256 x 256 WebP) and the list of games that have it
+tools/fetch_art.py    downloads artwork; run weekly by .github/workflows/artwork.yml
 data/games.json       the game list, one game per line
 data/catalogue.json   last-updated date, leaving-soon dates and small monthly changes
 worker/               the optional Cloudflare Worker (accounts and store lookups)
