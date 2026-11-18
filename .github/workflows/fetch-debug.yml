@@ -1,0 +1,39 @@
+name: Fetch pages (debug)
+
+# Maintenance helper: prints the raw wikitext of the listed wiki pages to the
+# job log, for building data files. Run by hand only; it changes nothing.
+on:
+  workflow_dispatch:
+    inputs:
+      pages:
+        description: "Fandom page titles, separated by ;"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          PAGES: ${{ inputs.pages }}
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.parse, urllib.request
+          for title in [p.strip() for p in os.environ["PAGES"].split(";") if p.strip()]:
+              url = "https://playstation.fandom.com/api.php?" + urllib.parse.urlencode(
+                  {"action": "parse", "page": title, "prop": "wikitext", "format": "json", "formatversion": "2"})
+              req = urllib.request.Request(url, headers={"User-Agent": "psplus-sorter data build (github.com/misterhundoah-code/Psplusorganizer)"})
+              try:
+                  data = json.load(urllib.request.urlopen(req, timeout=60))
+                  text = data.get("parse", {}).get("wikitext", "") or json.dumps(data)[:500]
+              except Exception as e:
+                  text = f"ERROR {e}"
+              print(f"=====PAGE {title}=====")
+              for line in text.splitlines():
+                  print("WT|" + line)
+              print(f"=====END {title}=====")
+          PY
