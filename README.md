@@ -1,6 +1,6 @@
 # PS Plus Catalogue Sorter
 
-A single-page site for sorting and tracking the PlayStation Plus Game Catalogue, the Premium Classics and every PS4 and PS5 monthly game since November 2013 (1,045 games as of 18 November 2026). Visitors can say when they joined PS Plus to hide monthly games from before then.
+A single-page site for sorting and tracking the PlayStation Plus Game Catalogue, the Premium Classics, the PS3 games Premium streams and every PS4 and PS5 monthly game since November 2013 (1,373 games as of 19 November 2026). Visitors can pick their PS Plus tier and say when they joined, and the list hides what they couldn't play.
 
 - Sort and filter by Metacritic score, completion time, platform, style, camera view and original system
 - Mark games as Now playing, Want to play, Played, Bounced off or Not interested
@@ -125,7 +125,8 @@ Paste a `https://store.playstation.com/.../concept/...` or `.../product/...` lin
 | `h`, `x`, `c`, `a` | Main, main+extras, completionist and all-styles hours |
 | `n` | Number of HowLongToBeat reports |
 | `cat` | 1 if in the Game Catalogue |
-| `cl`, `sys` | Premium Classic and its original system |
+| `cl`, `sys` | Premium Classic and its original system (`PS3` for streaming-only games) |
+| `s3` | Streams on PS3 with Premium: a streaming-only Classic, or the PS3 version of a game listed here |
 | `e`, `el` | Monthly game and its month (the most recent, if it was offered twice) |
 
 People's marks are keyed by `id`, so don't change an existing game's id.
@@ -146,6 +147,7 @@ To try the whole site locally against that Worker, set `apiBase` in `config.js` 
 
 - **Game lists:**
   - Sony's PlayStation Plus Game Catalogue and Premium Classics lists (Canada).
+  - PS3 streaming games: Sony doesn't publish this list; it comes from [Thumbsticks](https://www.thumbsticks.com/playstation-classics-every-retro-game-available-with-playstation-plus-premium/), cross-checked against [PlayStation Universe](https://www.psu.com/news/ps-plus-premium-game-list-all-playstation-plus-premium-ps5-ps4-ps3-ps2-ps1-games/).
   - Monthly games: November 2013 to October 2022 from the [PlayStation Fandom wiki](https://playstation.fandom.com/wiki/List_of_PlayStation_Plus_monthly_games_(North_America))'s North American lists; November 2022 on as reported by Game Rant, Insider Gaming and Beebom.
 - **Scores:** Metacritic, via public datasets on GitHub plus manual checks on metacritic.com.
 - **Completion times:** HowLongToBeat, via a public dataset on GitHub (March 2026).

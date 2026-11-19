@@ -118,6 +118,14 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .shelfhead h2{font-family:var(--display);font-weight:800;font-size:30px;letter-spacing:.05em;text-transform:uppercase;margin:0;line-height:1}
 .tabs{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 12px}
 .row2.since{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.myplus{background:color-mix(in srgb,var(--accent) 7%,var(--panel));border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));border-radius:12px;padding:10px 12px 12px;margin-bottom:6px;transition:box-shadow .3s}
+.myplus .railhead{margin:0 0 4px}
+.myplus.flash{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 45%,transparent)}
+.flag.stream{background:color-mix(in srgb,#7b5cff 16%,transparent);color:#6a4be0}
+:root[data-theme="dark"] .flag.stream{color:#b9a8ff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .flag.stream{color:#b9a8ff}}
+.welcome .tierq{display:flex;flex-direction:column;gap:6px;margin:2px 0 4px}
+.welcome .tierq .seg{display:flex;flex-wrap:wrap;gap:6px}
 .searchbar{position:sticky;top:8px;z-index:20;display:flex;align-items:center;gap:10px;margin:12px 0 4px;background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:0 10px 0 14px;box-shadow:0 6px 20px rgba(10,16,48,.08);transition:border-color .15s,box-shadow .15s}
 .searchbar:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 18%,transparent),0 6px 20px rgba(10,16,48,.1)}
 .searchbar svg{width:20px;height:20px;color:var(--muted);flex:none}
@@ -360,7 +368,7 @@ footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:78ch;display:
     </div>
     <div class="herotop">
       <h1>PS Plus <em>Catalogue</em><br>Sorter</h1>
-      <div class="sub">The Extra and Premium Game Catalogue as of <span id="asof">17 November 2026</span>, plus the Premium Classics and every PS4 and PS5 monthly game since 2013. Mark what you want, rate what you have played, and the list learns what to put in front of you.</div>
+      <div class="sub">The Extra and Premium Game Catalogue as of <span id="asof">17 November 2026</span>, plus the Premium Classics, the PS3 games Premium streams and every PS4 and PS5 monthly game since 2013. Mark what you want, rate what you have played, and the list learns what to put in front of you.</div>
     </div>
     <div class="progress">
       <div class="plabel"><div id="ptext">Sorted 0 of 0</div><span id="pleft"></span></div>
@@ -399,14 +407,26 @@ footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:78ch;display:
     <details class="rail" id="rail" open>
       <summary>Filters and sorting</summary>
       <div class="inner">
+        <div class="grp myplus" id="myplus">
+          <h2 class="railhead">Your PS Plus</h2>
+          <span class="lab">Membership tier</span>
+          <div class="seg" id="tierf" role="group" aria-label="PS Plus tier">
+            <button type="button" data-v="">Not set</button>
+            <button type="button" data-v="essential">Essential</button>
+            <button type="button" data-v="extra">Extra</button>
+            <button type="button" data-v="premium">Premium</button>
+          </div>
+          <span class="hint" id="tierhint"></span>
+          <span class="lab" style="margin-top:6px">Member since</span>
+          <div class="row2 since"><select id="sincem" aria-label="Month you joined PS Plus"></select><select id="sincey" aria-label="Year you joined PS Plus"></select></div>
+          <span class="hint" id="sincehint"></span>
+          <label for="region" style="margin-top:6px">Store links go to</label>
+          <select id="region"></select>
+          <span class="hint">The game list is Canada's PS Plus line-up, which differs a little by region.</span>
+        </div>
         <h2 class="railhead">Filters</h2>
         <div class="grp">
           <label class="check"><input type="checkbox" id="syn"> Show a synopsis under each game</label>
-        </div>
-        <div class="grp">
-          <label for="region">Store links go to</label>
-          <select id="region"></select>
-          <span class="hint">The game list is Canada's PS Plus line-up, which differs a little by region.</span>
         </div>
         <div class="grp">
           <label for="sort">Sort by</label>
@@ -443,19 +463,17 @@ footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:78ch;display:
             <button type="button" data-v="mine">Added by me</button>
           </div>
           <label class="check"><input type="checkbox" id="hidelib"> Also hide monthly games I haven't tagged yet</label>
-          <span class="lab" style="margin-top:4px">PS Plus member since</span>
-          <div class="row2 since"><select id="sincem" aria-label="Month you joined PS Plus"></select><select id="sincey" aria-label="Year you joined PS Plus"></select></div>
-          <span class="hint" id="sincehint"></span>
           <span class="lab" style="margin-top:4px">Classics by original system</span>
           <div class="seg" id="sysf" role="group" aria-label="Original system">
             <button type="button" data-v="all">All</button>
             <button type="button" data-v="PS1">PS1</button>
             <button type="button" data-v="PS2">PS2</button>
             <button type="button" data-v="PSP">PSP</button>
+            <button type="button" data-v="PS3">PS3 streaming</button>
             <button type="button" data-v="PS4 remaster">PS4 remasters</button>
             <button type="button" data-v="Arcade">Arcade</button>
           </div>
-          <span class="hint">Picking a system shows only Classics from it. Classics need PS Plus Premium.</span>
+          <span class="hint">Picking a system shows only Classics from it. Classics need PS Plus Premium, and PS3 games can only be streamed.</span>
           <span class="hint">Each monthly game has two tags: "In my library" and "Not in my library". Games tagged Not in my library drop out of Browse and wait in their own tab.</span>
           <button class="btn" id="bulkno" type="button">Tag all untagged monthly games as not in my library</button>
         </div>
@@ -576,7 +594,7 @@ footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:78ch;display:
   <footer>
     <div><b>Where the numbers come from.</b> Game Catalogue: Sony's PlayStation Plus feed (October 2026 snapshot), updated by hand with the October and November 2026 additions and removals. Monthly games: every PS4 and PS5 monthly game in North America, from the November 2013 PS4 launch to October 2022 as listed by the PlayStation Fandom wiki, and the Essential line-ups from November 2022 to November 2026 as reported by Game Rant, Insider Gaming and Beebom. PS3 and PS Vita monthly games aren't included. A game offered twice shows its most recent month. Many older monthly games no longer have Metascores or completion times here, and a few have been delisted from the store. Metacritic: Metascores collected July 2026, with about 150 gaps checked on metacritic.com on 16 November 2026. Completion times: HowLongToBeat averages collected March 2026.</div>
     <div><b>How "Priority for me" works.</b> It starts from a game's Metascore (68 when there is none) and moves it up or down by as much as about 20 points according to your taste. Taste comes from the styles and lengths of the games you have marked: a 5-star rating counts strongly for those styles, 3 stars is neutral, 1 star and Bounced count against, and Want and Not interested count a little. The small number beside the score is how far your taste moved it. It switches on once you have rated or bounced off three games, and it is a rough guide based on broad style tags, so treat it as a nudge.</div>
-    <div><b>Classics.</b> The 174 games in Sony's Canadian Premium Classics list as of 17 November 2026: PS1, PS2 and PSP games, PS4 remasters and two arcade fighters. The PS3 games Premium streams are not in Sony's list, so they are not here. Metacritic reviewed few PS1-era games, so many Classics have no Metascore, and some scores are for another platform's release. Times are HowLongToBeat averages for the original release.</div>
+    <div><b>Classics.</b> The 174 games in Sony's Canadian Premium Classics list as of 17 November 2026: PS1, PS2 and PSP games, PS4 remasters and two arcade fighters. <b>PS3 streaming.</b> Sony doesn't publish a list of the PS3 games Premium streams, so the 328 here come from Thumbsticks' list of the Classics Catalog, cross-checked against PlayStation Universe's (19 November 2026). The PS3 line-up differs a little between regions and changes from time to time, so check the console before you count on one. Metacritic reviewed few PS1-era games, so many Classics have no Metascore, and some scores are for another platform's release. Times are HowLongToBeat averages for the original release.</div>
     <div><b>Games you add.</b> A game you add carries only what you enter, or what its PlayStation Store page shows if you paste the link (title, platforms, genres and release year). Added games have no Metascore, are never recommended back to you, and are saved with your marks.</div>
     <div><b>Notes, dates and AI picks.</b> Marking a game Now playing or Played records the date. Notes are yours and are saved with your marks. The Copy prompt button only puts text on your clipboard: what you paste, and where, is up to you, and any picks you get back are suggestions, not facts.</div>
     <div><b>Accounts and privacy.</b> You can use this site without an account; your marks then stay in this browser. An account only needs a made-up username and a password: no email address, no name. Your marks are encrypted in your browser with a key made from your password before they are sent, so the server keeps only an unreadable copy. That also means nobody can reset a forgotten password, so download a backup now and then. The site sets no cookies and loads no trackers. Visits are counted anonymously with Cloudflare Web Analytics, which uses no cookies and doesn't identify you. See the <a href="privacy.html">Privacy Policy</a> for the details.</div>
@@ -591,8 +609,9 @@ footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:78ch;display:
   <dialog class="dlgbox" id="welcomedlg" aria-labelledby="welcomettl">
     <div class="dlg welcome">
       <h2 id="welcomettl">Welcome</h2>
-      <p>Sort the PS Plus Game Catalogue, Premium Classics and Essential monthly games by score, length, platform and style, and keep track of what you play.</p>
+      <p>Sort the PS Plus Game Catalogue, Premium Classics, PS3 streaming and monthly games by score, length, platform and style, and keep track of what you play.</p>
       <ul><li>Mark games as playing, played, want to play, bounced off or not interested.</li><li>Rate what you have played and get a priority list tuned to your taste.</li><li>Add games from outside PS Plus with a PlayStation Store link.</li></ul>
+      <div class="tierq"><b>Which PS Plus do you have?</b><div class="seg" id="welcometier" role="group" aria-label="PS Plus tier"><button type="button" class="btn" data-v="essential">Essential</button><button type="button" class="btn" data-v="extra">Extra</button><button type="button" class="btn" data-v="premium">Premium</button></div><span class="small">The list will show what your tier includes. You can change it any time under Your PS Plus.</span></div>
       <p>A free account keeps your records in sync across devices. It needs only a made-up username and a password: no email address and no name.</p>
       <div class="stack"><button type="button" class="btn primary" data-wact="new">Create a free account</button><button type="button" class="btn" data-wact="in">I already have an account</button><button type="button" class="btn" data-wact="skip">Not now, just use this browser</button></div>
       <p class="small">By creating an account you agree to the <a href="terms.html" target="_blank">Terms of Service</a>. See the <a href="privacy.html" target="_blank">Privacy Policy</a> for what is stored.</p>
@@ -641,7 +660,7 @@ const PORDER={"PS5":0,"PS4/PS5":1,"PS4":2,"Elsewhere":3};
 const PNAME={"PS5":"PS5 only","PS4/PS5":"PS4 and PS5","PS4":"PS4 only","Elsewhere":"Added by me"};
 const HUE={"Action":14,"Adventure":172,"RPG":268,"Shooter":212,"Open World":142,"Platformer":44,"Strategy":236,"Simulation":190,"Horror":350,"Survival":84,"Puzzle":312,"Racing":28,"Sports":108,"Fighting":2,"Family":332,"Party":290,"Roguelike":58,"Metroidvania":252,"Stealth":200,"Hack & Slash":20,"Narrative":160,"Arcade":322,"Soulslike":280,"Other":220};
 const SERIES=[["Jak|Daxter","Jak and Daxter"],["Sly ","Sly Cooper"],["Syphon Filter","Syphon Filter"],["Tekken","Tekken"],["Twisted Metal","Twisted Metal"],["Wild Arms","Wild Arms"],["TimeSplitters","TimeSplitters"],["Resident Evil","Resident Evil"],["Worms","Worms"],["Ape Escape|Ape Academy","Ape Escape"],["Armored Core","Armored Core"],["Patapon","Patapon"],["LocoRoco","LocoRoco"],["Metro","Metro"],["MediEvil","MediEvil"],["Ridge Racer|R4: Ridge Racer","Ridge Racer"],["Legacy of Kain|Blood Omen","Legacy of Kain"],["Dark Cloud","Dark Cloud"],["Pursuit Force","Pursuit Force"],["Kurushi","Kurushi"],["Thrillville","Thrillville"],["Ratchet|Secret Agent Clank","Ratchet & Clank"],["Dino Crisis","Dino Crisis"],["Gravity Rush","Gravity Rush"],["Myst|Riven","Myst"],["Jet Rider","Jet Rider"],["Alone in the Dark","Alone in the Dark"],["Everybody's Golf|Hot Shots","Everybody's Golf"],["Atari Flashback","Atari Flashback"],["Disney","Disney"],["Echochrome|echochrome|echoshift","Echochrome"]].concat([["LEGO|The LEGO","LEGO"],["Assassin's Creed","Assassin's Creed"],["Far Cry","Far Cry"],["PAW Patrol","PAW Patrol"],["Tom Clancy's Ghost Recon","Ghost Recon"],["Tom Clancy's Rainbow Six","Rainbow Six"],["Tom Clancy's The Division","The Division"],["Wolfenstein","Wolfenstein"],["Earth Defense Force","Earth Defense Force"],["Story of Seasons","Story of Seasons"],["Warhammer 40,000","Warhammer 40,000"],["Warhammer:","Warhammer Fantasy"],["Uncharted","Uncharted"],["Marvel's Spider-Man","Marvel's Spider-Man"],["The Last of Us","The Last of Us"],["God of War","God of War"],["Horizon","Horizon"],["Final Fantasy","Final Fantasy"],["Persona","Persona"],["Death Stranding","Death Stranding"],["Dying Light","Dying Light"],["Sniper Elite|Zombie Army","Sniper Elite"],["Watch Dogs","Watch Dogs"],["Mafia","Mafia"],["Destiny 2","Destiny 2"],["Tomb Raider|Rise of the Tomb Raider|Shadow of the Tomb Raider","Tomb Raider"],["Trials","Trials"],["Two Point","Two Point"],["Cat Quest","Cat Quest"],["Monster Hunter","Monster Hunter"],["Like a Dragon","Like a Dragon"],["Kingdom Come","Kingdom Come"],["Dishonored","Dishonored"],["Call of Duty","Call of Duty"],["Alan Wake","Alan Wake"],["Five Nights at Freddy's","Five Nights at Freddy's"],["Poppy Playtime","Poppy Playtime"],["Hotline Miami","Hotline Miami"],["Coffee Talk","Coffee Talk"],["Citizen Sleeper","Citizen Sleeper"],["Ben 10","Ben 10"],["Rabbids","Rabbids"],["Monopoly","Monopoly"],["Dynasty Warriors|Samurai Warriors|Warriors:","Warriors"],["Until Dawn","Until Dawn"],["Hello Neighbor|Secret Neighbor","Hello Neighbor"],["Killing Floor","Killing Floor"],["Outlast|The Outlast","Outlast"],["Overpass","Overpass"],["World War Z","World War Z"],["Nioh","Nioh"],["NBA 2K","NBA 2K"],["PGA Tour","PGA Tour 2K"],["WWE 2K","WWE 2K"],["MLB The Show","MLB The Show"],["EA Sports FC","EA Sports FC"],["F1 ","F1"],["Need for Speed","Need for Speed"],["Monster Train","Monster Train"],["Fallout","Fallout"],["DOOM","Doom"],["Sonic","Sonic"],["Aliens","Aliens"],["The Elder Scrolls","The Elder Scrolls"],["Oddworld","Oddworld"],["The Crew","The Crew"],["Planet ","Planet"],["The Surge","The Surge"],["Ys ","Ys"],["Prince of Persia|The Rogue Prince of Persia","Prince of Persia"],["Minecraft","Minecraft"],["South Park","South Park"],["Farming Simulator","Farming Simulator"],["Star Wars","Star Wars"],["For The King","For The King"],["Mighty Morphin Power Rangers|Power Rangers","Power Rangers"]]).map(([p,n])=>[new RegExp("^(?:"+p.replace(/[.*+?^${}()[\]\\]/g,m=>m==="|"?m:"\\"+m)+")","i"),n]);
-const DEF={since:"",region:"",q:"",sort:"m",desc:true,plat:"all",minm:0,hideun:false,tmode:"h",tlen:"all",styles:[],src:"all",hidep:true,hideb:true,hidew:false,hidelib:false,sys:"all",onlyleave:false,syn:true,pv:[],view:"browse"};
+const DEF={tier:"",since:"",region:"",q:"",sort:"m",desc:true,plat:"all",minm:0,hideun:false,tmode:"h",tlen:"all",styles:[],src:"all",hidep:true,hideb:true,hidew:false,hidelib:false,sys:"all",onlyleave:false,syn:true,pv:[],view:"browse"};
 let S=Object.assign({},DEF,{styles:[],pv:[]});
 let MARKS={}; // game id -> "w" want | "p" played | "b" bounced off | "x" not interested
 try{const s=JSON.parse(localStorage.getItem("psplus-sorter")||"null");if(s&&typeof s==="object")S=Object.assign(S,s);if(!Array.isArray(S.styles))S.styles=[];if(!Array.isArray(S.pv))S.pv=[];}catch(e){}
@@ -822,9 +841,20 @@ function band(g){
 }
 /* "member since": a monthly game from before you joined couldn't have been claimed, so it is hidden, unless it is
    also in the Game Catalogue or the Classics, you added it yourself, or you've marked it or tagged it as in your library */
+/* tier: Essential gets the monthly games, Extra adds the Game Catalogue, Premium adds the Classics and PS3 streaming.
+   Anything you've marked, added or tagged as in your library always shows. */
+const TIERS=["essential","extra","premium"];
+const tierAt=t=>TIERS.indexOf(S.tier||"premium")>=TIERS.indexOf(t);
+function tierOK(g){
+  if(!S.tier||g.own||MARKS[g.id]||LIB[g.id]===1||g.e)return true;
+  if(g.cat&&!g.gone&&tierAt("extra"))return true;
+  if((g.cl||g.s3)&&tierAt("premium"))return true;
+  return false;
+}
+const inScope=g=>tierOK(g)&&!preJoin(g);
 function preJoin(g){return !!(S.since&&g.e&&g.e<S.since&&!(g.cat&&!g.gone)&&!g.cl&&!g.own&&!MARKS[g.id]&&LIB[g.id]!==1);}
 function pass(g){
-  if(preJoin(g))return false;
+  if(!inScope(g))return false;
   const mk=MARKS[g.id];
   if(CTX.like&&g.id===CTX.like)return false;
   if(g.gone&&(!MARKS[g.id]||S.view==="browse"))return false;
@@ -865,7 +895,7 @@ function row(g,i){
   const tm=t==null?'<span class="time est">no data</span>':`<span class="time${low?" est":""}" title="${low?"Based on fewer than 10 player reports. ":""}${fb?"No figure for this play style, showing the all-styles average.":""}">${fb?"≈ ":""}${fmtT(t)}</span>`;
   const pl=g.pk==="Elsewhere"?"":g.p.map(p=>`<span class="${p==="PS5"?"p5":""}">${p}</span>`).join("");
   const lv=LIB[g.id]||0;
-  const flags=(g.own?`<span class="flag own">Added by me</span>`:"")+(g.cl?`<span class="flag cl" title="PS Plus Premium Classic, originally ${esc(g.sys==="PS4 remaster"?"a PS4 remaster or port":g.sys==="Arcade"?"an arcade game":"a "+g.sys+" game")}">Classic · ${esc(g.sys==="PS4 remaster"?"PS4":g.sys)}</span>`:"")+(g.new?`<span class="flag new">New ${esc(g.new.split(" ")[0])}</span>`:"")+(g.e?`<span class="flag mon" title="PS Plus Essential monthly game, ${esc(g.el)}${g.cat?". Also in the Game Catalogue, so you can play it either way.":""}">Monthly ${esc(g.el)}</span><span class="libset" role="group" aria-label="Is it in my library?"><button type="button" class="yes" data-lib="${esc(g.id)}" data-lv="1" aria-pressed="${lv===1}" title="I claimed this one">✓ In my library</button><button type="button" class="no" data-lib="${esc(g.id)}" data-lv="-1" aria-pressed="${lv===-1}" title="I never claimed this one">✕ Not in my library</button></span>`:"");
+  const flags=(g.own?`<span class="flag own">Added by me</span>`:"")+(g.cl?`<span class="flag cl" title="PS Plus Premium Classic, originally ${esc(g.sys==="PS4 remaster"?"a PS4 remaster or port":g.sys==="Arcade"?"an arcade game":"a "+g.sys+" game")}">Classic · ${esc(g.sys==="PS4 remaster"?"PS4":g.sys)}</span>`:"")+(g.s3?`<span class="flag stream" title="${g.cl?"Streamed from the cloud with PS Plus Premium; it can't be downloaded":"The PS3 version can also be streamed with PS Plus Premium"}">${g.cl?"Streaming only":"PS3 stream"}</span>`:"")+(g.new?`<span class="flag new">New ${esc(g.new.split(" ")[0])}</span>`:"")+(g.e?`<span class="flag mon" title="PS Plus Essential monthly game, ${esc(g.el)}${g.cat?". Also in the Game Catalogue, so you can play it either way.":""}">Monthly ${esc(g.el)}</span><span class="libset" role="group" aria-label="Is it in my library?"><button type="button" class="yes" data-lib="${esc(g.id)}" data-lv="1" aria-pressed="${lv===1}" title="I claimed this one">✓ In my library</button><button type="button" class="no" data-lib="${esc(g.id)}" data-lv="-1" aria-pressed="${lv===-1}" title="I never claimed this one">✕ Not in my library</button></span>`:"");
   let fy;
   if(mk==="p"){const r=RATE[g.id]||0;fy=`<span class="stars" role="group" aria-label="My rating">${[1,2,3,4,5].map(n=>`<button type="button" class="${n<=r?"on":""}" data-rate="${n}" data-id="${esc(g.id)}" aria-label="${n} ${n===1?"star":"stars"}" aria-pressed="${n===r}" title="${n===r?"Click to clear":"Rate "+n+" out of 5"}">★</button>`).join("")}</span>`;}
   else if(mk==="b"||mk==="x"){fy='<span class="time est">–</span>';}
@@ -895,19 +925,19 @@ const SORTNAME={date:"the date you started or finished",pri:"your priority",m:"M
 const EMPTY={g:"Nothing in progress. Use ▶ Playing on a game when you start it.",browse:"No games match these filters. Loosen one of them or reset.",w:"Nothing on your want-to-play list matches. Use ★ Want in Browse to add games here.",p:"No played games match. Use ✓ Played in Browse to move games here.",b:"No bounced-off games match. Use ↩ Bounced in Browse for games you tried and dropped.",n:"No games here. Monthly games you tag ✕ Not in my library collect in this tab, and you can untag them from here.",x:"No hidden games match. Games you mark ✕ Not interested land here, and you can bring them back from this tab."};
 function counts(){const c={g:0,w:0,p:0,b:0,x:0};for(const id in MARKS)if(IDS.has(id)&&c[MARKS[id]]!=null)c[MARKS[id]]++;return c;}
 function renderHero(){
-  learn();if(typeof sinceHint==="function"&&$("sincehint"))try{sinceHint();}catch(e){}
-  const c=counts(),tot=GAMES.filter(g=>!preJoin(g)).length,done=c.g+c.w+c.p+c.b+c.x;
+  learn();try{sinceHint();tierUI();}catch(e){}
+  const c=counts(),tot=GAMES.filter(inScope).length,done=c.g+c.w+c.p+c.b+c.x;
   $("ptext").textContent=`Sorted ${done} of ${tot}`;
   $("pleft").textContent=done?`${tot-done} still to look at`:"Start marking games and this bar fills in";
   const bars=$("pbar").children;["g","w","p","b","x"].forEach((k,i)=>bars[i].style.width=(c[k]/tot*100)+"%");
   $("lg").textContent=c.g;$("ng").textContent=c.g;$("lw").textContent=c.w;$("lp").textContent=c.p;$("lb").textContent=c.b;$("lx").textContent=c.x;
   $("nw").textContent=c.w;$("np").textContent=c.p;$("nb").textContent=c.b;$("nx").textContent=c.x;
-  const nolib=GAMES.filter(g=>LIB[g.id]===-1).length,untag=GAMES.filter(g=>g.e&&!g.cat&&!LIB[g.id]&&!preJoin(g)).length;
+  const nolib=GAMES.filter(g=>LIB[g.id]===-1).length,untag=GAMES.filter(g=>g.e&&!g.cat&&!LIB[g.id]&&inScope(g)).length;
   $("nn").textContent=nolib;
   const bb=$("bulkno");bb.dataset.n=untag;bb.disabled=!untag;if(!bb.dataset.armed)bb.textContent=untag?`Tag all ${untag} untagged monthly games as not in my library`:"Every monthly game is tagged";
   const pv=g=>priority(g)[0]??-1;
   const byScore=(a,b)=>pv(b)-pv(a)||a.st.localeCompare(b.st);
-  const playable=g=>g.cat||g.cl||LIB[g.id]===1;
+  const playable=g=>inScope(g)&&((g.cat&&!g.gone&&tierAt("extra"))||((g.cl||g.s3)&&tierAt("premium"))||LIB[g.id]===1);
   const how=TASTE.on?"ordered by how well they fit your ratings":"ordered by Metascore until you rate three games";
   $("leavenote").textContent=LEAVE_NOTE;$("asof").textContent=AS_OF;
   const lv=GAMES.filter(g=>LEAVING[g.id]&&(MARKS[g.id]==="w"||MARKS[g.id]==="g")).sort((a,b)=>LEAVING[a.id]<LEAVING[b.id]?-1:1);
@@ -968,10 +998,10 @@ function searchHints(here){
   S.view=keep;
   const terms=qterms(q);
   const any=GAMES.some(g=>!g.gone&&qhit(g,terms));
-  const early=!here&&!other.length?GAMES.filter(g=>preJoin(g)&&qhit(g,terms)).length:0;
+  const early=!here&&!other.length?GAMES.filter(g=>!g.gone&&!inScope(g)&&qhit(g,terms)).length:0;
   let h="";
   if(other.length)h+=`<span>${here?"Also in":"Found in"}</span>`+other.map(([v,n])=>`<button type="button" data-qview="${v}">${esc(VIEWNAME[v])} <b>${n}</b></button>`).join("");
-  if(early)h+=`<span>${early===1?"A match is a monthly game":early+" matches are monthly games"} from before you joined PS Plus.</span><button type="button" data-qsince="1">Clear my join date</button>`;
+  if(early)h+=`<span>${early===1?"A match is":early+" matches are"} hidden by your PS Plus tier or join date.</span><button type="button" data-qsince="1">Check my PS Plus settings</button>`;
   else if(!here&&!other.length)h+=any?`<span>Your filters are hiding the matches.</span><button type="button" data-qreset="1">Search with no filters</button>`
                                 :`<span>Nothing in the list matches. Is it missing?</span><button type="button" data-qadd="1">＋ Add it</button>`;
   el.innerHTML=h;el.hidden=!h;
@@ -1001,7 +1031,7 @@ function render(animate){
   const tb=$("rows");tb.classList.toggle("anim",animate!==false);tb.innerHTML=html;
   $("empty").hidden=list.length>0;$("empty").textContent=S.q&&!list.length?`No games here match "${S.q.trim()}".`:EMPTY[S.view];
   searchHints(list.length);
-  const c=counts();const pool=CTX.ser?serCount[CTX.ser]:S.view==="browse"?GAMES.filter(g=>!preJoin(g)).length:S.view==="n"?GAMES.filter(g=>LIB[g.id]===-1).length:c[S.view];
+  const c=counts();const pool=CTX.ser?serCount[CTX.ser]:S.view==="browse"?GAMES.filter(inScope).length:S.view==="n"?GAMES.filter(g=>LIB[g.id]===-1).length:c[S.view];
   $("count").innerHTML=`<b>${list.length}</b> of ${pool} games`;
   const scored=list.filter(g=>g.m!=null);
   const avg=scored.length?Math.round(scored.reduce((a,g)=>a+g.m,0)/scored.length):null;
@@ -1350,6 +1380,16 @@ function setSort(k){if(S.sort===k)S.desc=!S.desc;else{S.sort=k;S.desc=defaultDes
   const show=()=>{const ok=/^\d{4}-\d{2}$/.test(S.since||"");sy.value=ok?S.since.slice(0,4):"";sm.value=ok?S.since.slice(5):"01";sm.disabled=!ok;};
   const set=()=>{S.since=sy.value?`${sy.value}-${sm.value}`:"";sm.disabled=!sy.value;render(false);renderHero();sinceHint();};
   sm.addEventListener("change",set);sy.addEventListener("change",set);show();sinceHint();}
+function showMyPlus(){const r=$("rail");if(r&&!r.open)r.open=true;const box=$("myplus");box.scrollIntoView({block:"center",behavior:"smooth"});box.classList.add("flash");setTimeout(()=>box.classList.remove("flash"),1600);}
+function tierUI(){
+  document.querySelectorAll("#tierf button,#welcometier button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===(S.tier||""))));
+  const el=$("tierhint");
+  const n=S.tier?GAMES.filter(g=>!g.gone&&!tierOK(g)).length:0;
+  el.textContent=!S.tier?"Pick your tier to hide what it doesn't include. Essential gets the monthly games, Extra adds the Game Catalogue, Premium adds the Classics and PS3 streaming."
+    :`Hiding ${n} ${n===1?"game":"games"} ${S.tier==="essential"?"from the Game Catalogue, Classics and PS3 streaming":S.tier==="extra"?"from the Classics and PS3 streaming":""}. Games you've marked, added or tagged as in your library always show.`;
+  if(S.tier==="premium")el.textContent="Premium includes everything here: the monthly games, the Game Catalogue, the Classics and PS3 streaming.";
+}
+function setTier(v){S.tier=v;tierUI();render(false);renderHero();}
 function sinceHint(){
   const el=$("sincehint");
   if(!S.since){el.textContent="Set this to hide monthly games from before you joined, which you couldn't have claimed. Games also in the Game Catalogue or Classics, and any you've marked, always stay.";return;}
@@ -1357,6 +1397,8 @@ function sinceHint(){
   const when=new Date(+y,+m-1,1).toLocaleDateString("en-CA",{month:"long",year:"numeric"});
   el.textContent=`Hiding ${n} monthly ${n===1?"game":"games"} from before ${when}. Monthly games that are also in the Game Catalogue or Classics stay, as do any you've marked or tagged as in your library. If your membership lapsed for a while, tag those months' games "Not in my library".`;
 }
+$("tierf").addEventListener("click",e=>{const b=e.target.closest("button");if(b)setTier(b.dataset.v);});
+tierUI();
 let qTimer=null;
 $("q").addEventListener("input",e=>{S.q=e.target.value;$("qclear").hidden=!S.q;clearTimeout(qTimer);qTimer=setTimeout(()=>{const el=$("q"),pos=el.selectionStart;render(false);if(document.activeElement===el)el.setSelectionRange(pos,pos);},120);});
 $("q").addEventListener("keydown",e=>{
@@ -1368,8 +1410,8 @@ $("qclear").addEventListener("click",clearSearch);
 $("qelse").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.qview){CTX={ser:null,like:null};S.view=b.dataset.qview;render(false);}
-  else if(b.dataset.qsince){S.since="";$("sincey").value="";$("sincem").disabled=true;render(false);renderHero();sinceHint();}
-  else if(b.dataset.qreset){const q=S.q,view=S.view,region=S.region,since=S.since;S=Object.assign({},DEF,{styles:[],pv:[],view,q,region,since});render(false);}
+  else if(b.dataset.qsince){showMyPlus();}
+  else if(b.dataset.qreset){const q=S.q,view=S.view,region=S.region,since=S.since,tier=S.tier;S=Object.assign({},DEF,{styles:[],pv:[],view,q,region,since,tier});render(false);}
   else if(b.dataset.qadd){const t=$("addopen");if(t.getAttribute("aria-expanded")!=="true")t.click();const at=$("at");if(at&&!at.value.trim())at.value=S.q.trim();const f=$("aurl");if(f){f.focus();f.scrollIntoView({block:"center",behavior:"smooth"});}}
 });
 document.addEventListener("keydown",e=>{
@@ -1469,7 +1511,7 @@ $("aadd").addEventListener("click",()=>{
   $("at").value="";$("ah").value="";$("anote").value="";$("aurl").value="";
   ADD.stars=0;ADD.styles=[];ADD.y=null;ADD.d="";ADD.u="";ADD.p=[];renderAdd();$("aurl").focus();
 });
-$("reset").addEventListener("click",()=>{const view=S.view,region=S.region,since=S.since;S=Object.assign({},DEF,{styles:[],pv:[],view,region,since});render();});
+$("reset").addEventListener("click",()=>{const view=S.view,region=S.region,since=S.since,tier=S.tier;S=Object.assign({},DEF,{styles:[],pv:[],view,region,since,tier});render();});
 $("rows").addEventListener("click",e=>{
   const b=e.target.closest(".marks button[data-m]");if(b)return setMark(b.dataset.id,b.dataset.m);
   const st=e.target.closest(".stars button");if(st)return setRating(st.dataset.id,+st.dataset.rate);
@@ -1514,6 +1556,7 @@ $("shownotice").addEventListener("click",showNotice);
 if(!seen("psplus-notice"))showNotice();
 const wd=$("welcomedlg");
 wd.addEventListener("close",()=>markSeen("psplus-welcomed"));
+$("welcometier").addEventListener("click",e=>{const b=e.target.closest("button");if(b)setTier(S.tier===b.dataset.v?"":b.dataset.v);});
 wd.addEventListener("click",e=>{
   const b=e.target.closest("[data-wact]");if(!b)return;
   wd.close();
