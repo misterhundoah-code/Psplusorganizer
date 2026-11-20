@@ -68,8 +68,9 @@ def top_tier(loc):
     except Exception as e:
         print(f"  {loc}: couldn't read the PS Plus page: {e}")
         return None
-    deluxe = len(re.findall(r"(?:PlayStation|PS)\s*Plus\s+Deluxe", html))
-    premium = len(re.findall(r"(?:PlayStation|PS)\s*Plus\s+Premium", html))
+    # Japanese and Korean pages write the tier names in their own scripts.
+    deluxe = len(re.findall(r"(?:PlayStation|PS)\s*Plus\s+(?:Deluxe|デラックス|디럭스)", html))
+    premium = len(re.findall(r"(?:PlayStation|PS)\s*Plus\s+(?:Premium|プレミアム|프리미엄)", html))
     print(f"  {loc}: page mentions Deluxe {deluxe}x, Premium {premium}x")
     if deluxe > premium:
         return "deluxe"
@@ -103,11 +104,19 @@ def main():
 
     def match(entry, kind):
         """Find the site's game for a feed entry, preferring one already flagged for this list."""
-        cands = by_cid.get(str(entry.get("conceptId") or ""), [])
+        # 1. Exact title. Editions of one game often share a store id (Death Stranding and its
+        #    Director's Cut, Uncharted 4 and The Lost Legacy), so the title comes first.
+        names = [n for n in (entry.get("nameEn"), entry.get("name")) if n]
+        cands = next((by_title[norm(n)] for n in names if norm(n) in by_title), [])
+        # 2. Store id.
         if not cands:
-            for name in (entry.get("nameEn"), entry.get("name")):
-                if name and norm(name) in by_title:
-                    cands = by_title[norm(name)]
+            cands = by_cid.get(str(entry.get("conceptId") or ""), [])
+        # 3. Sony's name starts with the site's title ("Cricket 26 - The Official Game of the Ashes").
+        if not cands:
+            for n in map(norm, names):
+                hits = [t for t in by_title if len(t) >= 8 and n.startswith(t)]
+                if hits:
+                    cands = by_title[max(hits, key=len)]
                     break
         if not cands:
             return None
