@@ -153,9 +153,23 @@ def extracts(titles):
     return out
 
 
-def save_cover(url, out):
-    r = S.get(url, timeout=40)
+def get_image(url):
+    """Download politely: Wikimedia's image servers rate-limit, so wait when asked and retry."""
+    for attempt in range(5):
+        r = S.get(url, timeout=40)
+        if r.status_code == 429:
+            wait = int(r.headers.get("Retry-After", "0") or 0) or 20 * (attempt + 1)
+            print(f"  rate-limited; waiting {wait}s")
+            time.sleep(min(wait, 120))
+            continue
+        r.raise_for_status()
+        return r
     r.raise_for_status()
+    return r
+
+
+def save_cover(url, out):
+    r = get_image(url)
     im = Image.open(io.BytesIO(r.content))
     if im.mode in ("RGBA", "LA", "P"):
         im = im.convert("RGBA")
@@ -218,7 +232,7 @@ def main():
         except Exception as e:
             print(f"  {gid}: {e}")
             failed.append(g["t"])
-        time.sleep(0.25)
+        time.sleep(1.2)
     for gid in blocked - set(sources):
         (ART / f"{gid}.webp").unlink(missing_ok=True)
         art.discard(gid)
