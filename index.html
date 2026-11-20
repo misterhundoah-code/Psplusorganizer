@@ -219,9 +219,9 @@ dialog.dlgbox.gamebox{width:min(780px,calc(100vw - 24px));max-height:calc(100vh 
 .gamebox td.title .gt>a{font-size:20px}
 .gamebox .syn{font-size:14.5px;max-width:60ch}
 .gamebox.has-about .syn{display:none}
-.gamebox .why{margin:14px 6px 0;padding:10px 12px;background:var(--myplus,#FFF6D8);border-left:5px solid var(--yellow);font-size:14.5px;line-height:1.45;max-width:68ch}
-.gamebox .why b{display:inline;padding:0;margin:0;background:none;border:0;font-weight:700;font-size:inherit}
-.gamebox .why .verdict{font-family:var(--marker);font-weight:400;font-size:16px;color:var(--ink);margin-right:4px}
+.gamebox .whyfit{margin:14px 6px 0;padding:10px 12px;background:var(--myplus,#FFF6D8);border-left:5px solid var(--yellow);font-size:14.5px;line-height:1.45;max-width:68ch}
+.gamebox .whyfit b{display:inline;padding:0;margin:0;background:none;border:0;font-weight:700;font-size:inherit}
+.gamebox .whyfit .verdict{font-family:var(--marker);font-weight:400;font-size:16px;color:var(--ink);margin-right:4px}
 .gamebox .about{margin:12px 6px 0;max-width:68ch;font-size:14.5px;line-height:1.55}
 .gamebox .about p{margin:0 0 10px}
 .gamebox .about .credit{font-size:12px;color:var(--muted);margin-top:4px}
@@ -800,7 +800,7 @@ body.notime th[data-k="time"],body.notime td.tm,body.notime .ctm{display:none}
   <dialog class="dlgbox gamebox" id="gamedlg" aria-label="Game details">
     <div class="dlg"><button type="button" class="dlgx" id="gamex" aria-label="Close">✕</button>
       <div class="tablebox"><table><tbody id="dlgrows"></tbody></table></div>
-      <p class="why" id="dlgwhy"></p>
+      <p class="whyfit" id="dlgwhy"></p>
       <div class="about" id="dlgabout"></div></div>
   </dialog>
   <dialog class="dlgbox" id="welcomedlg" aria-labelledby="welcomettl">

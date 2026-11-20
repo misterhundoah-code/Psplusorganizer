@@ -209,6 +209,7 @@ def main():
 
     skip = set(json.loads(ov_path.read_text(encoding="utf-8")).get("wiki_skip", [])) if ov_path.exists() else set()
     found = {k: v for k, v in resolve(games).items() if k not in skip}
+    art_skip = set(json.loads(ov_path.read_text(encoding="utf-8")).get("wiki_art_skip", [])) if ov_path.exists() else set()
     print(f"matched {len(found)} of {len(games)} games to Wikipedia articles")
 
     ex = extracts(sorted({p["title"] for p in found.values()}))
@@ -222,7 +223,7 @@ def main():
     ART.mkdir(exist_ok=True)
     # A cover taken from an article that no longer matches the game is removed.
     for gid, title in list(sources.items()):
-        if gid not in ids or (found.get(gid) or {}).get("title") != title:
+        if gid not in ids or gid in art_skip or (found.get(gid) or {}).get("title") != title:
             (ART / f"{gid}.webp").unlink(missing_ok=True)
             art.discard(gid)
             del sources[gid]
@@ -234,7 +235,7 @@ def main():
         if gid in sources and (ART / f"{gid}.webp").exists():
             art.add(gid)
             continue
-        p = found.get(gid)
+        p = found.get(gid) if gid not in art_skip else None
         img = p and ((p.get("thumbnail") or {}).get("source") or (p.get("original") or {}).get("source"))
         if not img or img.lower().endswith(".svg"):
             if gid in blocked:
