@@ -10,14 +10,17 @@ a game in data/games.json, and writes data/regions.json:
     "asOf": "2026-11-20",
     "regions": {
       "pt-br": {"cat": [ids in the Game Catalogue], "cl": [ids in the Classics],
+                "stream": false,      # top tier is Deluxe: no cloud streaming, so no PS3 games
+                "from": "es-ar",      # Sony has no list for Brazil; this region's list stands in
                 "extra": [entries for games the site doesn't list yet]},
       ...
     }
   }
 
 A region whose lists can't be downloaded is left out, and the site then shows
-the full list for it. Sony doesn't publish its PS3 streaming list, so PS3
-streaming games aren't covered here.
+the full list for it. Sony doesn't publish its PS3 streaming list, so the only
+thing recorded about PS3 streaming is whether the region has it at all: regions
+whose top tier is Deluxe rather than Premium have no cloud streaming.
 """
 import json
 import re
@@ -31,6 +34,8 @@ from fetch_art import S, concept_of, load_games, norm  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 FEEDS = {"cat": "plus-games-list", "cl": "plus-classics-list"}
+# Regions Sony publishes no list for, and the region whose list is used instead.
+STAND_IN = {"pt-br": "es-ar"}
 
 
 def site_regions():
@@ -51,6 +56,25 @@ def fetch(loc, feed):
         except Exception as e:
             print(f"  {loc}/{feed}: attempt {attempt + 1} failed: {e}")
             time.sleep(3)
+    return None
+
+
+def top_tier(loc):
+    """'deluxe' or 'premium', read from the region's PS Plus page. Returns None if unsure."""
+    try:
+        r = S.get(f"https://www.playstation.com/{loc}/ps-plus/", timeout=40)
+        r.raise_for_status()
+        html = r.text
+    except Exception as e:
+        print(f"  {loc}: couldn't read the PS Plus page: {e}")
+        return None
+    deluxe = len(re.findall(r"(?:PlayStation|PS)\s*Plus\s+Deluxe", html))
+    premium = len(re.findall(r"(?:PlayStation|PS)\s*Plus\s+Premium", html))
+    print(f"  {loc}: page mentions Deluxe {deluxe}x, Premium {premium}x")
+    if deluxe > premium:
+        return "deluxe"
+    if premium > deluxe:
+        return "premium"
     return None
 
 
@@ -94,8 +118,14 @@ def main():
     out = {"asOf": date.today().isoformat(), "regions": {}}
     for loc in site_regions():
         reg, ok = {"cat": [], "cl": [], "extra": []}, True
+        src = STAND_IN.get(loc, loc)
+        if src != loc:
+            reg["from"] = src
+        tier = top_tier(loc)
+        if tier:
+            reg["stream"] = tier == "premium"
         for kind, feed in FEEDS.items():
-            entries = fetch(loc, feed)
+            entries = fetch(src, feed)
             if entries is None:
                 ok = False
                 break
