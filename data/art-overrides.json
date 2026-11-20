@@ -17,5 +17,10 @@
   "uncharted-legacy-of-thieves-collection",
   "uncharted-the-lost-legacy",
   "world-war-z-aftermath"
+ ],
+ "_note_wiki": "Games tools/fetch_wiki.py should not match to any Wikipedia article (its match was a different game).",
+ "wiki_skip": [
+  "metro-redux",
+  "the-awakened-fate-ultimatum"
  ]
 }

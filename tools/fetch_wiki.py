@@ -207,7 +207,8 @@ def main():
     src_path = ROOT / "data/art-sources.json"
     sources = json.loads(src_path.read_text(encoding="utf-8")) if src_path.exists() else {}
 
-    found = resolve(games)
+    skip = set(json.loads(ov_path.read_text(encoding="utf-8")).get("wiki_skip", [])) if ov_path.exists() else set()
+    found = {k: v for k, v in resolve(games).items() if k not in skip}
     print(f"matched {len(found)} of {len(games)} games to Wikipedia articles")
 
     ex = extracts(sorted({p["title"] for p in found.values()}))
