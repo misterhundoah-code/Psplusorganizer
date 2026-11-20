@@ -435,6 +435,10 @@ tr.band th{border-bottom:6px solid var(--blue);box-shadow:inset 0 -8px 0 -6px rg
 /* Last chance shelf: red "due back" notes */
 .eyebrow.last{color:#FF8A78}
 #lastdeck .talk.due,#lastdeck .card:nth-child(n) .talk.due{background:var(--red);color:#fff;transform:rotate(-3deg);white-space:nowrap;font-size:13px}
+.lastbtns{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.lastbtns .lastall{margin-left:0}
+.remind{font:inherit;font-size:12px;font-weight:700;color:var(--red);background:transparent;border:1.5px solid currentColor;border-radius:3px;padding:1px 7px;margin-left:4px;cursor:pointer;vertical-align:middle}
+.remind:hover{background:var(--red);color:#fff}
 .lastall{font:inherit;font-size:13px;font-weight:700;color:var(--band-ink);background:transparent;border:2px solid var(--band-muted);border-radius:3px;padding:2px 10px;cursor:pointer;margin-left:auto}
 .lastall:hover{border-color:var(--yellow);color:var(--yellow)}
 
@@ -467,7 +471,7 @@ tr.band th{border-bottom:6px solid var(--blue);box-shadow:inset 0 -8px 0 -6px rg
     </div>
     <div class="legend" id="leavealert" hidden></div>
     <div id="lastwrap" hidden>
-      <div class="deckhead"><h2 class="eyebrow last">Last chance</h2><span id="lastnote"></span><button type="button" class="lastall" id="lastall">Show them all on the shelf</button></div>
+      <div class="deckhead"><h2 class="eyebrow last">Last chance</h2><span id="lastnote"></span><span class="lastbtns"><button type="button" class="lastall" id="lastcal" title="Download calendar reminders: your want-to-play games if any are leaving, otherwise all of these">Add these to my calendar</button><button type="button" class="lastall" id="lastall">Show them all on the shelf</button></span></div>
       <div class="deck" id="lastdeck"></div>
     </div>
     <div class="deckhead"><h2 class="eyebrow">Staff picks</h2><span id="decknote"></span></div>
@@ -844,6 +848,35 @@ function talker(g,i){const t=g.h??g.a;
   if(g.m>=85)return "Staff favourite";
   return "Worth a look";}
 function daysLeft(iso){const t=new Date();t.setHours(0,0,0,0);const d=Math.round((new Date(iso+"T00:00:00")-t)/864e5);return d>1?` · ${d} days left`:d===1?" · last day tomorrow":d===0?" · last day":"";}
+/* Calendar reminders: an .ics file made in the browser (nothing is sent anywhere). One all-day event
+   on the last day a game is in PS Plus, with alerts at 9am a week before and on the day. */
+function icsFor(games){
+  const esc_=t=>String(t).replace(/\\/g,"\\\\").replace(/([,;])/g,"\\$1").replace(/\r?\n/g,"\\n");
+  const fold=l=>{const out=[];let cur="";for(const ch of l){if(new TextEncoder().encode(cur+ch).length>74){out.push(cur);cur=" "+ch;}else cur+=ch;}out.push(cur);return out.join("\r\n");};
+  const ymd=d=>d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0");
+  const stamp=new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+/,"");
+  const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//PS Plus Rental Wall//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH"];
+  games.forEach(g=>{
+    const leave=new Date(LEAVING[g.id]+"T00:00:00"),last=new Date(leave);last.setDate(last.getDate()-1);
+    const end=new Date(last);end.setDate(end.getDate()+1);const url=gameUrl(g);
+    lines.push("BEGIN:VEVENT",`UID:${g.id}-${LEAVING[g.id]}@psplus-rental-wall`,`DTSTAMP:${stamp}`,
+      `DTSTART;VALUE=DATE:${ymd(last)}`,`DTEND;VALUE=DATE:${ymd(end)}`,
+      `SUMMARY:${esc_("Last day for "+g.t+" on PS Plus")}`,
+      `DESCRIPTION:${esc_(`${g.t} leaves the PS Plus Game Catalogue on ${fmtD(LEAVING[g.id])}.`+(url?` Store page: ${url}`:""))}`,
+      ...(url?[`URL:${url}`]:[]),"TRANSP:TRANSPARENT",
+      "BEGIN:VALARM","ACTION:DISPLAY",`DESCRIPTION:${esc_(g.t+" leaves PS Plus in a week")}`,"TRIGGER:-P6DT15H","END:VALARM",
+      "BEGIN:VALARM","ACTION:DISPLAY",`DESCRIPTION:${esc_("Last day for "+g.t+" on PS Plus")}`,"TRIGGER:PT9H","END:VALARM",
+      "END:VEVENT");
+  });
+  lines.push("END:VCALENDAR");
+  return lines.map(fold).join("\r\n")+"\r\n";
+}
+function downloadIcs(games,name){
+  games=games.filter(g=>LEAVING[g.id]);if(!games.length)return;
+  const url=URL.createObjectURL(new Blob([icsFor(games)],{type:"text/calendar;charset=utf-8"}));
+  const a=document.createElement("a");a.href=url;a.download=name.replace(/[^a-z0-9-]+/gi,"-").replace(/^-|-$/g,"").toLowerCase()+".ics";
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);
+}
 const fmtD=iso=>{const [y,m,d]=iso.split("-").map(Number);return d+" "+MONTHS[m-1].slice(0,3)+" "+y;};
 const ART=new Set(Array.isArray(ARTLIST)?ARTLIST:[]);
 const tile=g=>`<span class="tile${ART.has(g.id)?" art":""}" style="--h:${g.hue};--a:${g.ang}deg" aria-hidden="true">${esc(g.ini)}${ART.has(g.id)?`<img src="art/${encodeURIComponent(g.id)}.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()">`:""}</span>`;
@@ -1047,7 +1080,7 @@ function row(g,i){
       +(hr&&avg?`<span>${mk==="g"?`of about ${fmtT(avg)} for the main story`:hr>avg*1.15?`${fmtT(hr-avg)} over the ${fmtT(avg)} average`:hr<avg*0.85?`${fmtT(avg-hr)} under the ${fmtT(avg)} average`:`close to the ${fmtT(avg)} average`}</span>`:"")+`</div>`;}
   else if(mk==="b"){const w=(dt&&dt.why)||[];
     extra=`<div class="why" role="group" aria-label="Why I bounced off"><span>Why?</span>${WHY.map(([k,l])=>`<button type="button" data-why="${k}" data-id="${esc(g.id)}" aria-pressed="${w.includes(k)}">${l}</button>`).join("")}</div>`;}
-  const leave=(g.gone?`<span class="flag leave" title="No longer in the Game Catalogue">Left the catalogue</span>`:"")+(LEAVING[g.id]?`<span class="flag leave" title="Confirmed to leave the Game Catalogue">Leaving ${fmtD(LEAVING[g.id])}${daysLeft(LEAVING[g.id])}</span>`:"");
+  const leave=(g.gone?`<span class="flag leave" title="No longer in the Game Catalogue">Left the catalogue</span>`:"")+(LEAVING[g.id]?`<span class="flag leave" title="Confirmed to leave the Game Catalogue">Leaving ${fmtD(LEAVING[g.id])}${daysLeft(LEAVING[g.id])}</span><button type="button" class="remind" data-remind="${esc(g.id)}" title="Download a calendar reminder for the last day, with an alert a week before">Remind me</button>`:"");
   return `<tr class="game${mk?" is-"+mk:""}${lv===-1&&!g.cat?" nolib":""}" style="--i:${Math.min(i,28)}"><td class="title"><div class="g">${tile(g)}<div class="gt"><a href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${hl(g.t)}</a>${leave}${flags}<div class="tags">${tags}</div>${S.syn&&g.d?`<div class="syn">${esc(g.d)}</div>`:""}${extra}${noteHTML}</div></div></td><td class="pl"><span class="plat">${pl}</span></td><td class="num sc">${scoreHTML(g.m)}</td><td class="num tm">${tm}</td><td class="fyc">${fy}</td><td class="mk"><span class="marks">${btns}${g.own?`<button type="button" class="mn" data-delown="${esc(g.id)}" aria-label="Remove" title="Remove this game I added">⌫<span class="ml"> Remove</span></button>`:""}<button type="button" class="mn" data-note="${esc(g.id)}" aria-pressed="${!!note}" aria-label="Note" title="${note?"Edit my note":"Add a note"}">✎<span class="ml"> Note</span></button></span></td></tr>`;
 }
 const SORTNAME={date:"the date you started or finished",pri:"your priority",m:"Metacritic score",time:"completion time",p:"platform",g:"game style",t:"title",y:"release year"};
@@ -1560,6 +1593,10 @@ $("q").addEventListener("keydown",e=>{
 });
 function clearSearch(){S.q="";$("q").value="";clearTimeout(qTimer);render(false);$("q").focus();}
 $("qclear").addEventListener("click",clearSearch);
+$("lastcal").addEventListener("click",()=>{
+  const want=GAMES.filter(g=>LEAVING[g.id]&&inScope(g)&&MARKS[g.id]==="w");
+  const list=want.length?want:GAMES.filter(g=>LEAVING[g.id]&&inScope(g)&&!["p","b","x"].includes(MARKS[g.id]));
+  downloadIcs(list,"ps-plus-leaving");});
 $("lastall").addEventListener("click",()=>{CTX={ser:null,like:null};S.view="browse";S.onlyleave=true;render();$("q").scrollIntoView({block:"start",behavior:"smooth"});});
 $("qelse").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
@@ -1667,6 +1704,7 @@ $("aadd").addEventListener("click",()=>{
 });
 $("reset").addEventListener("click",()=>{const view=S.view,region=S.region,since=S.since,tier=S.tier;S=Object.assign({},DEF,{styles:[],pv:[],view,region,since,tier});render();});
 $("rows").addEventListener("click",e=>{
+  const rb=e.target.closest("button[data-remind]");if(rb){const g=GAMES.find(x=>x.id===rb.dataset.remind);if(g)downloadIcs([g],"ps-plus-"+g.t);return;}
   const b=e.target.closest(".marks button[data-m]");if(b)return setMark(b.dataset.id,b.dataset.m);
   const st=e.target.closest(".stars button");if(st)return setRating(st.dataset.id,+st.dataset.rate);
   const lb=e.target.closest(".libset button");if(lb)return toggleLib(lb.dataset.lib,+lb.dataset.lv);
