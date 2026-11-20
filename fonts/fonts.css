@@ -17,3 +17,6 @@
 /* Permanent Marker (handwritten shelf notes and score stickers). Apache License 2.0: see LICENSE-PermanentMarker.txt. */
 @font-face{font-family:"Permanent Marker";font-style:normal;font-display:swap;font-weight:400;
   src:url(permanent-marker-latin-400-normal.woff2) format("woff2")}
+/* VT323 (dot-matrix, used on the rental receipt). SIL Open Font License 1.1: see OFL-VT323.txt. */
+@font-face{font-family:"VT323";font-style:normal;font-display:swap;font-weight:400;
+  src:url(vt323-latin-400-normal.woff2) format("woff2")}
