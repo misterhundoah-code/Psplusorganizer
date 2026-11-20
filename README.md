@@ -1,4 +1,4 @@
-# PS Plus Catalogue Sorter
+# PS Plus Rental Wall
 
 A single-page site for sorting and tracking the PlayStation Plus Game Catalogue, the Premium Classics, the PS3 games Premium streams and every PS4 and PS5 monthly game since November 2013 (1,373 games as of 19 November 2026). Visitors can pick their PS Plus tier and say when they joined, and the list hides what they couldn't play.
 
