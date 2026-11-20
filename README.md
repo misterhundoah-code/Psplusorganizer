@@ -128,6 +128,10 @@ Paste a `https://store.playstation.com/.../concept/...` or `.../product/...` lin
 | `cl`, `sys` | Premium Classic and its original system (`PS3` for streaming-only games) |
 | `s3` | Streams on PS3 with Premium: a streaming-only Classic, or the PS3 version of a game listed here |
 | `rg` | `"na"`: a PS3 streaming game Sony offers in the US and Canada only; hidden when the store region is elsewhere |
+
+### Regions
+
+What's on PS Plus differs by country. `tools/fetch_regions.py` (run by `.github/workflows/regions.yml` twice a week and whenever the game data changes) downloads Sony's Game Catalogue and Classics lists for every region in the site's region menu and writes `data/regions.json`: which games each region gets, and whether its top tier is Premium (with cloud streaming and PS3 games) or Deluxe (without). Sony publishes no list for Brazil, so Brazil uses the Latin American list. The site hides games that aren't offered in the chosen region, unless you've marked, added or own them, and calls the top tier Deluxe where that's its name. Monthly games are shown everywhere.
 | `e`, `el` | Monthly game and its month (the most recent, if it was offered twice) |
 
 People's marks are keyed by `id`, so don't change an existing game's id.

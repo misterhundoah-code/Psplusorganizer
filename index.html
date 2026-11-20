@@ -697,10 +697,10 @@ tr.band th{border-bottom:6px solid var(--blue);box-shadow:inset 0 -8px 0 -6px rg
 <script>
 (async function main(){
 "use strict";
-let GAMES,META,ARTLIST,LINKS;
+let GAMES,META,ARTLIST,LINKS,REGDATA;
 try{
   const get=u=>fetch(u,{cache:"no-cache"}).then(r=>{if(!r.ok)throw new Error(u+" "+r.status);return r.json();});
-  [GAMES,META,ARTLIST,LINKS]=await Promise.all([get("data/games.json"),get("data/catalogue.json"),get("data/art.json").catch(()=>[]),get("data/links.json").catch(()=>({}))]);
+  [GAMES,META,ARTLIST,LINKS,REGDATA]=await Promise.all([get("data/games.json"),get("data/catalogue.json"),get("data/art.json").catch(()=>[]),get("data/links.json").catch(()=>({})),get("data/regions.json").catch(()=>({}))]);
 }catch(e){
   document.getElementById("count").textContent="Couldn't load the game list. Check your connection and reload the page.";
   return;
@@ -924,9 +924,32 @@ function tierOK(g){
   if((g.cl||g.s3)&&tierAt("premium"))return true;
   return false;
 }
-/* Some PS3 streaming games are offered in the US and Canada only (rg:"na"). Hide them elsewhere unless marked. */
+/* What's on PS Plus differs by country. data/regions.json (built from Sony's own lists by
+   tools/fetch_regions.py) says which Game Catalogue and Classics games each store region gets, and whether
+   its top tier is Premium (with cloud streaming, so PS3 games) or Deluxe (no streaming). applyRegion sets
+   each game's cat, cl and s3 for the chosen region; games on PS Plus elsewhere but not here get offhere
+   and are hidden unless the person has marked, added or owns them. Some PS3 streaming games are offered
+   in the US and Canada only (rg:"na"). */
 const NA_REGIONS=new Set(["en-ca","fr-ca","en-us"]);
-const regionOK=g=>g.rg!=="na"||NA_REGIONS.has(S.region||autoRegion())||!!MARKS[g.id]||!!g.own;
+const REGION_SETS={};
+function regionData(){const loc=regionNow(),R=REGDATA&&REGDATA.regions&&REGDATA.regions[loc];if(!R)return null;
+  if(!REGION_SETS[loc])REGION_SETS[loc]={cat:new Set(R.cat||[]),cl:new Set(R.cl||[]),stream:R.stream!==false,from:R.from||""};
+  return REGION_SETS[loc];}
+const regionStreams=()=>{const R=regionData();return !R||R.stream;};
+let REGION_APPLIED=null;
+function applyRegion(){
+  const loc=regionNow();if(REGION_APPLIED===loc)return;REGION_APPLIED=loc;
+  const R=regionData(),na=NA_REGIONS.has(loc),gone=new Set(REMOVED);
+  GAMES.forEach(g=>{
+    if(g._c0===undefined){g._c0=g.cat||0;g._l0=g.cl||0;g._s0=g.s3||0;}
+    const ps3=g._l0&&g.sys==="PS3",streamOK=(!R||R.stream)&&(g.rg!=="na"||na);
+    g.s3=streamOK?g._s0:0;
+    if(!R){g.cat=g._c0;g.cl=ps3&&!streamOK?0:g._l0;}
+    else{g.cat=R.cat.has(g.id)&&!gone.has(g.id)?1:0;g.cl=ps3?(streamOK?g._l0:0):(R.cl.has(g.id)?1:0);}
+    g.offhere=(g._c0||g._l0||g._s0)&&!g.cat&&!g.cl&&!g.s3&&!g.gone?1:0;
+  });
+}
+const regionOK=g=>!g.offhere||!!g.e||!!g.own||!!MARKS[g.id]||LIB[g.id]===1;
 const inScope=g=>tierOK(g)&&!preJoin(g)&&regionOK(g);
 function preJoin(g){return !!(S.since&&g.e&&g.e<S.since&&!(g.cat&&!g.gone)&&!g.cl&&!g.own&&!MARKS[g.id]&&LIB[g.id]!==1);}
 function pass(g){
@@ -1001,6 +1024,7 @@ const SORTNAME={date:"the date you started or finished",pri:"your priority",m:"M
 const EMPTY={g:"Nothing in progress. Use ▶ Playing on a game when you start it.",browse:"No games match these filters. Loosen one of them or reset.",w:"Nothing on your want-to-play list matches. Use ★ Want in Browse to add games here.",p:"No played games match. Use ✓ Played in Browse to move games here.",b:"No bounced-off games match. Use ↩ Bounced in Browse for games you tried and dropped.",n:"No games here. Monthly games you tag ✕ Not in my library collect in this tab, and you can untag them from here.",x:"No hidden games match. Games you mark ✕ Not interested land here, and you can bring them back from this tab."};
 function counts(){const c={g:0,w:0,p:0,b:0,x:0};for(const id in MARKS)if(IDS.has(id)&&c[MARKS[id]]!=null)c[MARKS[id]]++;return c;}
 function renderHero(){
+  applyRegion();
   learn();try{sinceHint();tierUI();}catch(e){}
   const c=counts(),tot=GAMES.filter(inScope).length,done=c.g+c.w+c.p+c.b+c.x;
   $("ptext").textContent=`Sorted ${done} of ${tot}`;
@@ -1097,6 +1121,7 @@ const ROWOBS="IntersectionObserver" in window?new IntersectionObserver(es=>{if(e
 /* Let the browser paint the tap first, then do the heavy redraw. */
 const soon=f=>requestAnimationFrame(()=>setTimeout(f,0));
 function render(animate){
+  applyRegion();
   let list=GAMES.filter(pass);
   if(CTX.like){const a=BYID.get(CTX.like);list=a?list.map(g=>[g,simTo(a,g)]).sort((x,y)=>y[1]-x[1]||(y[0].m??0)-(x[0].m??0)).slice(0,40).map(e=>e[0]):[];}
   else list.sort(cmp);
@@ -1465,7 +1490,7 @@ function toggleLib(id,v){
 function defaultDesc(k){return k!=="time";}
 function setSort(k){if(S.sort===k)S.desc=!S.desc;else{S.sort=k;S.desc=defaultDesc(k);}soon(render);}
 {const sel=$("region");sel.innerHTML=`<option value="">Automatic (${esc((REGIONS.find(r=>r[0]===autoRegion())||[0,"Canada (English)"])[1])})</option>`+REGIONS.map(([c,n])=>`<option value="${c}">${esc(n)}</option>`).join("");sel.value=REGION_CODES.has(S.region)?S.region:"";
-  sel.addEventListener("change",e=>{S.region=e.target.value;render(false);renderHero();});}
+  sel.addEventListener("change",e=>{S.region=e.target.value;applyRegion();tierUI();render(false);renderHero();});}
 {const MN=["January","February","March","April","May","June","July","August","September","October","November","December"];
   const sm=$("sincem"),sy=$("sincey"),now=new Date().getFullYear();
   sm.innerHTML=MN.map((n,i)=>`<option value="${String(i+1).padStart(2,"0")}">${n}</option>`).join("");
@@ -1475,12 +1500,17 @@ function setSort(k){if(S.sort===k)S.desc=!S.desc;else{S.sort=k;S.desc=defaultDes
   sm.addEventListener("change",set);sy.addEventListener("change",set);show();sinceHint();}
 function showMyPlus(){const r=$("rail");if(r&&!r.open)r.open=true;const box=$("myplus");box.scrollIntoView({block:"center",behavior:"smooth"});box.classList.add("flash");setTimeout(()=>box.classList.remove("flash"),1600);}
 function tierUI(){
+  const top=regionStreams()?"Premium":"Deluxe";
+  document.querySelectorAll('#tierf button[data-v="premium"],#welcometier button[data-v="premium"]').forEach(b=>b.textContent=top);
   document.querySelectorAll("#tierf button,#welcometier button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===(S.tier||""))));
   const el=$("tierhint");
-  const n=S.tier?GAMES.filter(g=>!g.gone&&!tierOK(g)).length:0;
-  el.textContent=!S.tier?"Pick your tier to hide what it doesn't include. Essential gets the monthly games, Extra adds the Game Catalogue, Premium adds the Classics and PS3 streaming."
-    :`Hiding ${n} ${n===1?"game":"games"} ${S.tier==="essential"?"from the Game Catalogue, Classics and PS3 streaming":S.tier==="extra"?"from the Classics and PS3 streaming":""}. Games you've marked, added or tagged as in your library always show.`;
-  if(S.tier==="premium")el.textContent="Premium includes everything here: the monthly games, the Game Catalogue, the Classics and PS3 streaming.";
+  const n=S.tier?GAMES.filter(g=>!g.gone&&!g.offhere&&!tierOK(g)).length:0;
+  const ps3=regionStreams()?" and PS3 streaming":"";
+  el.textContent=!S.tier?`Pick your tier to hide what it doesn't include. Essential gets the monthly games, Extra adds the Game Catalogue, ${top} adds the Classics${ps3}.`
+    :`Hiding ${n} ${n===1?"game":"games"} ${S.tier==="essential"?`from the Game Catalogue and Classics${ps3}`:S.tier==="extra"?`from the Classics${ps3}`:""}. Games you've marked, added or tagged as in your library always show.`;
+  if(S.tier==="premium")el.textContent=`${top} includes everything here: the monthly games, the Game Catalogue and the Classics${ps3?", plus PS3 streaming":""}.`;
+  const R=regionData(),nm=(REGIONS.find(r=>r[0]===regionNow())||[0,""])[1];
+  if(R)el.textContent+=` The list is set for ${nm}${R.from?", using Sony's Latin American list because Sony doesn't publish one for Brazil":""}${R.stream?"":". There's no cloud streaming there, so no PS3 games"}.`;
 }
 function setTier(v){S.tier=v;tierUI();render(false);renderHero();}
 function sinceHint(){
