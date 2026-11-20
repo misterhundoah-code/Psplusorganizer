@@ -1,0 +1,21 @@
+{
+ "_note": "Games whose Sony artwork is wrong (another game's cover, or a placeholder). tools/fetch_art.py won't use Sony artwork for these; tools/fetch_wiki.py fills them from Wikipedia instead.",
+ "block": [
+  "destiny-2-beyond-light",
+  "destiny-2-lightfall",
+  "destiny-2-the-final-shape",
+  "destiny-2-the-witch-queen",
+  "evil-dead-the-game",
+  "knockout-city",
+  "red-dead-redemption-undead-nightmare",
+  "resident-evil-operation-raccoon-city",
+  "resident-evil-the-darkside-chronicles",
+  "resident-evil-the-umbrella-chronicles",
+  "saints-row-gat-out-of-hell",
+  "timesplitters-2",
+  "timesplitters-future-perfect",
+  "uncharted-legacy-of-thieves-collection",
+  "uncharted-the-lost-legacy",
+  "world-war-z-aftermath"
+ ]
+}

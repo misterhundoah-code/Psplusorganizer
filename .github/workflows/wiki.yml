@@ -1,0 +1,50 @@
+name: Fetch Wikipedia descriptions and covers
+
+# Longer descriptions for the game pop-up, and covers for games Sony has no artwork for,
+# from Wikipedia (see tools/fetch_wiki.py). Runs monthly, when games are added, or by hand.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 11 3 * *"
+  push:
+    branches: [main]
+    paths: ["data/games.json", "data/art-overrides.json", "tools/fetch_wiki.py"]
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: artwork
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests pillow
+      - run: python tools/fetch_wiki.py
+      - name: Commit any changes
+        id: commit
+        run: |
+          git add -A art data/about.json data/art.json data/art-sources.json
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Update Wikipedia descriptions and covers"
+            git pull --rebase
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Rebuild the site
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds" || echo "Pages will rebuild on the next push."

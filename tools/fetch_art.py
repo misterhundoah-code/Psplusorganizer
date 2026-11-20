@@ -195,9 +195,20 @@ def main():
     lp = ROOT / "data/links.json"
     links = json.loads(lp.read_text(encoding="utf-8")) if lp.exists() else {}
     tried = set(links.pop("_tried", []))
+    # Covers that came from Wikipedia (tools/fetch_wiki.py) are left alone, and games whose
+    # Sony artwork is known to be wrong (data/art-overrides.json) never get it.
+    sp, op = ROOT / "data/art-sources.json", ROOT / "data/art-overrides.json"
+    wiki = json.loads(sp.read_text(encoding="utf-8")) if sp.exists() else {}
+    blocked = set(json.loads(op.read_text(encoding="utf-8")).get("block", [])) if op.exists() else set()
     for g in games:
         gid = g["id"]
         out = ART / f"{gid}.webp"
+        if gid in wiki and out.exists():
+            got.append(gid)
+            continue
+        if gid in blocked:
+            missing.append(g.get("t", gid))
+            continue
         if out.exists() and not refresh and (concept_of(g) or gid in links or gid in tried):
             got.append(gid)
             continue
