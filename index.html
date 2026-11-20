@@ -195,6 +195,7 @@ tr.is-p .title a,tr.is-x .title a,tr.is-b .title a{color:var(--muted)}
 .flag.own{--fc:var(--bounced)}
 .flag.cl{--fc:var(--classic)}
 .flag.stream{--fc:var(--stream)}
+.flag.reg{--fc:var(--muted)}
 :root[data-theme="dark"] .flag{color:#0F1733}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .flag{color:#0F1733}}
 .plat{display:inline-flex;gap:4px}
@@ -403,6 +404,11 @@ tr.band th{border-bottom:6px solid var(--blue);box-shadow:inset 0 -8px 0 -6px rg
 .talk{align-self:flex-start;width:fit-content;max-width:100%;margin:4px 0 0 -2px;padding:3px 8px 2px;background:#FFF38A;color:#C2261A;font-family:var(--marker);font-size:14px;line-height:1.15;transform:rotate(-3deg);box-shadow:1px 2px 0 rgba(0,0,0,.18)}
 .card:nth-child(even) .talk{transform:rotate(2deg);background:#FFD3E8}
 .card:nth-child(3n) .talk{background:#C9F4C5;color:#14306E}
+/* Last chance shelf: red "due back" notes */
+.eyebrow.last{color:#FF8A78}
+#lastdeck .talk.due,#lastdeck .card:nth-child(n) .talk.due{background:var(--red);color:#fff;transform:rotate(-3deg);white-space:nowrap;font-size:13px}
+.lastall{font:inherit;font-size:13px;font-weight:700;color:var(--band-ink);background:transparent;border:2px solid var(--band-muted);border-radius:3px;padding:2px 10px;cursor:pointer;margin-left:auto}
+.lastall:hover{border-color:var(--yellow);color:var(--yellow)}
 
 </style>
 </head>
@@ -432,6 +438,10 @@ tr.band th{border-bottom:6px solid var(--blue);box-shadow:inset 0 -8px 0 -6px rg
       </div>
     </div>
     <div class="legend" id="leavealert" hidden></div>
+    <div id="lastwrap" hidden>
+      <div class="deckhead"><h2 class="eyebrow last">Last chance</h2><span id="lastnote"></span><button type="button" class="lastall" id="lastall">Show them all on the shelf</button></div>
+      <div class="deck" id="lastdeck"></div>
+    </div>
     <div class="deckhead"><h2 class="eyebrow">Staff picks</h2><span id="decknote"></span></div>
     <div class="deck" id="deck"></div>
    </div>
@@ -803,6 +813,7 @@ function talker(g,i){const t=g.h??g.a;
   if(t!=null&&t<=12)return "Weekend rental";
   if(g.m>=85)return "Staff favourite";
   return "Worth a look";}
+function daysLeft(iso){const t=new Date();t.setHours(0,0,0,0);const d=Math.round((new Date(iso+"T00:00:00")-t)/864e5);return d>1?` · ${d} days left`:d===1?" · last day tomorrow":d===0?" · last day":"";}
 const fmtD=iso=>{const [y,m,d]=iso.split("-").map(Number);return d+" "+MONTHS[m-1].slice(0,3)+" "+y;};
 const ART=new Set(Array.isArray(ARTLIST)?ARTLIST:[]);
 const tile=g=>`<span class="tile${ART.has(g.id)?" art":""}" style="--h:${g.hue};--a:${g.ang}deg" aria-hidden="true">${esc(g.ini)}${ART.has(g.id)?`<img src="art/${encodeURIComponent(g.id)}.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()">`:""}</span>`;
@@ -913,7 +924,10 @@ function tierOK(g){
   if((g.cl||g.s3)&&tierAt("premium"))return true;
   return false;
 }
-const inScope=g=>tierOK(g)&&!preJoin(g);
+/* Some PS3 streaming games are offered in the US and Canada only (rg:"na"). Hide them elsewhere unless marked. */
+const NA_REGIONS=new Set(["en-ca","fr-ca","en-us"]);
+const regionOK=g=>g.rg!=="na"||NA_REGIONS.has(S.region||autoRegion())||!!MARKS[g.id]||!!g.own;
+const inScope=g=>tierOK(g)&&!preJoin(g)&&regionOK(g);
 function preJoin(g){return !!(S.since&&g.e&&g.e<S.since&&!(g.cat&&!g.gone)&&!g.cl&&!g.own&&!MARKS[g.id]&&LIB[g.id]!==1);}
 function pass(g){
   if(!inScope(g))return false;
@@ -957,7 +971,7 @@ function row(g,i){
   const tm=t==null?'<span class="time est">no data</span>':`<span class="time${low?" est":""}" title="${low?"Based on fewer than 10 player reports. ":""}${fb?"No figure for this play style, showing the all-styles average.":""}">${fb?"≈ ":""}${fmtT(t)}</span>`;
   const pl=g.pk==="Elsewhere"?"":g.p.map(p=>`<span class="${p==="PS5"?"p5":""}">${p}</span>`).join("");
   const lv=LIB[g.id]||0;
-  const flags=(g.own?`<span class="flag own">Added by me</span>`:"")+(g.cl?`<span class="flag cl" title="PS Plus Premium Classic, originally ${esc(g.sys==="PS4 remaster"?"a PS4 remaster or port":g.sys==="Arcade"?"an arcade game":"a "+g.sys+" game")}">Classic · ${esc(g.sys==="PS4 remaster"?"PS4":g.sys)}</span>`:"")+(g.s3?`<span class="flag stream" title="${g.cl?"Streamed from the cloud with PS Plus Premium; it can't be downloaded":"The PS3 version can also be streamed with PS Plus Premium"}">${g.cl?"Streaming only":"PS3 stream"}</span>`:"")+(g.new?`<span class="flag new">New ${esc(g.new.split(" ")[0])}</span>`:"")+(g.e?`<span class="flag mon" title="PS Plus Essential monthly game, ${esc(g.el)}${g.cat?". Also in the Game Catalogue, so you can play it either way.":""}">Monthly ${esc(g.el)}</span><span class="libset" role="group" aria-label="Is it in my library?"><button type="button" class="yes" data-lib="${esc(g.id)}" data-lv="1" aria-pressed="${lv===1}" title="I claimed this one">✓ In my library</button><button type="button" class="no" data-lib="${esc(g.id)}" data-lv="-1" aria-pressed="${lv===-1}" title="I never claimed this one">✕ Not in my library</button></span>`:"");
+  const flags=(g.own?`<span class="flag own">Added by me</span>`:"")+(g.cl?`<span class="flag cl" title="PS Plus Premium Classic, originally ${esc(g.sys==="PS4 remaster"?"a PS4 remaster or port":g.sys==="Arcade"?"an arcade game":"a "+g.sys+" game")}">Classic · ${esc(g.sys==="PS4 remaster"?"PS4":g.sys)}</span>`:"")+(g.s3?`<span class="flag stream" title="${g.cl?"Streamed from the cloud with PS Plus Premium; it can't be downloaded":"The PS3 version can also be streamed with PS Plus Premium"}">${g.cl?"Streaming only":"PS3 stream"}</span>`:"")+(g.rg==="na"?`<span class="flag reg" title="Sony offers this PS3 game for streaming in the US and Canada only">US and Canada only</span>`:"")+(g.new?`<span class="flag new">New ${esc(g.new.split(" ")[0])}</span>`:"")+(g.e?`<span class="flag mon" title="PS Plus Essential monthly game, ${esc(g.el)}${g.cat?". Also in the Game Catalogue, so you can play it either way.":""}">Monthly ${esc(g.el)}</span><span class="libset" role="group" aria-label="Is it in my library?"><button type="button" class="yes" data-lib="${esc(g.id)}" data-lv="1" aria-pressed="${lv===1}" title="I claimed this one">✓ In my library</button><button type="button" class="no" data-lib="${esc(g.id)}" data-lv="-1" aria-pressed="${lv===-1}" title="I never claimed this one">✕ Not in my library</button></span>`:"");
   let fy;
   if(mk==="p"){const r=RATE[g.id]||0;fy=`<span class="stars" role="group" aria-label="My rating">${[1,2,3,4,5].map(n=>`<button type="button" class="${n<=r?"on":""}" data-rate="${n}" data-id="${esc(g.id)}" aria-label="${n} ${n===1?"star":"stars"}" aria-pressed="${n===r}" title="${n===r?"Click to clear":"Rate "+n+" out of 5"}">★</button>`).join("")}</span>`;}
   else if(mk==="b"||mk==="x"){fy='<span class="time est">–</span>';}
@@ -980,7 +994,7 @@ function row(g,i){
       +(hr&&avg?`<span>${mk==="g"?`of about ${fmtT(avg)} for the main story`:hr>avg*1.15?`${fmtT(hr-avg)} over the ${fmtT(avg)} average`:hr<avg*0.85?`${fmtT(avg-hr)} under the ${fmtT(avg)} average`:`close to the ${fmtT(avg)} average`}</span>`:"")+`</div>`;}
   else if(mk==="b"){const w=(dt&&dt.why)||[];
     extra=`<div class="why" role="group" aria-label="Why I bounced off"><span>Why?</span>${WHY.map(([k,l])=>`<button type="button" data-why="${k}" data-id="${esc(g.id)}" aria-pressed="${w.includes(k)}">${l}</button>`).join("")}</div>`;}
-  const leave=(g.gone?`<span class="flag leave" title="No longer in the Game Catalogue">Left the catalogue</span>`:"")+(LEAVING[g.id]?`<span class="flag leave" title="Confirmed to leave the Game Catalogue">Leaving ${fmtD(LEAVING[g.id])}</span>`:"");
+  const leave=(g.gone?`<span class="flag leave" title="No longer in the Game Catalogue">Left the catalogue</span>`:"")+(LEAVING[g.id]?`<span class="flag leave" title="Confirmed to leave the Game Catalogue">Leaving ${fmtD(LEAVING[g.id])}${daysLeft(LEAVING[g.id])}</span>`:"");
   return `<tr class="game${mk?" is-"+mk:""}${lv===-1&&!g.cat?" nolib":""}" style="--i:${Math.min(i,28)}"><td class="title"><div class="g">${tile(g)}<div class="gt"><a href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${hl(g.t)}</a>${leave}${flags}<div class="tags">${tags}</div>${S.syn&&g.d?`<div class="syn">${esc(g.d)}</div>`:""}${extra}${noteHTML}</div></div></td><td class="pl"><span class="plat">${pl}</span></td><td class="num sc">${scoreHTML(g.m)}</td><td class="num tm">${tm}</td><td class="fyc">${fy}</td><td class="mk"><span class="marks">${btns}${g.own?`<button type="button" class="mn" data-delown="${esc(g.id)}" aria-label="Remove" title="Remove this game I added">⌫<span class="ml"> Remove</span></button>`:""}<button type="button" class="mn" data-note="${esc(g.id)}" aria-pressed="${!!note}" aria-label="Note" title="${note?"Edit my note":"Add a note"}">✎<span class="ml"> Note</span></button></span></td></tr>`;
 }
 const SORTNAME={date:"the date you started or finished",pri:"your priority",m:"Metacritic score",time:"completion time",p:"platform",g:"game style",t:"title",y:"release year"};
@@ -1005,6 +1019,11 @@ function renderHero(){
   const lv=GAMES.filter(g=>LEAVING[g.id]&&(MARKS[g.id]==="w"||MARKS[g.id]==="g")).sort((a,b)=>LEAVING[a.id]<LEAVING[b.id]?-1:1);
   const la=$("leavealert");la.hidden=!lv.length;
   la.textContent=lv.length?"Leaving soon from your list: "+lv.map(g=>g.t+" ("+fmtD(LEAVING[g.id])+")").join(", "):"";
+  const lc=GAMES.filter(g=>LEAVING[g.id]&&inScope(g)&&!["p","b","x"].includes(MARKS[g.id])).sort((a,b)=>LEAVING[a.id]<LEAVING[b.id]?-1:LEAVING[a.id]>LEAVING[b.id]?1:(b.m??0)-(a.m??0));
+  $("lastwrap").hidden=!lc.length;
+  if(lc.length){const dates=[...new Set(lc.map(g=>LEAVING[g.id]))];
+    $("lastnote").textContent=(dates.length===1?`Leaving the Game Catalogue on ${fmtD(dates[0])}`:"Leaving the Game Catalogue soon")+daysLeft(dates[0]).replace(" · ",", ");
+    $("lastdeck").innerHTML=lc.map(g=>{const t=g.h??g.a;return `<a class="card" title="${esc(g.d||"")}" href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${tile(g)}<span class="ct">${esc(g.t)}</span><span class="cm">${g.m!=null?"Metascore "+g.m:"No Metascore"}${t!=null?" · "+fmtT(t):""}</span><span class="talk due">Due back ${esc(fmtD(LEAVING[g.id]).replace(/ \d{4}$/,""))}</span></a>`;}).join("");}
   renderTaste();
   let pick=GAMES.filter(g=>MARKS[g.id]==="w"&&playable(g)).sort(byScore),note="from your want-to-play list, "+how;
   if(!pick.length){pick=GAMES.filter(g=>!MARKS[g.id]&&playable(g)).sort(byScore);note="games you haven't sorted yet, "+how;}
@@ -1481,6 +1500,7 @@ $("q").addEventListener("keydown",e=>{
 });
 function clearSearch(){S.q="";$("q").value="";clearTimeout(qTimer);render(false);$("q").focus();}
 $("qclear").addEventListener("click",clearSearch);
+$("lastall").addEventListener("click",()=>{CTX={ser:null,like:null};S.view="browse";S.onlyleave=true;render();$("q").scrollIntoView({block:"start",behavior:"smooth"});});
 $("qelse").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.qview){CTX={ser:null,like:null};S.view=b.dataset.qview;render(false);}

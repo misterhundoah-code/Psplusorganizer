@@ -127,6 +127,7 @@ Paste a `https://store.playstation.com/.../concept/...` or `.../product/...` lin
 | `cat` | 1 if in the Game Catalogue |
 | `cl`, `sys` | Premium Classic and its original system (`PS3` for streaming-only games) |
 | `s3` | Streams on PS3 with Premium: a streaming-only Classic, or the PS3 version of a game listed here |
+| `rg` | `"na"`: a PS3 streaming game Sony offers in the US and Canada only; hidden when the store region is elsewhere |
 | `e`, `el` | Monthly game and its month (the most recent, if it was offered twice) |
 
 People's marks are keyed by `id`, so don't change an existing game's id.
@@ -147,7 +148,7 @@ To try the whole site locally against that Worker, set `apiBase` in `config.js` 
 
 - **Game lists:**
   - Sony's PlayStation Plus Game Catalogue and Premium Classics lists (Canada).
-  - PS3 streaming games: Sony doesn't publish this list; it comes from [Thumbsticks](https://www.thumbsticks.com/playstation-classics-every-retro-game-available-with-playstation-plus-premium/), cross-checked against [PlayStation Universe](https://www.psu.com/news/ps-plus-premium-game-list-all-playstation-plus-premium-ps5-ps4-ps3-ps2-ps1-games/).
+  - PS3 streaming games: Sony doesn't publish this list; it comes from [Thumbsticks](https://www.thumbsticks.com/playstation-classics-every-retro-game-available-with-playstation-plus-premium/), cross-checked against [PlayStation Universe](https://www.psu.com/news/ps-plus-premium-game-list-all-playstation-plus-premium-ps5-ps4-ps3-ps2-ps1-games/). The US and Canada only titles come from [ComicBook's comparison of the US and European lists](https://comicbook.com/gaming/news/playstation-ps-plus-premium-ps3-ps5-infamous-ratchet-and-clank).
   - Monthly games: November 2013 to October 2022 from the [PlayStation Fandom wiki](https://playstation.fandom.com/wiki/List_of_PlayStation_Plus_monthly_games_(North_America))'s North American lists; November 2022 on as reported by Game Rant, Insider Gaming and Beebom.
 - **Scores:** Metacritic, via public datasets on GitHub plus manual checks on metacritic.com.
 - **Completion times:** HowLongToBeat, via a public dataset on GitHub (March 2026).
