@@ -218,6 +218,14 @@ dialog.dlgbox.gamebox{width:min(780px,calc(100vw - 24px));max-height:calc(100vh 
 .gamebox td.title .tile{width:132px;height:132px}
 .gamebox td.title .gt>a{font-size:20px}
 .gamebox .syn{font-size:14.5px;max-width:60ch}
+.gamebox.has-about .syn{display:none}
+.gamebox .why{margin:14px 6px 0;padding:10px 12px;background:var(--myplus,#FFF6D8);border-left:5px solid var(--yellow);font-size:14.5px;line-height:1.45;max-width:68ch}
+.gamebox .why b{display:inline;padding:0;margin:0;background:none;border:0;font-weight:700;font-size:inherit}
+.gamebox .why .verdict{font-family:var(--marker);font-weight:400;font-size:16px;color:var(--ink);margin-right:4px}
+.gamebox .about{margin:12px 6px 0;max-width:68ch;font-size:14.5px;line-height:1.55}
+.gamebox .about p{margin:0 0 10px}
+.gamebox .about .credit{font-size:12px;color:var(--muted);margin-top:4px}
+.gamebox .about .credit a{color:inherit}
 .gamebox .marks button .ml{display:inline !important}
 .gamebox .marks{flex-wrap:wrap}
 .gamebox td.mk{justify-self:start !important;margin-top:6px}
@@ -791,7 +799,9 @@ body.notime th[data-k="time"],body.notime td.tm,body.notime .ctm{display:none}
   </dialog>
   <dialog class="dlgbox gamebox" id="gamedlg" aria-label="Game details">
     <div class="dlg"><button type="button" class="dlgx" id="gamex" aria-label="Close">✕</button>
-      <div class="tablebox"><table><tbody id="dlgrows"></tbody></table></div></div>
+      <div class="tablebox"><table><tbody id="dlgrows"></tbody></table></div>
+      <p class="why" id="dlgwhy"></p>
+      <div class="about" id="dlgabout"></div></div>
   </dialog>
   <dialog class="dlgbox" id="welcomedlg" aria-labelledby="welcomettl">
     <div class="dlg welcome">
@@ -1334,7 +1344,48 @@ function layoutUI(){
   $("wall").hidden=!WALL();$("rows").closest("table").hidden=WALL();
 }
 let DLG_ID=null;
-function fillDlg(){if(!DLG_ID)return;const g=BYID.get(DLG_ID);if(!g)return;const syn=S.syn;S.syn=true;$("dlgrows").innerHTML=row(g,0);S.syn=syn;}
+function fillDlg(){if(!DLG_ID)return;const g=BYID.get(DLG_ID);if(!g)return;const syn=S.syn;S.syn=true;$("dlgrows").innerHTML=row(g,0);S.syn=syn;
+  const w=whyFor(g);$("dlgwhy").innerHTML=w;$("dlgwhy").hidden=!w;fillAbout(g);}
+/* Longer description from Wikipedia (data/about.json, made by tools/fetch_wiki.py), loaded the first
+   time a pop-up opens. Wikipedia text is CC BY-SA 4.0, so it's credited with a link to the article. */
+let ABOUT=null,ABOUT_LOADING=null;
+function fillAbout(g){
+  const el=$("dlgabout");
+  if(!ABOUT){el.innerHTML="";$("gamedlg").classList.remove("has-about");
+    if(!ABOUT_LOADING)ABOUT_LOADING=fetch("data/about.json").then(r=>r.ok?r.json():{}).catch(()=>({})).then(a=>{ABOUT=a;if(DLG_ID)fillAbout(BYID.get(DLG_ID));});
+    return;}
+  const a=ABOUT[g.id];$("gamedlg").classList.toggle("has-about",!!a);
+  if(!a){el.innerHTML="";return;}
+  const url="https://en.wikipedia.org/wiki/"+encodeURIComponent(a.w.replace(/ /g,"_"));
+  el.innerHTML=a.x.split(/\n\n+/).map(p=>`<p>${esc(p)}</p>`).join("")
+    +`<p class="credit">From the Wikipedia article <a href="${esc(url)}" target="_blank" rel="noopener">${esc(a.w)}</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>.</p>`;
+}
+/* "Why you might like it": the games you've rated or bounced off that this one is most like, any
+   style or length pattern behind the For me score, and a one-word verdict. */
+function whyFor(g){
+  const mk=MARKS[g.id];
+  if(mk==="p")return RATE[g.id]?`You played this and gave it ${"★".repeat(RATE[g.id])}.`:"You've played this. Rate it to sharpen the picks for everything else.";
+  const liked=[],disliked=[];
+  for(const id in MARKS){if(id===g.id)continue;const o=BYID.get(id);if(!o)continue;
+    const m=MARKS[id],r=RATE[id];
+    if(m==="p"&&r>=4)liked.push(o);else if(m==="b"||(m==="p"&&r&&r<=2))disliked.push(o);}
+  const near=(list)=>list.map(o=>[o,simTo(o,g)]).filter(x=>x[1]>=0.55).sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>x[0]);
+  const L=near(liked),D=near(disliked);
+  if(!TASTE.on&&!L.length&&!D.length)return "Rate a few games you've played, and this will say whether this one's likely to suit you.";
+  const names=a=>a.length===2?`<b>${esc(a[0].t)}</b> and <b>${esc(a[1].t)}</b>`:`<b>${esc(a[0].t)}</b>`;
+  const parts=[];
+  if(L.length)parts.push(`It's a lot like ${names(L)}, which you rated ${L.map(o=>RATE[o.id]).join(" and ")} stars.`);
+  if(D.length){const why=[...new Set(D.flatMap(o=>(DATES[o.id]&&DATES[o.id].why)||[]))].map(k=>(WHYNAME[k]||"").toLowerCase()).filter(Boolean);
+    parts.push(`It plays like ${names(D)}, which didn't work for you${why.length?` (${why.slice(0,2).join(", ")})`:""}.`);}
+  const [p,d,reason]=priority(g);
+  if(reason&&!(L.length&&D.length))parts.push(reason);
+  const lb=lenBand(g),lv=TASTE.on?(TASTE.len[lb]||0):0,t=timeOf(g)[0];
+  if(lv<-0.5&&t!=null&&!S.notime)parts.push(`At around ${fmtT(t)}, it's the kind of length you tend to drop.`);
+  else if(lv>0.5&&t!=null&&!S.notime)parts.push(`At around ${fmtT(t)}, it's the kind of length you tend to finish.`);
+  const verdict=L.length&&D.length?(d>=8?"Likely a good fit.":d<=-8?"Maybe not one for you.":"Could go either way.")
+    :d>=4||L.length?"Likely a good fit.":d<=-4||D.length?"Maybe not one for you.":"Could go either way.";
+  return `<b class="verdict">${verdict}</b> ${parts.join(" ")}`;
+}
 function openGame(id){DLG_ID=id;fillDlg();const d=$("gamedlg");if(!d.open)d.showModal();}
 function fillRows(n){const end=Math.min(PEND.length,n);
   if(end>SHOWN){$(WALL()?"wall":"rows").insertAdjacentHTML("beforeend",PEND.slice(SHOWN,end).join(""));SHOWN=end;}

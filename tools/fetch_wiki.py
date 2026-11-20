@@ -85,8 +85,15 @@ def candidates(g):
 
 
 def is_game(page):
+    """The article is about one game: not a company, a series, a person or a disambiguation page."""
     d = (page.get("description") or "").lower()
-    return not page.get("missing") and "disambiguation" not in d and ("video game" in d or re.search(r"\bgame\b", d))
+    if page.get("missing") or not d or "disambiguation" in d:
+        return False
+    if re.search(r"\b(company|developer|publisher|studio|corporation|character|person|engine|console)\b", d):
+        return False
+    if re.search(r"\b(?:game|video game) (?:series|franchise)\b|^(?:media )?franchise|^series\b", d):
+        return False
+    return "video game" in d or re.search(r"\bgame\b", d)
 
 
 def resolve(games):
@@ -100,10 +107,14 @@ def resolve(games):
                    piprop="thumbnail|original", pithumbsize=500, pilicense="any")
         q = data.get("query", {})
         norm = {n["from"]: n["to"] for n in q.get("normalized", [])}
-        redir = {r["from"]: r["to"] for r in q.get("redirects", [])}
+        # A redirect to a section of another article ("Secret Neighbor" -> "Hello Neighbor#...") is a
+        # different game's page, so it doesn't count.
+        redir = {r["from"]: (None if r.get("tofragment") else r["to"]) for r in q.get("redirects", [])}
         by_title = {p["title"]: p for p in q.get("pages", [])}
         for c in chunk:
             t = norm.get(c, c)
+            if t in redir and redir[t] is None:
+                continue
             t = redir.get(t, t)
             if t in by_title:
                 pages[c] = by_title[t]
@@ -208,6 +219,12 @@ def main():
     print(f"descriptions for {len(about)} games")
 
     ART.mkdir(exist_ok=True)
+    # A cover taken from an article that no longer matches the game is removed.
+    for gid, title in list(sources.items()):
+        if gid not in ids or (found.get(gid) or {}).get("title") != title:
+            (ART / f"{gid}.webp").unlink(missing_ok=True)
+            art.discard(gid)
+            del sources[gid]
     new, failed = 0, []
     for g in games:
         gid = g["id"]
