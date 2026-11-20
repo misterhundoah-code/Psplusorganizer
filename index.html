@@ -435,6 +435,8 @@ tr.band th{border-bottom:6px solid var(--blue);box-shadow:inset 0 -8px 0 -6px rg
 /* Last chance shelf: red "due back" notes */
 .eyebrow.last{color:#FF8A78}
 #lastdeck .talk.due,#lastdeck .card:nth-child(n) .talk.due{background:var(--red);color:#fff;transform:rotate(-3deg);white-space:nowrap;font-size:13px}
+/* Hide playtimes (HowLongToBeat) everywhere when the toggle is on */
+body.notime th[data-k="time"],body.notime td.tm,body.notime .ctm{display:none}
 .lastbtns{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
 .lastbtns .lastall{margin-left:0}
 .remind{font:inherit;font-size:12px;font-weight:700;color:var(--red);background:transparent;border:1.5px solid currentColor;border-radius:3px;padding:1px 7px;margin-left:4px;cursor:pointer;vertical-align:middle}
@@ -591,6 +593,7 @@ tr.band th{border-bottom:6px solid var(--blue);box-shadow:inset 0 -8px 0 -6px rg
         </div>
         <div class="grp">
           <label for="tmode">Completion time</label>
+          <label class="check"><input type="checkbox" id="notime"> Hide playtimes</label>
           <select id="tmode">
             <option value="h">Main story</option>
             <option value="x">Main story + extras</option>
@@ -756,7 +759,7 @@ const PORDER={"PS5":0,"PS4/PS5":1,"PS4":2,"Elsewhere":3};
 const PNAME={"PS5":"PS5 only","PS4/PS5":"PS4 and PS5","PS4":"PS4 only","Elsewhere":"Added by me"};
 const HUE={"Action":14,"Adventure":172,"RPG":268,"Shooter":212,"Open World":142,"Platformer":44,"Strategy":236,"Simulation":190,"Horror":350,"Survival":84,"Puzzle":312,"Racing":28,"Sports":108,"Fighting":2,"Family":332,"Party":290,"Roguelike":58,"Metroidvania":252,"Stealth":200,"Hack & Slash":20,"Narrative":160,"Arcade":322,"Soulslike":280,"Other":220};
 const SERIES=[["Jak|Daxter","Jak and Daxter"],["Sly ","Sly Cooper"],["Syphon Filter","Syphon Filter"],["Tekken","Tekken"],["Twisted Metal","Twisted Metal"],["Wild Arms","Wild Arms"],["TimeSplitters","TimeSplitters"],["Resident Evil","Resident Evil"],["Worms","Worms"],["Ape Escape|Ape Academy","Ape Escape"],["Armored Core","Armored Core"],["Patapon","Patapon"],["LocoRoco","LocoRoco"],["Metro","Metro"],["MediEvil","MediEvil"],["Ridge Racer|R4: Ridge Racer","Ridge Racer"],["Legacy of Kain|Blood Omen","Legacy of Kain"],["Dark Cloud","Dark Cloud"],["Pursuit Force","Pursuit Force"],["Kurushi","Kurushi"],["Thrillville","Thrillville"],["Ratchet|Secret Agent Clank","Ratchet & Clank"],["Dino Crisis","Dino Crisis"],["Gravity Rush","Gravity Rush"],["Myst|Riven","Myst"],["Jet Rider","Jet Rider"],["Alone in the Dark","Alone in the Dark"],["Everybody's Golf|Hot Shots","Everybody's Golf"],["Atari Flashback","Atari Flashback"],["Disney","Disney"],["Echochrome|echochrome|echoshift","Echochrome"]].concat([["LEGO|The LEGO","LEGO"],["Assassin's Creed","Assassin's Creed"],["Far Cry","Far Cry"],["PAW Patrol","PAW Patrol"],["Tom Clancy's Ghost Recon","Ghost Recon"],["Tom Clancy's Rainbow Six","Rainbow Six"],["Tom Clancy's The Division","The Division"],["Wolfenstein","Wolfenstein"],["Earth Defense Force","Earth Defense Force"],["Story of Seasons","Story of Seasons"],["Warhammer 40,000","Warhammer 40,000"],["Warhammer:","Warhammer Fantasy"],["Uncharted","Uncharted"],["Marvel's Spider-Man","Marvel's Spider-Man"],["The Last of Us","The Last of Us"],["God of War","God of War"],["Horizon","Horizon"],["Final Fantasy","Final Fantasy"],["Persona","Persona"],["Death Stranding","Death Stranding"],["Dying Light","Dying Light"],["Sniper Elite|Zombie Army","Sniper Elite"],["Watch Dogs","Watch Dogs"],["Mafia","Mafia"],["Destiny 2","Destiny 2"],["Tomb Raider|Rise of the Tomb Raider|Shadow of the Tomb Raider","Tomb Raider"],["Trials","Trials"],["Two Point","Two Point"],["Cat Quest","Cat Quest"],["Monster Hunter","Monster Hunter"],["Like a Dragon","Like a Dragon"],["Kingdom Come","Kingdom Come"],["Dishonored","Dishonored"],["Call of Duty","Call of Duty"],["Alan Wake","Alan Wake"],["Five Nights at Freddy's","Five Nights at Freddy's"],["Poppy Playtime","Poppy Playtime"],["Hotline Miami","Hotline Miami"],["Coffee Talk","Coffee Talk"],["Citizen Sleeper","Citizen Sleeper"],["Ben 10","Ben 10"],["Rabbids","Rabbids"],["Monopoly","Monopoly"],["Dynasty Warriors|Samurai Warriors|Warriors:","Warriors"],["Until Dawn","Until Dawn"],["Hello Neighbor|Secret Neighbor","Hello Neighbor"],["Killing Floor","Killing Floor"],["Outlast|The Outlast","Outlast"],["Overpass","Overpass"],["World War Z","World War Z"],["Nioh","Nioh"],["NBA 2K","NBA 2K"],["PGA Tour","PGA Tour 2K"],["WWE 2K","WWE 2K"],["MLB The Show","MLB The Show"],["EA Sports FC","EA Sports FC"],["F1 ","F1"],["Need for Speed","Need for Speed"],["Monster Train","Monster Train"],["Fallout","Fallout"],["DOOM","Doom"],["Sonic","Sonic"],["Aliens","Aliens"],["The Elder Scrolls","The Elder Scrolls"],["Oddworld","Oddworld"],["The Crew","The Crew"],["Planet ","Planet"],["The Surge","The Surge"],["Ys ","Ys"],["Prince of Persia|The Rogue Prince of Persia","Prince of Persia"],["Minecraft","Minecraft"],["South Park","South Park"],["Farming Simulator","Farming Simulator"],["Star Wars","Star Wars"],["For The King","For The King"],["Mighty Morphin Power Rangers|Power Rangers","Power Rangers"]]).map(([p,n])=>[new RegExp("^(?:"+p.replace(/[.*+?^${}()[\]\\]/g,m=>m==="|"?m:"\\"+m)+")","i"),n]);
-const DEF={tier:"",since:"",region:"",q:"",sort:"m",desc:true,plat:"all",minm:0,hideun:false,tmode:"h",tlen:"all",styles:[],src:"all",hidep:true,hideb:true,hidew:false,hidelib:false,sys:"all",onlyleave:false,syn:true,pv:[],view:"browse"};
+const DEF={notime:false,tier:"",since:"",region:"",q:"",sort:"m",desc:true,plat:"all",minm:0,hideun:false,tmode:"h",tlen:"all",styles:[],src:"all",hidep:true,hideb:true,hidew:false,hidelib:false,sys:"all",onlyleave:false,syn:true,pv:[],view:"browse"};
 let S=Object.assign({},DEF,{styles:[],pv:[]});
 let MARKS={}; // game id -> "w" want | "p" played | "b" bounced off | "x" not interested
 try{const s=JSON.parse(localStorage.getItem("psplus-sorter")||"null");if(s&&typeof s==="object")S=Object.assign(S,s);if(!Array.isArray(S.styles))S.styles=[];if(!Array.isArray(S.pv))S.pv=[];}catch(e){}
@@ -837,7 +840,7 @@ function syncCustom(){ // rebuild the viewer's own entries inside GAMES from CUS
 syncCustom();
 const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
 const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
-function talker(g,i){const t=g.h??g.a;
+function talker(g,i){const t=S.notime?null:(g.h??g.a);
   if(LEAVING[g.id])return "Leaving "+fmtD(LEAVING[g.id]).replace(/ \d{4}$/,"")+"!";
   if(g.new)return "New arrival!";
   if(t!=null&&t<=5)return "Done in one night";
@@ -1110,12 +1113,12 @@ function renderHero(){
   $("lastwrap").hidden=!lc.length;
   if(lc.length){const dates=[...new Set(lc.map(g=>LEAVING[g.id]))];
     $("lastnote").textContent=(dates.length===1?`Leaving the Game Catalogue on ${fmtD(dates[0])}`:"Leaving the Game Catalogue soon")+daysLeft(dates[0]).replace(" · ",", ");
-    $("lastdeck").innerHTML=lc.map(g=>{const t=g.h??g.a;return `<a class="card" title="${esc(g.d||"")}" href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${tile(g)}<span class="ct">${esc(g.t)}</span><span class="cm">${g.m!=null?"Metascore "+g.m:"No Metascore"}${t!=null?" · "+fmtT(t):""}</span><span class="talk due">Due back ${esc(fmtD(LEAVING[g.id]).replace(/ \d{4}$/,""))}</span></a>`;}).join("");}
+    $("lastdeck").innerHTML=lc.map(g=>{const t=g.h??g.a;return `<a class="card" title="${esc(g.d||"")}" href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${tile(g)}<span class="ct">${esc(g.t)}</span><span class="cm">${g.m!=null?"Metascore "+g.m:"No Metascore"}${t!=null?`<span class="ctm"> · ${fmtT(t)}</span>`:""}</span><span class="talk due">Due back ${esc(fmtD(LEAVING[g.id]).replace(/ \d{4}$/,""))}</span></a>`;}).join("");}
   renderTaste();
   let pick=GAMES.filter(g=>MARKS[g.id]==="w"&&playable(g)).sort(byScore),note="from your want-to-play list, "+how;
   if(!pick.length){pick=GAMES.filter(g=>!MARKS[g.id]&&playable(g)).sort(byScore);note="games you haven't sorted yet, "+how;}
   $("decknote").textContent=note;
-  $("deck").innerHTML=pick.slice(0,14).map((g,i)=>{const t=g.h??g.a;return `<a class="card" style="--i:${i}" title="${esc(g.d||"")}" href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${tile(g)}<span class="ct">${esc(g.t)}</span><span class="cm">${TASTE.on?"Priority "+pv(g):(g.m!=null?"Metascore "+g.m:"No Metascore")}${t!=null?" · "+fmtT(t):""}</span><span class="talk">${esc(talker(g,i))}</span></a>`;}).join("");
+  $("deck").innerHTML=pick.slice(0,14).map((g,i)=>{const t=g.h??g.a;return `<a class="card" style="--i:${i}" title="${esc(g.d||"")}" href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${tile(g)}<span class="ct">${esc(g.t)}</span><span class="cm">${TASTE.on?"Priority "+pv(g):(g.m!=null?"Metascore "+g.m:"No Metascore")}${t!=null?`<span class="ctm"> · ${fmtT(t)}</span>`:""}</span><span class="talk">${esc(talker(g,i))}</span></a>`;}).join("");
 }
 function renderTaste(){
   const rated=GAMES.filter(g=>MARKS[g.id]==="p"&&RATE[g.id]);
@@ -1185,6 +1188,7 @@ const ROWOBS="IntersectionObserver" in window?new IntersectionObserver(es=>{if(e
 const soon=f=>requestAnimationFrame(()=>setTimeout(f,0));
 function render(animate){
   applyRegion();
+  document.body.classList.toggle("notime",!!S.notime);
   let list=GAMES.filter(pass);
   if(CTX.like){const a=BYID.get(CTX.like);list=a?list.map(g=>[g,simTo(a,g)]).sort((x,y)=>y[1]-x[1]||(y[0].m??0)-(x[0].m??0)).slice(0,40).map(e=>e[0]):[];}
   else list.sort(cmp);
@@ -1214,7 +1218,7 @@ function render(animate){
   const scored=list.filter(g=>g.m!=null);
   const avg=scored.length?Math.round(scored.reduce((a,g)=>a+g.m,0)/scored.length):null;
   $("sortnote").textContent=`Sorted by ${SORTNAME[S.sort]}`+(avg!=null?` · average Metascore ${avg}`:"");
-  $("q").value=S.q;$("sort").value=S.sort;$("tmode").value=S.tmode;$("minm").value=S.minm;$("hideun").checked=S.hideun;$("hidep").checked=S.hidep;$("hideb").checked=S.hideb;$("hidew").checked=S.hidew;$("hidelib").checked=S.hidelib;$("onlyleave").checked=S.onlyleave;$("syn").checked=S.syn;
+  $("q").value=S.q;$("sort").value=S.sort;$("tmode").value=S.tmode;$("minm").value=S.minm;$("hideun").checked=S.hideun;$("notime").checked=!!S.notime;$("hidep").checked=S.hidep;$("hideb").checked=S.hideb;$("hidew").checked=S.hidew;$("hidelib").checked=S.hidelib;$("onlyleave").checked=S.onlyleave;$("syn").checked=S.syn;
   document.querySelectorAll("#pvs button").forEach(b=>b.setAttribute("aria-pressed",S.pv.includes(b.dataset.v)));
   $("minv").textContent=S.minm>0?S.minm:"any";
   const asc=!S.desc;$("dir").textContent=asc?"↑":"↓";
@@ -1616,7 +1620,7 @@ $("dir").addEventListener("click",()=>{S.desc=!S.desc;soon(render);});
 $("tmode").addEventListener("change",e=>{S.tmode=e.target.value;soon(render);});
 $("minm").addEventListener("input",e=>{S.minm=+e.target.value;render(false);});
 const chk=(id)=>$(id).addEventListener("change",e=>{S[id]=e.target.checked;soon(render);});
-chk("hideun");chk("hidep");chk("hideb");chk("hidew");chk("hidelib");chk("onlyleave");chk("syn");
+chk("hideun");chk("hidep");chk("hideb");chk("hidew");chk("hidelib");chk("onlyleave");chk("syn");$("notime").addEventListener("change",e=>{S.notime=e.target.checked;soon(()=>{render();renderHero();});});
 $("pvs").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const v=b.dataset.v;S.pv=S.pv.includes(v)?S.pv.filter(x=>x!==v):S.pv.concat(v);soon(render);});
 const segClick=(id,key)=>$(id).addEventListener("click",e=>{const b=e.target.closest("button");if(b){S[key]=b.dataset.v;soon(render);}});
 segClick("plat","plat");segClick("sysf","sys");segClick("tlen","tlen");segClick("src","src");$("tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(b){CTX={ser:null,like:null};S.view=b.dataset.v;soon(render);}});
