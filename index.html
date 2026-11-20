@@ -20,7 +20,8 @@
   --classic:#0D7C86; --playing:#D9690B; --want:#1E3A9E; --played:#1F8A4C; --bounced:#E23D28; --skip:#7C849C; --monthly:#A85A00;
   --stream:#6A3FD0;
   --font:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --display:"Archivo","Arial Black",Impact,sans-serif;
+  --display:"Bungee","Arial Black",Impact,sans-serif;
+  --marker:"Permanent Marker","Comic Sans MS",cursive;
   --body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 @media (prefers-color-scheme: dark){
@@ -55,7 +56,7 @@ a{color:inherit}
 html,body{overflow-x:clip}
 .sign{background:var(--sign);color:var(--yellow-ink);padding:14px 24px 22px;border-bottom:10px solid var(--blue)}
 .herotop{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 32px}
-h1{font-family:var(--display);font-weight:900;font-stretch:125%;font-size:clamp(42px,7vw,88px);line-height:.88;letter-spacing:-.025em;margin:0;color:var(--sign-ink);text-wrap:balance}
+h1{font-family:var(--display);font-weight:400;font-stretch:100%;font-size:clamp(38px,6vw,76px);line-height:.95;letter-spacing:0;margin:0;color:var(--sign-ink);text-wrap:balance}
 h1 em{font-style:normal}
 .sub{color:var(--yellow-ink);font-size:15px;max-width:52ch;font-weight:500}
 .counter{background:var(--band);color:var(--band-ink);padding:18px 24px 22px}
@@ -69,7 +70,7 @@ h1 em{font-style:normal}
 .legend b{color:var(--band-ink);font-weight:700;font-variant-numeric:tabular-nums}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:1px;margin-right:6px;vertical-align:-1px}
 .deckhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 14px;margin:24px 0 12px}
-.eyebrow{font-family:var(--display);font-weight:900;font-stretch:125%;font-size:26px;letter-spacing:-.01em;margin:0;white-space:nowrap;color:var(--yellow)}
+.eyebrow{font-family:var(--display);font-weight:400;font-stretch:100%;font-size:24px;letter-spacing:0;margin:0;white-space:nowrap;color:var(--yellow)}
 .deckhead span{color:var(--band-muted);font-size:13.5px}
 .deck{display:flex;gap:14px;overflow-x:auto;padding:0 0 10px;scrollbar-width:thin}
 .card{flex:0 0 156px;display:flex;flex-direction:column;gap:6px;text-decoration:none;color:var(--ink);background:var(--case);padding:8px 8px 10px;border-bottom:6px solid var(--lip)}
@@ -93,7 +94,7 @@ h1 em{font-style:normal}
 
 /* ---------- game art and fallback tiles ---------- */
 .tile{--h:220;--a:135deg;flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:0;color:#fff;
-  font-family:var(--display);font-weight:900;font-stretch:125%;font-size:21px;line-height:1;
+  font-family:var(--display);font-weight:400;font-stretch:100%;font-size:20px;line-height:1;
   background:hsl(var(--h) 62% 38%);position:relative;overflow:hidden}
 td.title .tile{width:64px;height:64px;font-size:24px}
 .tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:var(--chip)}
@@ -103,7 +104,7 @@ td.title .tile{width:64px;height:64px;font-size:24px}
 .layout{display:grid;grid-template-columns:288px minmax(0,1fr);gap:22px;align-items:start;padding:0 16px}
 .rail{background:var(--case);border-top:8px solid var(--blue);padding:16px;position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}
 .rail summary{display:none}
-.railhead{font-family:var(--display);font-weight:900;font-stretch:122%;font-size:23px;letter-spacing:-.01em;margin:0 0 2px;color:var(--accent)}
+.railhead{font-family:var(--display);font-weight:400;font-stretch:100%;font-size:21px;letter-spacing:0;margin:0 0 2px;color:var(--accent)}
 .inner{display:flex;flex-direction:column;gap:18px}
 .grp{display:flex;flex-direction:column;gap:7px}
 .grp>label,.grp>.lab{font-weight:800;font-stretch:108%;font-size:14px;color:var(--ink)}
@@ -134,7 +135,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 
 /* ---------- the wall ---------- */
 .shelfhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 16px;margin-bottom:8px}
-.shelfhead h2{font-family:var(--display);font-weight:900;font-stretch:125%;font-size:34px;letter-spacing:-.02em;margin:0;line-height:1;color:var(--accent)}
+.shelfhead h2{font-family:var(--display);font-weight:400;font-stretch:100%;font-size:30px;letter-spacing:0;margin:0;line-height:1;color:var(--accent)}
 .searchbar{position:sticky;top:8px;z-index:20;display:flex;align-items:center;gap:10px;margin:12px 0 4px;background:var(--field);border:3px solid var(--ink);border-radius:3px;padding:0 10px 0 14px}
 .searchbar:focus-within{box-shadow:0 0 0 4px var(--yellow)}
 .searchbar svg{width:20px;height:20px;color:var(--ink);flex:none}
@@ -169,8 +170,8 @@ thead th[aria-sort=ascending] button::after{content:" ▲";color:var(--accent);f
 thead th[aria-sort=descending] button::after{content:" ▼";color:var(--accent);font-size:11px}
 tbody td{padding:12px 12px;background:var(--case);border-bottom:6px solid var(--floor);vertical-align:middle}
 tbody td:last-child{box-shadow:none}
-tr.band th{text-align:left;padding:18px 14px 9px;background:var(--floor);font-weight:900;font-stretch:122%;font-size:22px;letter-spacing:-.01em;color:var(--ink);border-bottom:6px solid var(--blue)}
-tr.band th small{font-weight:500;font-stretch:100%;font-size:13px;letter-spacing:0;color:var(--muted);margin-left:10px}
+tr.band th{text-align:left;padding:18px 14px 9px;background:transparent;font-family:var(--display);font-weight:400;font-stretch:100%;font-size:19px;letter-spacing:0;color:var(--ink);border-bottom:6px solid var(--blue)}
+tr.band th small{font-family:var(--font);font-weight:500;font-stretch:100%;font-size:13px;letter-spacing:0;color:var(--muted);margin-left:10px}
 tr.game{--st:transparent}
 tr.game td:first-child{box-shadow:inset 6px 0 0 var(--st)}
 tr.is-g{--st:var(--playing)} tr.is-w{--st:var(--want)} tr.is-p{--st:var(--played)} tr.is-b{--st:var(--bounced)} tr.is-x{--st:var(--skip)}
@@ -199,11 +200,11 @@ tr.is-p .title a,tr.is-x .title a,tr.is-b .title a{color:var(--muted)}
 .plat span.p5{color:var(--accent-ink);background:var(--accent);border-color:var(--accent)}
 
 /* the price stickers */
-.score{display:inline-grid;place-content:center;width:52px;height:52px;border-radius:50%;font-weight:900;font-stretch:118%;font-size:21px;line-height:1;color:var(--yellow-ink);
+.score{display:inline-grid;place-content:center;width:52px;height:52px;border-radius:50%;font-family:var(--marker);font-weight:400;font-stretch:100%;font-size:22px;line-height:1;color:var(--yellow-ink);
   transform:rotate(-10deg);border:2px dashed rgba(14,22,54,.32);background:var(--great)}
 .score.s{background:var(--great)}
 .score.g{background:var(--good)} .score.m{background:var(--mid)} .score.b{background:var(--bad);color:#fff;border-color:rgba(255,255,255,.45)}
-.score.n{background:transparent;color:var(--none);font-size:12.5px;font-weight:700;font-stretch:100%;box-shadow:none;border:2px dashed var(--none);transform:none}
+.score.n{font-family:var(--font);background:transparent;color:var(--none);font-size:12.5px;font-weight:700;font-stretch:100%;box-shadow:none;border:2px dashed var(--none);transform:none}
 tr.game:hover .score:not(.n){transform:rotate(-2deg) scale(1.06)}
 .time{white-space:nowrap;font-weight:700}
 .time.est{color:var(--muted);font-weight:500}
@@ -260,7 +261,7 @@ tr.nolib .title a{color:var(--muted);text-decoration:line-through}
 .taste{background:var(--case);border-top:8px solid var(--yellow);margin:0 16px 22px}
 .taste>summary{cursor:pointer;list-style:none;display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:14px 18px}
 .taste>summary::-webkit-details-marker{display:none}
-.taste>summary h2{font-weight:900;font-stretch:125%;font-size:26px;letter-spacing:-.01em;margin:0;line-height:1;color:var(--accent)}
+.taste>summary h2{font-family:var(--display);font-weight:400;font-stretch:100%;font-size:23px;letter-spacing:0;margin:0;line-height:1;color:var(--accent)}
 .taste>summary span{color:var(--muted);font-size:13px}
 .taste>summary::after{content:"+";color:var(--accent);font-weight:900;font-size:26px;line-height:1}
 .taste[open]>summary::after{content:"–"}
@@ -287,7 +288,7 @@ tr.nolib .title a{color:var(--muted);text-decoration:line-through}
 dialog.dlgbox{border:0;border-top:10px solid var(--yellow);border-radius:3px;padding:0;background:var(--case);color:var(--ink);width:min(470px,calc(100vw - 32px));box-shadow:0 24px 60px rgba(5,10,30,.4)}
 dialog.dlgbox::backdrop{background:rgba(14,22,54,.62)}
 .dlg{padding:20px 22px;display:flex;flex-direction:column;gap:12px}
-.dlg h2{font-weight:900;font-stretch:125%;font-size:30px;letter-spacing:-.02em;margin:0;line-height:1;color:var(--accent)}
+.dlg h2{font-family:var(--display);font-weight:400;font-stretch:100%;font-size:26px;letter-spacing:0;margin:0;line-height:1;color:var(--accent)}
 .welcome h2{font-size:40px}
 .dlg p{margin:0;font-size:14.5px;line-height:1.5}
 .dlg label{display:flex;flex-direction:column;gap:4px;font-size:13.5px;color:var(--ink);font-weight:700}
@@ -340,7 +341,7 @@ footer b{color:var(--ink)}
 @media (max-width:980px){
   .layout{grid-template-columns:1fr}
   .rail{position:static;max-height:none;padding:0}
-  .rail summary{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:12px 14px;font-weight:900;font-stretch:118%;font-size:19px;list-style:none;color:var(--accent)}
+  .rail summary{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:12px 14px;font-family:var(--display);font-weight:400;font-stretch:100%;font-size:17px;list-style:none;color:var(--accent)}
   .rail summary::-webkit-details-marker{display:none}
   .rail summary::after{content:"+";font-size:24px;line-height:1}
   .rail[open] summary::after{content:"–"}
@@ -356,10 +357,10 @@ footer b{color:var(--ink)}
   .themesw svg{width:15px;height:15px}
   .sub{font-size:14px}
   .tabs button{font-size:13px;padding:5px 9px}
-  tr.band th{font-size:18px;padding:16px 4px 8px}
+  tr.band th{font-size:16px;padding:16px 4px 8px}
   tr.band th small{display:block;margin:2px 0 0}
   .g{align-items:flex-start}
-  .eyebrow{font-size:22px}
+  .eyebrow{font-size:20px}
   .card{flex-basis:132px}.card .tile{width:116px;height:116px}
   .counter{padding:16px 16px 18px}
   .layout{padding:0 10px}
@@ -382,6 +383,25 @@ footer b{color:var(--ink)}
   .marks{flex-wrap:wrap;white-space:normal}
   .marks button .ml{display:inline}.marks button{font-size:12.5px;padding:6px 8px}
 }
+/* ---------- texture ---------- */
+/* Backlit sign: the tubes glow brighter in the middle. */
+.sign{background:radial-gradient(ellipse 70% 120% at 28% 30%,rgba(255,255,255,.38),rgba(255,255,255,0) 70%),var(--sign)}
+/* The blue band is slatwall: horizontal grooves every 44px. */
+.counter{background:repeating-linear-gradient(180deg,rgba(255,255,255,0) 0 40px,rgba(0,0,0,.2) 40px 43px,rgba(255,255,255,.08) 43px 44px),var(--band)}
+/* Commercial carpet on the floor: confetti flecks. */
+body{background-color:var(--floor);background-image:var(--carpet);background-size:180px 180px}
+:root{--carpet:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cg fill='none' stroke-linecap='round' stroke-width='2.5' opacity='.15'%3E%3Cpath d='M14 22q6-8 12 0' stroke='%231E3A9E'/%3E%3Cpath d='M96 14l10 6' stroke='%23E23D28'/%3E%3Cpath d='M150 40q4 8 12 4' stroke='%23F2A900'/%3E%3Cpath d='M40 88l-6 10' stroke='%230D7C86'/%3E%3Cpath d='M118 92q8-4 12 4' stroke='%231E3A9E'/%3E%3Cpath d='M70 140l10-4' stroke='%23F2A900'/%3E%3Cpath d='M160 128q-6 8 0 14' stroke='%23E23D28'/%3E%3Cpath d='M22 160l8 6' stroke='%236A3FD0'/%3E%3Cpath d='M74 54q6 6 12 0' stroke='%236A3FD0'/%3E%3C/g%3E%3Cg opacity='.13'%3E%3Ccircle cx='58' cy='24' r='2.5' fill='%23E23D28'/%3E%3Ccircle cx='132' cy='60' r='2.5' fill='%230D7C86'/%3E%3Ccircle cx='12' cy='118' r='2.5' fill='%23F2A900'/%3E%3Ccircle cx='100' cy='170' r='2.5' fill='%231E3A9E'/%3E%3Ccircle cx='170' cy='86' r='2.5' fill='%231E3A9E'/%3E%3Ccircle cx='86' cy='110' r='2' fill='%23E23D28'/%3E%3C/g%3E%3C/svg%3E")}
+/* Shelf edges: a lit top edge on the laminate lip under each case. */
+.card{border-bottom:0;box-shadow:0 6px 0 var(--lip),0 7px 0 rgba(0,0,0,.18);margin-bottom:7px}
+tr.band th{border-bottom:6px solid var(--blue);box-shadow:inset 0 -8px 0 -6px rgba(255,255,255,.35)}
+/* Clamshell case: a faint plastic sheen across the cover. */
+.card .tile::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,0) 35%,rgba(255,255,255,.22) 47%,rgba(255,255,255,0) 60%);pointer-events:none}
+/* Handwritten shelf talker clipped to each staff pick. */
+.card{position:relative}
+.talk{align-self:flex-start;width:fit-content;max-width:100%;margin:4px 0 0 -2px;padding:3px 8px 2px;background:#FFF38A;color:#C2261A;font-family:var(--marker);font-size:14px;line-height:1.15;transform:rotate(-3deg);box-shadow:1px 2px 0 rgba(0,0,0,.18)}
+.card:nth-child(even) .talk{transform:rotate(2deg);background:#FFD3E8}
+.card:nth-child(3n) .talk{background:#C9F4C5;color:#14306E}
+
 </style>
 </head>
 <body>
@@ -770,6 +790,16 @@ function syncCustom(){ // rebuild the viewer's own entries inside GAMES from CUS
 syncCustom();
 const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
 const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+function talker(g,i){const t=g.h??g.a;
+  if(LEAVING[g.id])return "Leaving "+fmtD(LEAVING[g.id]).replace(/ \d{4}$/,"")+"!";
+  if(g.new)return "New arrival!";
+  if(t!=null&&t<=5)return "Done in one night";
+  if(t!=null&&t>=60)return "Clear your weekends";
+  if(g.m>=93)return ["All-time great","A must-rent","Staff favourite"][i%3];
+  if(g.cl)return "Old favourite";
+  if(t!=null&&t<=12)return "Weekend rental";
+  if(g.m>=85)return "Staff favourite";
+  return "Worth a look";}
 const fmtD=iso=>{const [y,m,d]=iso.split("-").map(Number);return d+" "+MONTHS[m-1].slice(0,3)+" "+y;};
 const ART=new Set(Array.isArray(ARTLIST)?ARTLIST:[]);
 const tile=g=>`<span class="tile${ART.has(g.id)?" art":""}" style="--h:${g.hue};--a:${g.ang}deg" aria-hidden="true">${esc(g.ini)}${ART.has(g.id)?`<img src="art/${encodeURIComponent(g.id)}.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()">`:""}</span>`;
@@ -976,7 +1006,7 @@ function renderHero(){
   let pick=GAMES.filter(g=>MARKS[g.id]==="w"&&playable(g)).sort(byScore),note="from your want-to-play list, "+how;
   if(!pick.length){pick=GAMES.filter(g=>!MARKS[g.id]&&playable(g)).sort(byScore);note="games you haven't sorted yet, "+how;}
   $("decknote").textContent=note;
-  $("deck").innerHTML=pick.slice(0,14).map((g,i)=>{const t=g.h??g.a;return `<a class="card" style="--i:${i}" title="${esc(g.d||"")}" href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${tile(g)}<span class="ct">${esc(g.t)}</span><span class="cm">${TASTE.on?"Priority "+pv(g):(g.m!=null?"Metascore "+g.m:"No Metascore")}${t!=null?" · "+fmtT(t):""}</span></a>`;}).join("");
+  $("deck").innerHTML=pick.slice(0,14).map((g,i)=>{const t=g.h??g.a;return `<a class="card" style="--i:${i}" title="${esc(g.d||"")}" href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${tile(g)}<span class="ct">${esc(g.t)}</span><span class="cm">${TASTE.on?"Priority "+pv(g):(g.m!=null?"Metascore "+g.m:"No Metascore")}${t!=null?" · "+fmtT(t):""}</span><span class="talk">${esc(talker(g,i))}</span></a>`;}).join("");
 }
 function renderTaste(){
   const rated=GAMES.filter(g=>MARKS[g.id]==="p"&&RATE[g.id]);
