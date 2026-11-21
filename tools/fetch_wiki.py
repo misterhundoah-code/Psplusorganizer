@@ -137,30 +137,120 @@ def resolve(games):
     return found
 
 
-def clean(text):
-    text = re.sub(r"\s*\((?:[^()]*?(?:Japanese|Korean|Chinese|lit\.|pronounced|stylized|stylised|abbreviated)[^()]*|[^()]*[぀-ヿ一-鿿가-힯][^()]*)\)", "", text)
-    text = re.sub(r"\s{2,}", " ", text).strip()
-    paras = [p.strip() for p in text.split("\n") if p.strip()]
-    out = ""
-    for p in paras:
-        if len(out) + len(p) > 900 and out:
-            break
-        out = (out + "\n\n" + p).strip()
-    if len(out) > 900:
-        cut = out[:900]
-        out = cut[: cut.rfind(". ") + 1] if ". " in cut else cut
+# ---- descriptions ---------------------------------------------------------
+# Built from what the game is and how it plays, not its release history: the genre from the
+# article's first sentence (cut before "developed by ..."), the start of its Gameplay section,
+# and the set-up from its Premise, Setting or Plot section (kept short to avoid spoilers).
+# Sentences about release dates, platforms, ports, sales or reviews are dropped.
+MONTHS = r"(?:January|February|March|April|May|June|July|August|September|October|November|December)"
+NOISE_WORDS = re.compile(
+    r"\b(?:released|re-released|release date|ported|port of|launched|launch title|announced|sold|copies|sales|"
+    r"reviews?|reviewers|critics?|critical reception|acclaim|nominated|awards?|Metacritic|aggregator|developed by|"
+    r"published by|publisher|downloadable content|season pass|early access|Kickstarter|crowdfund|remastered|"
+    r"remake|compilation|bundled)\b|" + MONTHS + r"\s+(?:\d{1,2},\s+)?\d{4}",
+    re.I,
+)
+NOISE_PLATFORMS = re.compile(r"\b(?:Microsoft Windows|Windows|Xbox|Nintendo|Wii|Steam|Epic Games Store|macOS|iOS|Android|Stadia|DLC|PlayStation\s?(?:\d|Vita|Portable|Network|Store|VR))\b")
+
+
+class _Noise:
+    @staticmethod
+    def search(x):
+        return NOISE_WORDS.search(x) or NOISE_PLATFORMS.search(x)
+
+
+NOISE = _Noise()
+GAMEPLAY = ("gameplay", "game play", "gameplay and premise", "gameplay and plot", "overview", "game mechanics", "mechanics", "game modes")
+STORY = ("premise", "setting", "synopsis", "plot", "story", "setting and characters", "plot and setting", "characters and setting", "narrative")
+JUNK_PAREN = re.compile(r"\s*\((?:[^()]*?(?:Japanese|Korean|Chinese|lit\.|pronounced|stylized|stylised|abbreviated|known in|released in|titled)[^()]*|[^()]*[\u3040-\u30ff\u4e00-\u9fff\uac00-\ud7af][^()]*)\)")
+
+
+def sentences(text):
+    text = JUNK_PAREN.sub("", text)
+    text = re.sub(r"\s+", " ", text).strip()
+    parts = re.split(r"(?<=[.!?])\s+(?=[A-Z\"“'‘(])", text)
+    return [p.strip() for p in parts if len(p.strip()) > 20]
+
+
+def sections(full):
+    """Split a plain-text extract (exsectionformat=wiki) into {heading: text} for top-level sections."""
+    out, head, buf = {}, "_intro", []
+    for line in full.split("\n"):
+        m = re.match(r"^(=+)\s*(.*?)\s*=+\s*$", line)
+        if m and len(m.group(1)) == 2:
+            out[head] = "\n".join(buf).strip()
+            head, buf = m.group(2).strip().lower(), []
+        elif not m:
+            buf.append(line)
+    out[head] = "\n".join(buf).strip()
     return out
 
 
+def pick(secs, names):
+    for n in names:
+        if secs.get(n):
+            return secs[n]
+    for k, v in secs.items():
+        if v and any(k.startswith(n) for n in names):
+            return v
+    return ""
+
+
+def take(sents, max_n, max_chars, skip_noise=True):
+    out, size = [], 0
+    for x in sents:
+        if skip_noise and NOISE.search(x):
+            continue
+        if size + len(x) > max_chars and out:
+            break
+        out.append(x)
+        size += len(x)
+        if len(out) >= max_n:
+            break
+    return out
+
+
+def describe(full):
+    secs = sections(full)
+    intro = sentences(secs.get("_intro", ""))
+    lead = ""
+    if intro:
+        first = intro[0]
+        m = re.search(r"\s(?:developed|co-developed|published|co-published|created|made|designed|produced|programmed)\b|,\s(?:and\s)?(?:developed|published)\b|\swhich was\b|\sthat was\b", first)
+        if m:
+            first = first[: m.start()].rstrip(" ,;") + "."
+        if not NOISE.search(first) and len(first) < 220:
+            lead = first
+    play = take(sentences(pick(secs, GAMEPLAY)), 3, 420)
+    story = take(sentences(pick(secs, STORY)), 2, 300)
+    if not play and not story:
+        play = take(intro[1:], 3, 420)
+    # Gameplay sections often open by saying what the game is; then the genre line repeats it.
+    if lead and play and re.match(r"^[^.]{0,90}\b(?:is|was) an?\b", play[0]):
+        lead = ""
+    p1 = " ".join(([lead] if lead else []) + play).strip()
+    p2 = " ".join(story).strip()
+    text = "\n\n".join(x for x in (p1, p2) if x)
+    # A lone genre sentence isn't worth showing over the site's own synopsis.
+    return text if len(text) >= 140 else ""
+
+
 def extracts(titles):
+    """Full plain-text articles, one per request (the API only returns one full extract at a time)."""
     out = {}
-    for i in range(0, len(titles), 20):
-        chunk = titles[i:i + 20]
-        data = api(action="query", titles="|".join(chunk), prop="extracts", exintro=1, explaintext=1, exlimit=20)
-        for p in data.get("query", {}).get("pages", []):
-            if p.get("extract"):
-                out[p["title"]] = clean(p["extract"])
-        time.sleep(0.3)
+    for n, t in enumerate(titles):
+        try:
+            data = api(action="query", titles=t, prop="extracts", explaintext=1, exsectionformat="wiki")
+            for p in data.get("query", {}).get("pages", []):
+                if p.get("extract"):
+                    d = describe(p["extract"])
+                    if d:
+                        out[p["title"]] = d
+        except Exception as e:
+            print(f"  {t}: {e}")
+        if n % 100 == 0:
+            print(f"  read {n} of {len(titles)} articles")
+        time.sleep(0.25)
     return out
 
 
