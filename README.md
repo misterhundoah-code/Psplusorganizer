@@ -166,6 +166,6 @@ No licence has been chosen yet. Add a `LICENSE` file if you want others to be ab
 
 ## Custom domain
 
-The site is served at `https://wallofpsplus.com` by Cloudflare Workers static assets (`wrangler.jsonc`, `site/worker.js`, `.assetsignore`), deployed by Workers Builds from this repository with root directory `/` and deploy command `npx wrangler deploy`. The Worker sends `www.wallofpsplus.com` to `wallofpsplus.com`.
+The site is served at `https://wallofpsplus.com` by Cloudflare Workers static assets (`wrangler.jsonc`, `.assetsignore`), deployed by Workers Builds from this repository with root directory `/` and deploy command `npx wrangler deploy`. It has no Worker script, so every request is a free static-asset request and none count toward the 100,000-a-day Workers limit. A Cloudflare Redirect Rule (Rules > Redirect Rules, "Redirect from WWW to root" template, 301, keep query string) sends `www.wallofpsplus.com` to `wallofpsplus.com`.
 
 GitHub Pages keeps serving the old address, `https://misterhundoah-code.github.io/Psplusorganizer/`. There, `move.js` checks that the new site is up, then forwards visitors to the same page on the new address, carrying their saved data (not their sign-in) in the link's `#fragment` so nothing is lost. Don't set a custom domain in the GitHub Pages settings: GitHub would then redirect on its own and that hand-over couldn't happen.
