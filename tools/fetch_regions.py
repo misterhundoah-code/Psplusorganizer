@@ -94,7 +94,8 @@ NAMED_AGES = {
     "USK_RESTRICTED": 18,    # "keine Jugendfreigabe"
 }
 # Badge text where Sony's own wording is long or unclear.
-LABELS = {"USK_RESTRICTED": "USK 18", "SKOREA_M": "GRAC 19+"}
+LABELS = {"USK_RESTRICTED": "USK 18", "USK_EVERYONE": "USK 0", "SKOREA_M": "GRAC 19+",
+          "SKOREA_ALL": "GRAC All", "SKOREA_12": "GRAC 12+", "SKOREA_15": "GRAC 15+"}
 ESRB_SHORT = {6: "E", 10: "E10+", 13: "T", 17: "M", 18: "AO", 3: "EC"}
 UNKNOWN_RATINGS = set()
 
@@ -123,6 +124,8 @@ def rating_entry(e):
     name = (a.get("name") or "").upper()
     if not name:
         return None
+    if re.search(r"PENDING|REVIEW|NOT_RATED|_RP$", name):
+        return None                      # not rated yet: show nothing rather than "pending"
     age = rating_age(name)
     auth = (a.get("authority") or name.split("_")[0]).upper()
     full = (a.get("description") or "").strip()
