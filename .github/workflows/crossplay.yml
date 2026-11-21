@@ -1,0 +1,43 @@
+name: Fetch crossplay list
+
+# Which games let PlayStation players play with Xbox or PC players, from Wikipedia's
+# list of games that support cross-platform play (see tools/fetch_crossplay.py).
+# Runs weekly, whenever the game data changes, or by hand from the Actions tab.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 12 * * 2"
+  push:
+    branches: [main]
+    paths: ["data/games.json", "tools/fetch_crossplay.py"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: crossplay
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests pillow mwparserfromhell
+      - run: python tools/fetch_crossplay.py
+      - name: Commit any changes
+        run: |
+          git add data/crossplay.json
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Update crossplay list"
+            git pull --rebase
+            git push
+          fi

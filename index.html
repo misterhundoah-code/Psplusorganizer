@@ -586,6 +586,8 @@ body.noplat #wall .ckind,body.noplat #rows td.pl,body.noplat .tablebox th[data-k
 body.nodue #wall .talk.due,body.nodue #rows .flag.leave,body.nodue #rows .remind,
 body.notags #rows .tags{display:none}
 body:not(.noplat) #wall .cm .ckind+.ctm::before{content:" · "}
+
+#dlgfacts a.src{color:var(--muted);font-size:12px}
 </style>
 </head>
 <body>
@@ -765,8 +767,9 @@ body:not(.noplat) #wall .cm .ckind+.ctm::before{content:" · "}
             <button type="button" data-v="c">Co-op</button>
             <button type="button" data-v="m">Multiplayer</button>
             <button type="button" data-v="s1">Solo only</button>
+            <button type="button" data-v="xp" title="Plays with friends on Xbox or PC">Crossplay</button>
           </div>
-          <span class="hint">From Wikidata, which lists game modes for about three quarters of the games. Games it says nothing about are hidden while this filter is on.</span>
+          <span class="hint">Co-op, Multiplayer and Solo come from Wikidata, which lists game modes for about three quarters of the games. Crossplay means you can play with friends on Xbox or PC, from <a href="https://en.wikipedia.org/wiki/List_of_video_games_that_support_cross-platform_play" target="_blank" rel="noopener">Wikipedia's crossplay list</a>, which is far from complete. Games the source says nothing about are hidden while a filter here is on.</span>
         </div>
         <div class="grp">
           <span class="lab">Age rating</span>
@@ -929,10 +932,10 @@ body:not(.noplat) #wall .cm .ckind+.ctm::before{content:" · "}
 (()=>{const f=()=>document.documentElement.style.setProperty("--sbw",(innerWidth-document.documentElement.clientWidth)+"px");addEventListener("resize",f);addEventListener("load",f);new ResizeObserver(f).observe(document.documentElement);})();
 (async function main(){
 "use strict";
-let GAMES,META,ARTLIST,LINKS,REGDATA,FACTS={};
+let GAMES,META,ARTLIST,LINKS,REGDATA,FACTS={},XPLAY={};
 try{
   const get=u=>fetch(u,{cache:"no-cache"}).then(r=>{if(!r.ok)throw new Error(u+" "+r.status);return r.json();});
-  [GAMES,META,ARTLIST,LINKS,REGDATA,FACTS]=await Promise.all([get("data/games.json"),get("data/catalogue.json"),get("data/art.json").catch(()=>[]),get("data/links.json").catch(()=>({})),get("data/regions.json").catch(()=>({})),get("data/facts.json").catch(()=>({}))]);
+  [GAMES,META,ARTLIST,LINKS,REGDATA,FACTS,XPLAY]=await Promise.all([get("data/games.json"),get("data/catalogue.json"),get("data/art.json").catch(()=>[]),get("data/links.json").catch(()=>({})),get("data/regions.json").catch(()=>({})),get("data/facts.json").catch(()=>({})),get("data/crossplay.json").then(j=>j&&j.games&&typeof j.games==="object"?j.games:{}).catch(()=>({}))]);
 }catch(e){
   document.getElementById("count").textContent="Couldn't load the game list. Check your connection and reload the page.";
   return;
@@ -1299,7 +1302,8 @@ function pass(g){
   if(CTX.ser&&g.ser!==CTX.ser)return false;
   if(S.onlyleave&&!LEAVING[g.id])return false;
   if(S.age!=="all"){const a=ageOf(g);if(a==null||a>+S.age)return false;}
-  if(S.players!=="all"){const m=(FACTS[g.id]||{}).modes||"";if(S.players==="s1"?!(m.includes("s")&&!m.includes("m")):!m.includes(S.players))return false;}
+  if(S.players==="xp"){if(!XPLAY[g.id])return false;}
+  else if(S.players!=="all"){const m=(FACTS[g.id]||{}).modes||"";if(S.players==="s1"?!(m.includes("s")&&!m.includes("m")):!m.includes(S.players))return false;}
   if(CTX.ser){/* a series view shows every entry, whatever its mark */}
   else if(S.view==="n"){if(LIB[g.id]!==-1)return false;}
   else if(S.view==="browse"){
@@ -1884,6 +1888,11 @@ function fillFacts(g){
   if(f.ser)rows.push(["Series",esc(f.ser)]);
   if(f.modes){const m=f.modes,shown=[...m].filter(k=>k!=="m"||!/[col]/.test(m)).map(k=>MODE_NAMES[k]);rows.push(["Modes",shown.join(", ")+(f.max>1?` · up to ${f.max} players`:"")]);}
   else if(f.max>1)rows.push(["Players",`Up to ${f.max}`]);
+  const xp=XPLAY[g.id];
+  if(xp){const both=g.p.filter(p=>p==="PS4"||p==="PS5"),only=v=>both.length>1&&v&&v.length<both.length;
+    // Say which PlayStation version only when it matters: "Xbox, and PC from the PS5 version only".
+    const w=[xp.x&&"Xbox"+(only(xp.x)?` from the ${xp.x.join(" and ")} version only`:""),xp.p&&"PC"+(only(xp.p)?` from the ${xp.p.join(" and ")} version only`:"")].filter(Boolean);
+    rows.push(["Crossplay",`Play with friends on ${w.join(w.some(x=>x.includes("only"))?", and ":" and ")} <a class="src" href="https://en.wikipedia.org/wiki/List_of_video_games_that_support_cross-platform_play" target="_blank" rel="noopener">(Wikipedia)</a>`]);}
   const rt=ratingOf(g);
   if(rt)rows.push(["Rated",`<span class="crt big">${esc(rt.label)}</span> ${rt.full!==rt.label?esc(rt.full):""}${rt.desc.length?`<span class="rdesc">${rt.desc.map(esc).join(", ")}</span>`:""}`]);
   const t=[["Main story",g.h],["Story and extras",g.x],["Completionist",g.c]].filter(x=>x[1]);
