@@ -229,6 +229,7 @@ mark.hit{background:var(--yellow);color:var(--yellow-ink);padding:0 1px}
 dialog.dlgbox.rcptbox{width:min(420px,calc(100vw - 24px));max-height:calc(100vh - 24px)}
 #rcpt{width:100%;height:auto;display:block;align-self:center;max-width:360px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.18))}
 dialog.dlgbox.gamebox{width:min(780px,calc(100vw - 24px));max-height:calc(100vh - 32px)}
+dialog.dlgbox{overscroll-behavior:contain}
 .gamebox .dlg{padding:14px 14px 18px;position:relative}
 .dlgx{position:absolute;right:10px;top:8px;z-index:2;font:inherit;font-size:18px;font-weight:800;width:36px;height:36px;border:2px solid var(--line);background:var(--case);color:var(--ink);border-radius:3px;cursor:pointer}
 .gamebox .tablebox{margin:0}
@@ -559,6 +560,18 @@ body.notime th[data-k="time"],body.notime td.tm,body.notime .ctm{display:none}
 .lastall{font:inherit;font-size:13px;font-weight:700;color:var(--band-ink);background:transparent;border:2px solid var(--band-muted);border-radius:3px;padding:2px 10px;cursor:pointer;margin-left:auto}
 .lastall:hover{border-color:var(--yellow);color:var(--yellow)}
 
+
+/* Rate-it bar: shown after marking a game Played, because "Hide games I've played" takes the game off the
+   wall straight away and the stars would otherwise only be reachable through the Played filter. */
+.ratebar{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;
+  display:flex;align-items:center;gap:12px;flex-wrap:nowrap;justify-content:center;width:max-content;max-width:calc(100vw - 24px);
+  background:var(--case);color:var(--ink);border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink);padding:10px 12px 10px 16px}
+.ratebar[hidden]{display:none}
+@media (max-width:640px){.ratebar{flex-wrap:wrap;width:calc(100vw - 24px)}.ratebar p{flex:1 1 100%;text-align:center;padding:0 24px}.ratebar .ratex{position:absolute;top:2px;right:2px}}
+.ratebar p{margin:0;font-weight:600}
+.ratebar .stars.big button{font-size:28px;line-height:1;padding:2px 3px}
+.ratebar .ratex{background:none;border:0;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 6px}
+html:has(dialog[open]){overflow:hidden}
 </style>
 </head>
 <body>
@@ -577,7 +590,7 @@ body.notime th[data-k="time"],body.notime td.tm,body.notime .ctm{display:none}
    <div class="counter">
     <div class="progress">
       <div class="plabel"><div id="ptext">Sorted 0 of 0</div><span id="pleft"></span></div>
-      <div class="pbar" role="img" aria-label="Progress through the catalogue" id="pbar"><i class="sg"></i><i class="sw"></i><i class="sp"></i><i class="sb"></i><i class="sx"></i></div>
+      <div class="pbar" role="progressbar" aria-labelledby="ptext" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" id="pbar"><i class="sg"></i><i class="sw"></i><i class="sp"></i><i class="sb"></i><i class="sx"></i></div>
       <div class="legend">
         <span><i style="background:#FF9B45"></i>Now playing <b id="lg">0</b></span>
         <span><i style="background:#FFFFFF"></i>Want to play <b id="lw">0</b></span>
@@ -839,6 +852,12 @@ body.notime th[data-k="time"],body.notime td.tm,body.notime .ctm{display:none}
       <p class="small">Made in your browser from your marks and ratings. Nothing is uploaded.</p>
     </div>
   </dialog>
+  <div id="ratebar" class="ratebar" hidden>
+    <p id="ratemsg" aria-live="polite"></p>
+    <span class="stars big" id="ratestars" role="group" aria-label="Rate it"><button type="button" data-n="1" aria-label="1 star" title="Rate 1 out of 5">★</button><button type="button" data-n="2" aria-label="2 stars" title="Rate 2 out of 5">★</button><button type="button" data-n="3" aria-label="3 stars" title="Rate 3 out of 5">★</button><button type="button" data-n="4" aria-label="4 stars" title="Rate 4 out of 5">★</button><button type="button" data-n="5" aria-label="5 stars" title="Rate 5 out of 5">★</button></span>
+    <button type="button" class="btn" id="rateundo">Undo</button>
+    <button type="button" class="ratex" id="ratex" aria-label="Close">✕</button>
+  </div>
   <dialog class="dlgbox gamebox" id="gamedlg" aria-label="Game details">
     <div class="dlg"><button type="button" class="dlgx" id="gamex" aria-label="Close">✕</button>
       <div class="tablebox"><table><tbody id="dlgrows"></tbody></table></div>
@@ -921,6 +940,45 @@ try{const m=JSON.parse(localStorage.getItem("psplus-lib")||"null");if(m&&typeof 
 try{const m=JSON.parse(localStorage.getItem("psplus-notes")||"null");if(m&&typeof m==="object")NOTES=m;}catch(e){}
 try{const m=JSON.parse(localStorage.getItem("psplus-dates")||"null");if(m&&typeof m==="object")DATES=m;}catch(e){}
 try{const m=JSON.parse(localStorage.getItem("psplus-custom")||"null");if(m&&typeof m==="object")CUSTOM=m;}catch(e){}
+/* Every saved map passes through cleanSnap, whatever it came from (this browser's storage, a backup file or
+   the account), so a hand-edited or damaged file can't put bad values into the app. Anything that doesn't
+   match the expected shape is dropped. Stored keys stay short (m, r, d.f and so on) because they are the
+   format of existing backups and synced accounts; the names are listed here.
+     marks   m: id -> "g" playing | "w" want | "p" played | "b" bounced | "x" not interested
+     ratings r: id -> whole number 1 to 5
+     library l: id -> 1 in my library | -1 not in it
+     notes   n: id -> text, up to 2000 characters
+     dates   d: id -> { s: started "YYYY-MM-DD", f: finished "YYYY-MM-DD", pg: progress 1-5, hr: hours 0-5000, why: bounce reasons }
+     added   c: id "my-…" -> { t title, g styles, pv perspective, h hours, y year, d description, p platforms, u store link } */
+const ID_RE=/^[a-z0-9][a-z0-9-]{0,139}$/;
+const isDay=v=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&!isNaN(Date.parse(v+"T00:00:00Z"))&&new Date(v+"T00:00:00Z").toISOString().slice(0,10)===v;
+const isStr=(v,max)=>typeof v==="string"&&v.length<=max;
+function cleanSnap(x){
+  x=x&&typeof x==="object"?x:{};let dropped=0;
+  const map=(v,fn)=>{const out={};if(!v||typeof v!=="object"||Array.isArray(v))return out;
+    for(const id of Object.keys(v)){const c=ID_RE.test(id)?fn(v[id],id):undefined;if(c===undefined)dropped++;else out[id]=c;}return out;};
+  const WHYK=new Set(WHY.map(w=>w[0]));
+  const out={
+    m:map(x.m,v=>["g","w","p","b","x"].includes(v)?v:undefined),
+    r:map(x.r,v=>Number.isInteger(v)&&v>=1&&v<=5?v:undefined),
+    l:map(x.l,v=>v===1||v===-1?v:undefined),
+    n:map(x.n,v=>typeof v==="string"&&v.trim()?v.slice(0,2000):undefined),
+    d:map(x.d,v=>{if(!v||typeof v!=="object"||Array.isArray(v))return undefined;const o={};
+      if("s" in v){if(isDay(v.s))o.s=v.s;else dropped++;}
+      if("f" in v){if(isDay(v.f))o.f=v.f;else dropped++;}
+      if("pg" in v){if(Number.isInteger(v.pg)&&v.pg>=1&&v.pg<=5)o.pg=v.pg;else dropped++;}
+      if("hr" in v){if(typeof v.hr==="number"&&isFinite(v.hr)&&v.hr>=0&&v.hr<=5000)o.hr=v.hr;else dropped++;}
+      if("why" in v){const w=Array.isArray(v.why)?[...new Set(v.why.filter(k=>WHYK.has(k)))]:[];if(w.length)o.why=w;if(!Array.isArray(v.why)||w.length!==v.why.length)dropped++;}
+      return Object.keys(o).length?o:undefined;}),
+    c:map(x.c,(v,id)=>{if(!id.startsWith("my-")||!v||typeof v!=="object"||!isStr(v.t,120)||!v.t.trim())return undefined;
+      const g=Array.isArray(v.g)?v.g.filter(k=>typeof k==="string"&&k.length<=40).slice(0,3):[];if(!g.length)return undefined;
+      return {t:v.t,g,pv:isStr(v.pv,40)?v.pv:"Third-person",h:typeof v.h==="number"&&v.h>0&&v.h<=5000?v.h:null,
+        y:Number.isInteger(v.y)&&v.y>=1970&&v.y<=2100?v.y:null,d:isStr(v.d,300)?v.d:"",
+        p:Array.isArray(v.p)?v.p.filter(k=>k==="PS4"||k==="PS5"):[],u:isStr(v.u,500)&&/^https:\/\//.test(v.u)?v.u:null};})
+  };
+  return [out,dropped];
+}
+{const [c]=cleanSnap({m:MARKS,r:RATE,l:LIB,n:NOTES,d:DATES,c:CUSTOM});MARKS=c.m;RATE=c.r;LIB=c.l;NOTES=c.n;DATES=c.d;CUSTOM=c.c;}
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const IDS=new Set(GAMES.map(g=>g.id));
@@ -985,7 +1043,7 @@ function syncCustom(){ // rebuild the viewer's own entries inside GAMES from CUS
 syncCustom();
 const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
 const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
-function talker(g,i){const t=S.notime?null:(g.h??g.a);
+function talker(g,i){const t=S.notime?null:(g.h);
   if(LEAVING[g.id])return "Leaving "+fmtD(LEAVING[g.id]).replace(/ \d{4}$/,"")+"!";
   if(g.new)return "New arrival!";
   if(t!=null&&t<=5)return "Done in one night";
@@ -1031,7 +1089,10 @@ const ART=new Set(Array.isArray(ARTLIST)?ARTLIST:[]);
 const tapeName=t=>t.length>34?t.slice(0,32).replace(/\s+\S*$/,"")+"…":t;
 const tile=g=>`<span class="tile${ART.has(g.id)?" art":""}" aria-hidden="true"><span class="tape"><span class="lab" style="--tilt:${((g.hue||0)%5)-2}deg">${esc(tapeName(g.t))}</span><span class="vhs">VHS</span></span>${ART.has(g.id)?`<img src="art/${encodeURIComponent(g.id)}.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()">`:""}</span>`;
 
-function timeOf(g){const v=g[S.tmode];if(v!=null)return [v,false];if(g.a!=null)return [g.a,true];return [null,false];}
+/* HowLongToBeat time for the chosen play style. No stand-in when a style has no figure: HLTB's "all styles"
+   average is not comparable (it can be shorter than the story), so those games show "no data" and are left
+   out of the length filters for that style. */
+function timeOf(g){const v=g[S.tmode];return [v!=null?v:null,false];}
 const styleCounts={};GAMES.forEach(g=>g.g.forEach(s=>styleCounts[s]=(styleCounts[s]||0)+1));
 const STYLES=Object.keys(styleCounts).sort((a,b)=>styleCounts[b]-styleCounts[a]);
 const PVORDER=["First-person","Third-person","First or third person","Top-down","Side-on","Multiple views","Fixed view","Visual novel"];
@@ -1040,7 +1101,7 @@ $("pvs").innerHTML=PVORDER.filter(v=>pvCounts[v]).map(v=>`<button type="button" 
 $("styles").innerHTML=STYLES.map(s=>`<button type="button" data-v="${esc(s)}" style="--h:${HUE[s]??220}"><span class="dot"></span>${esc(s)}<small>${styleCounts[s]}</small></button>`).join("");
 
 /* ---- taste model: what the viewer's ratings say about styles and lengths ---- */
-const lenBand=g=>{const t=g.h??g.a;return t==null?-1:t<5?0:t<10?1:t<20?2:t<40?3:t<80?4:5;};
+const lenBand=g=>{const t=g.h??g.x??g.c;return t==null?-1:t<5?0:t<10?1:t<20?2:t<40?3:t<80?4:5;};
 let TASTE={on:false,style:{},len:{},n:0};
 function signal(id){const mk=MARKS[id];
   if(mk==="p")return RATE[id]?[RATE[id]-3,true]:null;
@@ -1206,10 +1267,11 @@ const mcUrl=g=>"https://www.metacritic.com/search/"+encodeURIComponent(g.t.repla
 const scoreLink=g=>g.m==null?scoreHTML(g.m):`<a class="mclink" href="${esc(mcUrl(g))}" target="_blank" rel="noopener" title="Metascore ${g.m}: see the reviews on Metacritic" aria-label="Metascore ${g.m}, opens Metacritic">${scoreHTML(g.m)}</a>`;
 const scoreHTML=m=>m==null?'<span class="score n" title="No Metascore">tbd</span>':`<span class="score ${m>=90?"s":m>=75?"g":m>=50?"m":"b"}">${m}</span>`;
 const MK=[["g","mg","▶","Playing","I'm playing this now"],["w","mw","★","Want","Add to my want-to-play list"],["p","mp","✓","Played","I have played this"],["b","mb","↩","Bounced","I tried it and bounced off"],["x","mx","✕","Not interested","Hide this game"]];
+const TMNAME={h:"main story",x:"main story + extras",c:"completionist"};
 function row(g,i){
   const [t,fb]=timeOf(g);const mk=MARKS[g.id]||"";
   const low=g.n!=null&&g.n<10;
-  const tm=t==null?'<span class="time est">no data</span>':`<span class="time${low?" est":""}" title="${low?"Based on fewer than 10 player reports. ":""}${fb?"No figure for this play style, showing the all-styles average.":""}">${fb?"≈ ":""}${fmtT(t)}</span>`;
+  const tm=t==null?`<span class="time est" title="HowLongToBeat has no ${TMNAME[S.tmode]} time for this game">no data</span>`:`<span class="time${low?" est":""}" title="${low?"Based on fewer than 10 player reports. ":""}">${fmtT(t)}</span>`;
   const pl=g.pk==="Elsewhere"?"":g.p.map(p=>`<span class="${p==="PS5"?"p5":""}">${p}</span>`).join("");
   const lv=LIB[g.id]||0;
   const flags=(g.own?`<span class="flag own">Added by me</span>`:"")+(g.cl?`<span class="flag cl" title="PS Plus Premium Classic, originally ${esc(g.sys==="PS4 remaster"?"a PS4 remaster or port":g.sys==="Arcade"?"an arcade game":"a "+g.sys+" game")}">Classic · ${esc(g.sys==="PS4 remaster"?"PS4":g.sys)}</span>`:"")+(g.s3&&g.cl?`<span class="flag stream" title="Streamed from the cloud with PS Plus Premium; it can't be downloaded${g.rg==="na"?". Offered in the US and Canada only":""}">Streaming only</span>`:"")+(g.new?`<span class="flag new">New ${esc(g.new.split(" ")[0])}</span>`:"")+(g.e?`<span class="flag mon" title="PS Plus Essential monthly game, ${esc(g.el)}${g.cat?". Also in the Game Catalogue, so you can play it either way.":""}">Monthly ${esc(g.el)}</span><span class="libset" role="group" aria-label="Is it in my library?"><button type="button" class="yes" data-lib="${esc(g.id)}" data-lv="1" aria-pressed="${lv===1}" title="I claimed this one">✓ In my library</button><button type="button" class="no" data-lib="${esc(g.id)}" data-lv="-1" aria-pressed="${lv===-1}" title="I never claimed this one">✕ Not in my library</button></span>`:"");
@@ -1228,7 +1290,7 @@ function row(g,i){
   const note=NOTES[g.id];
   const noteHTML=OPEN_NOTE===g.id?`<div class="noteedit"><textarea id="notebox" aria-label="My note on ${esc(g.t)}" placeholder="Why you liked it, why you bounced, where you left off…">${esc(note||"")}</textarea><div><button type="button" class="btn primary" data-notesave="${esc(g.id)}">Save note</button><button type="button" class="btn" data-notecancel="1">Cancel</button>${note?`<button type="button" class="btn" data-notedel="${esc(g.id)}">Delete note</button>`:""}</div></div>`:(note?`<div class="note">${esc(note)}</div>`:"");
   let extra="";
-  if(mk==="g"||mk==="p"){const pg=(dt&&dt.pg)||0,hr=dt&&dt.hr,avg=g.h??g.a;
+  if(mk==="g"||mk==="p"){const pg=(dt&&dt.pg)||0,hr=dt&&dt.hr,avg=g.h;
     extra=`<div class="prog">`+(mk==="g"?`<span class="seg5" role="group" aria-label="How far in">${[1,2,3,4,5].map(n=>`<button type="button" class="${n<=pg?"on":""}" data-pg="${n}" data-id="${esc(g.id)}" aria-pressed="${n===pg}" aria-label="${PGNAME[n]}" title="${PGNAME[n]}"></button>`).join("")}</span><span>${pg?PGNAME[pg]:"How far in?"}</span>`:"")
       +`<label>${mk==="g"?"Hours so far":"My hours"} <input type="number" min="0" max="5000" step="0.5" data-hr="${esc(g.id)}" value="${hr??""}" aria-label="${mk==="g"?"Hours so far":"My hours"} for ${esc(g.t)}"></label>`
       +(hr&&avg?`<span>${mk==="g"?`of about ${fmtT(avg)} for the main story`:hr>avg*1.15?`${fmtT(hr-avg)} over the ${fmtT(avg)} average`:hr<avg*0.85?`${fmtT(avg-hr)} under the ${fmtT(avg)} average`:`close to the ${fmtT(avg)} average`}</span>`:"")+`</div>`;}
@@ -1246,7 +1308,9 @@ function renderHero(){
   const c=counts(),tot=GAMES.filter(inScope).length,done=c.g+c.w+c.p+c.b+c.x;
   $("ptext").textContent=`Sorted ${done} of ${tot}`;
   $("pleft").textContent=done?`${tot-done} still to look at`:"Start marking games and this bar fills in";
-  const bars=$("pbar").children;["g","w","p","b","x"].forEach((k,i)=>bars[i].style.width=(c[k]/tot*100)+"%");
+  const pb=$("pbar"),bars=pb.children;["g","w","p","b","x"].forEach((k,i)=>bars[i].style.width=(c[k]/tot*100)+"%");
+  pb.setAttribute("aria-valuemax",tot);pb.setAttribute("aria-valuenow",done);
+  pb.setAttribute("aria-valuetext",`${done} of ${tot} games sorted: ${c.g} playing, ${c.w} want to play, ${c.p} played, ${c.b} bounced off, ${c.x} not interested`);
   $("lg").textContent=c.g;$("ng").textContent=c.g;$("lw").textContent=c.w;$("lp").textContent=c.p;$("lb").textContent=c.b;$("lx").textContent=c.x;
   $("nw").textContent=c.w;$("np").textContent=c.p;$("nb").textContent=c.b;$("nx").textContent=c.x;
   const nolib=GAMES.filter(g=>LIB[g.id]===-1).length,untag=GAMES.filter(g=>g.e&&!g.cat&&!LIB[g.id]&&inScope(g)).length;
@@ -1264,17 +1328,17 @@ function renderHero(){
   $("lastwrap").hidden=!lc.length;
   if(lc.length){const dates=[...new Set(lc.map(g=>LEAVING[g.id]))];
     $("lastnote").textContent=(dates.length===1?`Leaving the Game Catalogue on ${fmtD(dates[0])}`:"Leaving the Game Catalogue soon")+daysLeft(dates[0]).replace(" · ",", ");
-    $("lastdeck").innerHTML=lc.map(g=>{const t=g.h??g.a;return `<a class="card" title="${esc(g.d||"")}" href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${tile(g)}<span class="ct">${esc(g.t)}</span><span class="cm">${g.m!=null?"Metascore "+g.m:"No Metascore"}${t!=null?`<span class="ctm"> · ${fmtT(t)}</span>`:""}</span><span class="talk due">Due back ${esc(fmtD(LEAVING[g.id]).replace(/ \d{4}$/,""))}</span></a>`;}).join("");}
+    $("lastdeck").innerHTML=lc.map(g=>{const t=g.h;return `<a class="card" title="${esc(g.d||"")}" href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${tile(g)}<span class="ct">${esc(g.t)}</span><span class="cm">${g.m!=null?"Metascore "+g.m:"No Metascore"}${t!=null?`<span class="ctm"> · ${fmtT(t)}</span>`:""}</span><span class="talk due">Due back ${esc(fmtD(LEAVING[g.id]).replace(/ \d{4}$/,""))}</span></a>`;}).join("");}
   renderTaste();
   let pick=GAMES.filter(g=>MARKS[g.id]==="w"&&playable(g)).sort(byScore),note="from your want-to-play list, "+how;
   if(!pick.length){pick=GAMES.filter(g=>!MARKS[g.id]&&playable(g)).sort(byScore);note="games you haven't sorted yet, "+how;}
   $("decknote").textContent=note;
-  $("deck").innerHTML=pick.slice(0,14).map((g,i)=>{const t=g.h??g.a;return `<a class="card" style="--i:${i}" title="${esc(g.d||"")}" href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${tile(g)}<span class="ct">${esc(g.t)}</span><span class="cm">${TASTE.on?"Priority "+pv(g):(g.m!=null?"Metascore "+g.m:"No Metascore")}${t!=null?`<span class="ctm"> · ${fmtT(t)}</span>`:""}</span><span class="talk">${esc(talker(g,i))}</span></a>`;}).join("");
+  $("deck").innerHTML=pick.slice(0,14).map((g,i)=>{const t=g.h;return `<a class="card" style="--i:${i}" title="${esc(g.d||"")}" href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${tile(g)}<span class="ct">${esc(g.t)}</span><span class="cm">${TASTE.on?"Priority "+pv(g):(g.m!=null?"Metascore "+g.m:"No Metascore")}${t!=null?`<span class="ctm"> · ${fmtT(t)}</span>`:""}</span><span class="talk">${esc(talker(g,i))}</span></a>`;}).join("");
 }
 function renderTaste(){
   const rated=GAMES.filter(g=>MARKS[g.id]==="p"&&RATE[g.id]);
   const want=GAMES.filter(g=>MARKS[g.id]==="w");
-  const hrs=Math.round(want.reduce((a,g)=>a+(g.h??g.a??0),0));
+  const hrs=Math.round(want.reduce((a,g)=>a+(g.h??0),0));
   const sum=$("tastesum"),grid=$("tastegrid");
   if(!TASTE.on){sum.textContent=`Rate or bounce off ${3-TASTE.n} more ${3-TASTE.n===1?"game":"games"} to unlock it`;
     grid.innerHTML=`<p class="tfact">Once you have rated or bounced off three games, this panel shows which styles, camera views and lengths you favour, and where you part ways with the critics.</p>`;return;}
@@ -1338,7 +1402,7 @@ async function drawReceipt(){
   try{await document.fonts.load('20px "VT323"');}catch(e){}
   const W=34,mine=id=>BYID.get(id),c=counts();
   const ids=k=>Object.keys(MARKS).filter(id=>MARKS[id]===k&&mine(id));
-  const played=ids("p").map(mine),hrs=played.reduce((a,g)=>a+((DATES[g.id]&&+DATES[g.id].hr)||g.h||g.a||0),0);
+  const played=ids("p").map(mine),hrs=played.reduce((a,g)=>a+((DATES[g.id]&&+DATES[g.id].hr)||g.h||0),0);
   const fav=played.filter(g=>(RATE[g.id]||0)>=4),styleCount={};fav.forEach(g=>g.g.forEach(x=>styleCount[x]=(styleCount[x]||0)+1));
   const topStyle=Object.entries(styleCount).sort((a,b)=>b[1]-a[1])[0];
   const best=played.filter(g=>RATE[g.id]).sort((a,b)=>RATE[b.id]-RATE[a.id]||(b.m??0)-(a.m??0)).slice(0,6);
@@ -1516,8 +1580,20 @@ function setMeta(id,key,val,cb){const t=Object.assign({},DATES[id]);
   if(val==null||val===""||(Array.isArray(val)&&!val.length))delete t[key];else t[key]=val;
   if(Object.keys(t).length)DATES[id]=t;else delete DATES[id];
   soon(()=>{saveMarks();renderHero();render(false);if(cb)cb();});}
+let RB=null;
+function rateBar(id,prev){
+  const g=BYID.get(id),bar=$("ratebar");if(!g)return;
+  clearTimeout(RB&&RB.t);RB={id,prev,t:0};
+  $("ratemsg").textContent=`Marked ${g.t} as played. How was it?`;
+  bar.querySelectorAll("#ratestars button").forEach(b=>{b.classList.remove("on");b.setAttribute("aria-pressed","false");});
+  bar.hidden=false;rbTimer(12000);
+}
+function rbTimer(ms){clearTimeout(RB&&RB.t);if(RB)RB.t=setTimeout(()=>{const bar=$("ratebar");if(bar.matches(":hover,:focus-within"))return rbTimer(4000);bar.hidden=true;RB=null;},ms);}
+function rbClose(){clearTimeout(RB&&RB.t);$("ratebar").hidden=true;RB=null;}
 function setMark(id,k){
+  const prev=MARKS[id];
   if(MARKS[id]===k)delete MARKS[id];else MARKS[id]=k;
+  if(MARKS[id]==="p"&&S.hidep&&!$("gamedlg").open)rateBar(id,prev);else if(RB&&RB.id===id)rbClose();
   if(MARKS[id]!=="p")delete RATE[id];
   stamp(id);
   document.querySelectorAll(`.marks button[data-id="${CSS.escape(id)}"][data-m]`).forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.m===MARKS[id])));
@@ -1530,7 +1606,7 @@ function saveNote(id,text){text=(text||"").trim().slice(0,2000);if(text)NOTES[id
 let askCtl=null;
 const ASKCOPY={not_granted:"Claude isn't allowed for this page, so this feature is off.",sampling_disabled:"Claude isn't available for this account.",rate_limited:"You've hit a usage limit. Try again later.",session_expired:"Your session expired. Sign in again and retry.",refused:"Claude declined that request. Try rewording your question.",prompt_too_large:"There is too much to send at once. Shorten some notes and retry.",upstream_error:"Something went wrong reaching Claude. Try again."};
 function askPrompt(extra){
- const line=g=>`${g.t}${g.cl?` (Premium Classic, ${g.sys})`:""} | ${g.g.join(", ")} | ${g.pv} | ${g.h??g.a??"?"} h | Metascore ${g.m??"none"}`;
+ const line=g=>`${g.t}${g.cl?` (Premium Classic, ${g.sys})`:""} | ${g.g.join(", ")} | ${g.pv} | ${g.h??"?"} h | Metascore ${g.m??"none"}`;
   const withNote=g=>line(g)+(NOTES[g.id]?` | My note: ${NOTES[g.id].replace(/\s+/g," ")}`:"");
   const why=g=>{const w=(DATES[g.id]&&DATES[g.id].why)||[];return w.length?" | Reasons they dropped it: "+w.map(k=>WHYNAME[k]||k).join(", "):"";};
   const prog=g=>{const t=DATES[g.id]||{};return (t.pg?" | Progress: "+PGNAME[t.pg].toLowerCase():"")+(t.hr?" | Hours played: "+t.hr:"");};
@@ -1576,8 +1652,8 @@ $("restorefile").addEventListener("change",async e=>{
     const j=JSON.parse(await f.text());
     if(!j||j.app!=="psplus-sorter"||!j.data||typeof j.data!=="object")throw new Error("not a backup");
     if(!confirm("Replace your current marks, ratings, notes and added games with this backup from "+String(j.exported||"an unknown date").slice(0,10)+"?"))return;
-    applySnap(j.data);queuePush(0);
-    $("datamsg").textContent="Backup restored.";
+    const dropped=applySnap(j.data);queuePush(0);
+    $("datamsg").textContent=dropped?`Backup restored. ${dropped} ${dropped===1?"entry wasn't":"entries weren't"} valid and ${dropped===1?"was":"were"} skipped.`:"Backup restored.";
   }catch(err){$("datamsg").textContent="That file isn't a backup from this site.";}
 });
 
@@ -1600,9 +1676,9 @@ const normUser=u=>String(u||"").normalize("NFKC").trim().toLowerCase();
 let ACCT=null,pushTimer=null,pushing=false,pushAgain=false,lastPull=0,dirty=false,retryTimer=null;
 
 function snapshot(){return JSON.parse(JSON.stringify({m:MARKS,r:RATE,l:LIB,n:NOTES,d:DATES,c:CUSTOM}));}
-function applySnap(x){const o=v=>v&&typeof v==="object"&&!Array.isArray(v)?v:{};
-  MARKS=o(x.m);RATE=o(x.r);LIB=o(x.l);NOTES=o(x.n);DATES=o(x.d);CUSTOM=o(x.c);
-  syncCustom();saveLocal();renderHero();render(false);}
+function applySnap(x){const [c,dropped]=cleanSnap(x);
+  MARKS=c.m;RATE=c.r;LIB=c.l;NOTES=c.n;DATES=c.d;CUSTOM=c.c;
+  syncCustom();saveLocal();renderHero();render(false);return dropped;}
 function merge3(base,local,server){ // keep this browser's changes since the last sync; take everything else from the account
   const out={};
   for(const k of MAPKEYS){const b=(base&&base[k])||{},l=local[k]||{},sv=(server&&server[k])||{},r={};
@@ -1712,12 +1788,15 @@ async function sendVotes(){
     if(CUSTOM[id]||!BYID.has(id))continue;
     const v={};if(MARKS[id])v.m=MARKS[id];if(RATE[id])v.r=RATE[id];if(v.m||v.r)votes[id]=v;
   }
-  try{await api("/api/votes/put",{uid:ACCT.uid,auth:ACCT.auth,votes});}catch(e){}
+  try{await api("/api/votes/put",{uid:ACCT.uid,auth:ACCT.auth,votes});return true;}catch(e){return false;}
 }
+/* Returns true only once the server has confirmed the change. Turning sharing off keeps the setting on
+   until the server has actually removed the votes, so the checkbox never claims something that didn't happen. */
 async function setSharing(on){
-  try{on?localStorage.setItem(SHARE_KEY,"1"):localStorage.removeItem(SHARE_KEY);}catch(e){}
-  if(!ACCT)return;
-  if(on)await sendVotes();else{try{await api("/api/votes/delete",{uid:ACCT.uid,auth:ACCT.auth});}catch(e){}}
+  if(on){try{localStorage.setItem(SHARE_KEY,"1");}catch(e){}return ACCT?await sendVotes():false;}
+  if(!ACCT){try{localStorage.removeItem(SHARE_KEY);}catch(e){}return true;}
+  try{await api("/api/votes/delete",{uid:ACCT.uid,auth:ACCT.auth});}catch(e){return false;}
+  try{localStorage.removeItem(SHARE_KEY);}catch(e){}return true;
 }
 let COMM=null,COMM_LOADING=null;
 function loadCommunity(){
@@ -1800,8 +1879,10 @@ const dlgMsg=(t,ok)=>{const m=$("dlgmsg");if(m){m.textContent=t;m.classList.togg
 $("acctdlg").addEventListener("change",async e=>{
   if(e.target.id!=="dlgshare")return;
   dlgMsg(e.target.checked?"Adding your ratings…":"Withdrawing your ratings…",true);
-  await setSharing(e.target.checked);
-  dlgMsg(e.target.checked?"Thanks. Your ratings are counted in the community scores.":"Done. Your ratings are no longer counted.",true);
+  const on=e.target.checked,ok=await setSharing(on);
+  if(on)dlgMsg(ok?"Thanks. Your ratings are counted in the community scores.":"Sharing is on, but your ratings didn't reach the server. They'll be sent the next time your list syncs.",ok);
+  else if(ok)dlgMsg("Done. Your ratings are no longer counted.",true);
+  else{e.target.checked=true;dlgMsg("Couldn't reach the server, so your ratings are still counted. Try again in a minute.",false);}
   COMM=null;COMM_LOADING=null;
 });
 $("acctdlg").addEventListener("click",async e=>{
@@ -2059,6 +2140,13 @@ onRows("click",e=>{
 $("wall").addEventListener("click",e=>{const c=e.target.closest("[data-open]");if(c)openGame(c.dataset.open);});
 document.querySelector(".layoutsw").addEventListener("click",e=>{const b=e.target.closest("[data-layout]");if(!b)return;S.layout=b.dataset.layout;render();});
 $("gamex").addEventListener("click",()=>$("gamedlg").close());
+$("ratestars").addEventListener("click",e=>{const b=e.target.closest("button[data-n]");if(!b||!RB)return;const n=+b.dataset.n,id=RB.id;
+  RATE[id]=n;$("ratestars").querySelectorAll("button").forEach(x=>{x.classList.toggle("on",+x.dataset.n<=n);x.setAttribute("aria-pressed",String(+x.dataset.n===n));});
+  $("ratemsg").textContent=`Rated ${n} ${n===1?"star":"stars"}. Thanks.`;soon(()=>{saveMarks();renderHero();render(false);});rbTimer(2500);});
+$("rateundo").addEventListener("click",()=>{if(!RB)return;const {id,prev}=RB;rbClose();
+  if(prev)MARKS[id]=prev;else delete MARKS[id];delete RATE[id];stamp(id);soon(()=>{saveMarks();renderHero();render(false);});});
+$("ratex").addEventListener("click",rbClose);
+$("ratebar").addEventListener("keydown",e=>{if(e.key==="Escape")rbClose();});
 $("rcptbtn").addEventListener("click",openReceipt);
 $("rcptx").addEventListener("click",()=>$("rcptdlg").close());
 $("rcptdlg").addEventListener("click",e=>{if(e.target===$("rcptdlg"))$("rcptdlg").close();});
