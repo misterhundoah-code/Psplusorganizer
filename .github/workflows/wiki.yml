@@ -4,6 +4,11 @@ name: Fetch Wikipedia descriptions and covers
 # from Wikipedia (see tools/fetch_wiki.py). Runs monthly, when games are added, or by hand.
 on:
   workflow_dispatch:
+    inputs:
+      only:
+        description: "Set to facts to refresh only the Wikidata facts"
+        required: false
+        default: ""
   schedule:
     - cron: "17 11 3 * *"
   push:
@@ -29,6 +34,8 @@ jobs:
           python-version: "3.12"
       - run: pip install requests pillow
       - run: python tools/fetch_wiki.py
+        env:
+          ONLY: ${{ github.event.inputs.only }}
       - name: Commit any changes
         id: commit
         run: |

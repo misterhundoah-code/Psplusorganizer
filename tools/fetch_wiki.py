@@ -19,6 +19,7 @@ description must say it's a game. Games that can't be matched that way get nothi
 rather than the wrong article.
 """
 import io
+import os
 import json
 import re
 import sys
@@ -261,14 +262,17 @@ PROPS = {"P178": "dev", "P123": "pub", "P57": "dir", "P86": "mus", "P179": "ser"
 
 
 def wd(**params):
-    params.update(format="json", maxlag=5)
-    for attempt in range(4):
+    # No maxlag here: it refers to Wikidata's query service, which is often behind, and these are
+    # small read-only lookups.
+    params.update(format="json")
+    for attempt in range(5):
         r = S.get(WD_API, params=params, timeout=40)
-        if r.status_code == 200 and "error" not in r.json():
-            return r.json()
-        time.sleep(2 + attempt * 3)
-    r.raise_for_status()
-    return r.json()
+        body = r.json() if r.headers.get("content-type", "").startswith("application/json") else {}
+        if r.status_code == 200 and "error" not in body:
+            return body
+        print(f"  wikidata: {r.status_code} {str(body.get('error', ''))[:120]}")
+        time.sleep(3 + attempt * 5)
+    raise RuntimeError("Wikidata lookups kept failing")
 
 
 def mode_flags(labels):
@@ -396,10 +400,13 @@ def main():
     art_skip = set(json.loads(ov_path.read_text(encoding="utf-8")).get("wiki_art_skip", [])) if ov_path.exists() else set()
     print(f"matched {len(found)} of {len(games)} games to Wikipedia articles")
 
+    print(f"{sum(1 for p in found.values() if (p.get('pageprops') or {}).get('wikibase_item'))} articles have a Wikidata item")
     facts = facts_for(found)
     (ROOT / "data/facts.json").write_text(json.dumps(facts, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"facts for {len(facts)} games; co-op {sum('c' in f.get('modes', '') for f in facts.values())}, "
           f"multiplayer {sum('m' in f.get('modes', '') for f in facts.values())}")
+    if os.environ.get("ONLY") == "facts":
+        return
 
     ex = extracts(sorted({p["title"] for p in found.values()}))
     about = {}
