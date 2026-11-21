@@ -89,7 +89,12 @@ NAMED_AGES = {
     "CERO_A": 0, "CERO_B": 12, "CERO_C": 15, "CERO_D": 17, "CERO_Z": 18,
     "ACB_G": 0, "ACB_PG": 8, "ACB_M": 15, "ACB_MA15": 15, "ACB_MA_15": 15, "ACB_R18": 18, "ACB_R_18": 18,
     "CLASSIND_L": 0, "GRAC_ALL": 0, "OFLC_G": 0, "OFLC_PG": 8, "OFLC_M": 16,
+    "OFLCAU_PG": 8, "OFLCAU_M": 15, "OFLCNZ_PG": 8, "OFLCNZ_M": 16,
+    "SKOREA_M": 19,          # Sony shows it as "GRAC 19+"
+    "USK_RESTRICTED": 18,    # "keine Jugendfreigabe"
 }
+# Badge text where Sony's own wording is long or unclear.
+LABELS = {"USK_RESTRICTED": "USK 18", "SKOREA_M": "GRAC 19+"}
 ESRB_SHORT = {6: "E", 10: "E10+", 13: "T", 17: "M", 18: "AO", 3: "EC"}
 UNKNOWN_RATINGS = set()
 
@@ -123,6 +128,10 @@ def rating_entry(e):
     full = (a.get("description") or "").strip()
     if auth == "ESRB" and age in ESRB_SHORT:
         label = ESRB_SHORT[age]
+    elif name in LABELS:
+        label = LABELS[name]
+    elif full and len(full) <= 12:
+        label = full                     # "PEGI 16", "IARC 12+", "GRAC 15+", "ACB MA 15+"
     else:
         tail = name[len(auth) + 1:] if name.startswith(auth + "_") else name
         label = f"{auth} {tail.replace('_', ' ')}".strip()
