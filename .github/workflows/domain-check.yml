@@ -1,0 +1,27 @@
+name: Check the custom domain
+
+# Prints the domain's DNS records and what each address answers with (status, redirects,
+# certificate), to help when setting up or debugging the custom domain.
+on:
+  workflow_dispatch:
+    inputs:
+      domain:
+        description: "Domain to check"
+        default: "wallofpsplus.com"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: DNS
+        run: |
+          D="${{ github.event.inputs.domain }}"
+          for t in A AAAA CNAME NS; do echo "== $t $D"; dig +short $t "$D"; done
+          echo "== CNAME www.$D"; dig +short CNAME "www.$D"; dig +short A "www.$D"
+      - name: HTTP
+        run: |
+          D="${{ github.event.inputs.domain }}"
+          for u in "https://$D/" "http://$D/" "https://www.$D/" "https://misterhundoah-code.github.io/Psplusorganizer/"; do
+            echo "== $u"; curl -sS -o /dev/null -w "status %{http_code} -> %{redirect_url}\n" --max-time 20 "$u" || true
+          done
+          echo "== certificate"; echo | openssl s_client -connect "$D:443" -servername "$D" 2>/dev/null | openssl x509 -noout -issuer -subject -dates 2>/dev/null || echo "no certificate"
