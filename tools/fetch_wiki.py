@@ -103,8 +103,8 @@ def resolve(games):
     pages, redirect = {}, {}
     for i in range(0, len(titles), 50):
         chunk = titles[i:i + 50]
-        data = api(action="query", titles="|".join(chunk), redirects=1, prop="description|pageimages",
-                   piprop="thumbnail|original", pithumbsize=500, pilicense="any")
+        data = api(action="query", titles="|".join(chunk), redirects=1, prop="description|pageimages|pageprops",
+                   piprop="thumbnail|original", pithumbsize=500, pilicense="any", ppprop="wikibase_item")
         q = data.get("query", {})
         norm = {n["from"]: n["to"] for n in q.get("normalized", [])}
         # A redirect to a section of another article ("Secret Neighbor" -> "Hello Neighbor#...") is a
@@ -254,6 +254,100 @@ def extracts(titles):
     return out
 
 
+# ---- facts from Wikidata ----------------------------------------------------
+# Wikidata (CC0, no credit required) has structured facts for most games' Wikipedia articles.
+WD_API = "https://www.wikidata.org/w/api.php"
+PROPS = {"P178": "dev", "P123": "pub", "P57": "dir", "P86": "mus", "P179": "ser", "P404": "modes", "P852": "esrb", "P908": "pegi"}
+
+
+def wd(**params):
+    params.update(format="json", maxlag=5)
+    for attempt in range(4):
+        r = S.get(WD_API, params=params, timeout=40)
+        if r.status_code == 200 and "error" not in r.json():
+            return r.json()
+        time.sleep(2 + attempt * 3)
+    r.raise_for_status()
+    return r.json()
+
+
+def mode_flags(labels):
+    """Single-player (s), multiplayer (m), co-op (c), online (o) and local/split-screen (l) from game-mode labels."""
+    out = ""
+    joined = " | ".join(l.lower() for l in labels)
+    for flag, pat in (("s", r"single[- ]?player"), ("m", r"multi[- ]?player"), ("c", r"co-?op|cooperative"),
+                      ("o", r"online|massively"), ("l", r"split[- ]screen|local multiplayer|hot ?seat|couch")):
+        if re.search(pat, joined):
+            out += flag
+    if ("c" in out or "o" in out or "l" in out) and "m" not in out:
+        out += "m"
+    return out
+
+
+def facts_for(found):
+    """game id -> {dev, pub, dir, mus: [names], ser, modes, max, esrb, pegi} from each article's Wikidata item."""
+    qid_of = {gid: (p.get("pageprops") or {}).get("wikibase_item") for gid, p in found.items()}
+    qids = sorted({q for q in qid_of.values() if q})
+    claims, refs = {}, set()
+    for i in range(0, len(qids), 50):
+        data = wd(action="wbgetentities", ids="|".join(qids[i:i + 50]), props="claims")
+        for q, ent in (data.get("entities") or {}).items():
+            c = {}
+            for pid, key in PROPS.items():
+                vals = []
+                for st in (ent.get("claims") or {}).get(pid, []):
+                    dv = ((st.get("mainsnak") or {}).get("datavalue") or {}).get("value")
+                    if isinstance(dv, dict) and dv.get("id"):
+                        vals.append(dv["id"])
+                        refs.add(dv["id"])
+                c[key] = vals
+            mx = []
+            for st in (ent.get("claims") or {}).get("P1873", []):
+                dv = ((st.get("mainsnak") or {}).get("datavalue") or {}).get("value")
+                if isinstance(dv, dict) and dv.get("amount"):
+                    try:
+                        mx.append(int(float(dv["amount"])))
+                    except ValueError:
+                        pass
+            c["max"] = max(mx) if mx else None
+            claims[q] = c
+        time.sleep(0.3)
+    labels, refs = {}, sorted(refs)
+    for i in range(0, len(refs), 50):
+        data = wd(action="wbgetentities", ids="|".join(refs[i:i + 50]), props="labels", languages="en")
+        for q, ent in (data.get("entities") or {}).items():
+            lab = ((ent.get("labels") or {}).get("en") or {}).get("value")
+            if lab:
+                labels[q] = lab
+        time.sleep(0.3)
+    out = {}
+    for gid, q in qid_of.items():
+        c = claims.get(q)
+        if not c:
+            continue
+        name = lambda ids: [labels[x] for x in ids if x in labels]
+        f = {}
+        for k in ("dev", "pub", "dir", "mus"):
+            v = list(dict.fromkeys(name(c[k])))[:3]
+            if v:
+                f[k] = v
+        ser = name(c["ser"])
+        if ser:
+            f["ser"] = re.sub(r"\s*\((?:video game )?(?:series|franchise)\)$", "", ser[0])
+        modes = mode_flags(name(c["modes"]))
+        if modes:
+            f["modes"] = modes
+        if c["max"] and 1 <= c["max"] <= 64:
+            f["max"] = c["max"]
+        for k in ("esrb", "pegi"):
+            v = name(c[k])
+            if v:
+                f[k] = v[0]
+        if f:
+            out[gid] = f
+    return out
+
+
 def get_image(url):
     """Download politely: Wikimedia's image servers rate-limit, so wait when asked and retry."""
     for attempt in range(5):
@@ -301,6 +395,11 @@ def main():
     found = {k: v for k, v in resolve(games).items() if k not in skip}
     art_skip = set(json.loads(ov_path.read_text(encoding="utf-8")).get("wiki_art_skip", [])) if ov_path.exists() else set()
     print(f"matched {len(found)} of {len(games)} games to Wikipedia articles")
+
+    facts = facts_for(found)
+    (ROOT / "data/facts.json").write_text(json.dumps(facts, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    print(f"facts for {len(facts)} games; co-op {sum('c' in f.get('modes', '') for f in facts.values())}, "
+          f"multiplayer {sum('m' in f.get('modes', '') for f in facts.values())}")
 
     ex = extracts(sorted({p["title"] for p in found.values()}))
     about = {}

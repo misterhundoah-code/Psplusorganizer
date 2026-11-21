@@ -32,7 +32,7 @@ jobs:
       - name: Commit any changes
         id: commit
         run: |
-          git add -A art data/about.json data/art.json data/art-sources.json
+          git add -A art data/about.json data/facts.json data/art.json data/art-sources.json
           if git diff --cached --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
