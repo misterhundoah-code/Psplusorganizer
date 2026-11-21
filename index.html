@@ -222,6 +222,8 @@ dialog.dlgbox.gamebox{width:min(780px,calc(100vw - 24px));max-height:calc(100vh 
 .gamebox .whyfit{margin:14px 6px 0;padding:10px 12px;background:var(--myplus,#FFF6D8);border-left:5px solid var(--yellow);font-size:14.5px;line-height:1.45;max-width:68ch}
 .gamebox .whyfit b{display:inline;padding:0;margin:0;background:none;border:0;font-weight:700;font-size:inherit}
 .gamebox .whyfit .verdict{font-family:var(--marker);font-weight:400;font-size:16px;color:var(--ink);margin-right:4px}
+.mclink{text-decoration:none;display:inline-block;border-radius:50%}
+.mclink:hover .score,.mclink:focus-visible .score{transform:rotate(-10deg) scale(1.08)}
 .gamebox .comm{margin:10px 6px 0;font-size:14px;color:var(--ink)}
 .gamebox .comm .lab{font-weight:800;margin-right:6px}
 .gamebox .comm b{color:var(--ink)}
@@ -1177,6 +1179,10 @@ function pass(g){
   return true;
 }
 function fmtT(h){return h>=100?Math.round(h)+" h":(Math.round(h*10)/10).toString().replace(/\.0$/,"")+" h";}
+/* The score sticker opens Metacritic. There's no reliable way to build a game's own Metacritic
+   address from its title (editions and remasters vary), so it opens a Metacritic game search. */
+const mcUrl=g=>"https://www.metacritic.com/search/"+encodeURIComponent(g.t.replace(/[®™]/g,"").replace(/\s*\((?:PS\d|PSP|Classic|\d{4})\)\s*$/,""))+"/?category=13";
+const scoreLink=g=>g.m==null?scoreHTML(g.m):`<a class="mclink" href="${esc(mcUrl(g))}" target="_blank" rel="noopener" title="Metascore ${g.m}: see the reviews on Metacritic" aria-label="Metascore ${g.m}, opens Metacritic">${scoreHTML(g.m)}</a>`;
 const scoreHTML=m=>m==null?'<span class="score n" title="No Metascore">tbd</span>':`<span class="score ${m>=90?"s":m>=75?"g":m>=50?"m":"b"}">${m}</span>`;
 const MK=[["g","mg","▶","Playing","I'm playing this now"],["w","mw","★","Want","Add to my want-to-play list"],["p","mp","✓","Played","I have played this"],["b","mb","↩","Bounced","I tried it and bounced off"],["x","mx","✕","Not interested","Hide this game"]];
 function row(g,i){
@@ -1208,7 +1214,7 @@ function row(g,i){
   else if(mk==="b"){const w=(dt&&dt.why)||[];
     extra=`<div class="why" role="group" aria-label="Why I bounced off"><span>Why?</span>${WHY.map(([k,l])=>`<button type="button" data-why="${k}" data-id="${esc(g.id)}" aria-pressed="${w.includes(k)}">${l}</button>`).join("")}</div>`;}
   const leave=(g.gone?`<span class="flag leave" title="No longer in the Game Catalogue">Left the catalogue</span>`:"")+(LEAVING[g.id]?`<span class="flag leave" title="Confirmed to leave the Game Catalogue">Leaving ${fmtD(LEAVING[g.id])}${daysLeft(LEAVING[g.id])}</span><button type="button" class="remind" data-remind="${esc(g.id)}" title="Download a calendar reminder for the last day, with an alert a week before">Remind me</button>`:"");
-  return `<tr class="game${mk?" is-"+mk:""}${lv===-1&&!g.cat?" nolib":""}" style="--i:${Math.min(i,28)}"><td class="title"><div class="g">${tile(g)}<div class="gt"><a href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${hl(g.t)}</a>${leave}${flags}${tags}${S.syn&&g.d?`<div class="syn">${esc(g.d)}</div>`:""}${extra}${noteHTML}</div></div></td><td class="pl"><span class="plat">${pl}</span></td><td class="num sc">${scoreHTML(g.m)}</td><td class="num tm">${tm}</td><td class="fyc">${fy}</td><td class="mk"><span class="marks">${btns}${g.own?`<button type="button" class="mn" data-delown="${esc(g.id)}" aria-label="Remove" title="Remove this game I added">⌫<span class="ml"> Remove</span></button>`:""}<button type="button" class="mn" data-note="${esc(g.id)}" aria-pressed="${!!note}" aria-label="Note" title="${note?"Edit my note":"Add a note"}">✎<span class="ml"> Note</span></button></span></td></tr>`;
+  return `<tr class="game${mk?" is-"+mk:""}${lv===-1&&!g.cat?" nolib":""}" style="--i:${Math.min(i,28)}"><td class="title"><div class="g">${tile(g)}<div class="gt"><a href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${hl(g.t)}</a>${leave}${flags}${tags}${S.syn&&g.d?`<div class="syn">${esc(g.d)}</div>`:""}${extra}${noteHTML}</div></div></td><td class="pl"><span class="plat">${pl}</span></td><td class="num sc">${scoreLink(g)}</td><td class="num tm">${tm}</td><td class="fyc">${fy}</td><td class="mk"><span class="marks">${btns}${g.own?`<button type="button" class="mn" data-delown="${esc(g.id)}" aria-label="Remove" title="Remove this game I added">⌫<span class="ml"> Remove</span></button>`:""}<button type="button" class="mn" data-note="${esc(g.id)}" aria-pressed="${!!note}" aria-label="Note" title="${note?"Edit my note":"Add a note"}">✎<span class="ml"> Note</span></button></span></td></tr>`;
 }
 const SORTNAME={date:"the date you started or finished",pri:"your priority",m:"Metacritic score",time:"completion time",p:"platform",g:"game style",t:"title",y:"release year"};
 const EMPTY={g:"Nothing in progress. Use ▶ Playing on a game when you start it.",browse:"No games match these filters. Loosen one of them or reset.",w:"Nothing on your want-to-play list matches. Use ★ Want in Browse to add games here.",p:"No played games match. Use ✓ Played in Browse to move games here.",b:"No bounced-off games match. Use ↩ Bounced in Browse for games you tried and dropped.",n:"No games here. Monthly games you tag ✕ Not in my library collect in this tab, and you can untag them from here.",x:"No hidden games match. Games you mark ✕ Not interested land here, and you can bring them back from this tab."};
