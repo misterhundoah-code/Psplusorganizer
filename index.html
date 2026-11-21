@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PS Plus Rental Wall: sort the PS Plus catalogue</title>
 <script src="theme.js"></script>
+<script src="move.js"></script>
 <link rel="preload" href="fonts/archivo-latin-wdth-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/bungee-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="fonts/fonts.css">
@@ -531,6 +532,9 @@ tr.band th{border-bottom:6px solid var(--blue);box-shadow:inset 0 -8px 0 -6px rg
 #lastdeck .talk.due,#lastdeck .card:nth-child(n) .talk.due{background:var(--red);color:#fff;transform:rotate(-3deg);white-space:nowrap;font-size:13px}
 /* Hide playtimes (HowLongToBeat) everywhere when the toggle is on */
 body.notime th[data-k="time"],body.notime td.tm,body.notime .ctm{display:none}
+.moved{display:flex;align-items:center;gap:12px;justify-content:center;padding:10px 16px;background:var(--ink);color:#fff;font-size:14.5px}
+.moved p{margin:0}
+.moved button{font:inherit;font-weight:800;background:transparent;border:2px solid rgba(255,255,255,.5);color:#fff;border-radius:3px;width:32px;height:32px;cursor:pointer}
 .lastbtns{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
 .lastbtns .lastall{margin-left:0}
 .remind{font:inherit;font-size:12px;font-weight:700;color:var(--red);background:transparent;border:1.5px solid currentColor;border-radius:3px;padding:1px 7px;margin-left:4px;cursor:pointer;vertical-align:middle}
@@ -2056,6 +2060,15 @@ function foldState(){
   const on=foldKeys(grp).some(k=>JSON.stringify(S[k])!==JSON.stringify(DEF[k]));
   grp.classList.toggle("active",on);if(on&&!grp.dataset.touched)grp.classList.add("open");
   grp.querySelector(".foldhead").setAttribute("aria-expanded",String(grp.classList.contains("open")));});}
+/* After move.js brings someone's data over from the old address, say so once. */
+(function movedBanner(){
+  let moved=false;try{moved=sessionStorage.getItem("psplus-moved")==="1";sessionStorage.removeItem("psplus-moved");}catch(e){}
+  if(!moved)return;
+  const b=document.createElement("div");b.className="moved";b.setAttribute("role","status");
+  b.innerHTML=`<p><b>Welcome to wallofpsplus.com,</b> the Rental Wall's new address. Your marks, ratings and notes came with you. If you have an account, sign in again here.</p><button type="button" aria-label="Close">✕</button>`;
+  b.querySelector("button").addEventListener("click",()=>b.remove());
+  document.body.prepend(b);
+})();
 (function shortenRail(){
   document.querySelectorAll("#rail .hint:not([id]),#rail #regionhint,#rail #tierhint,#rail #sincehint").forEach(h=>{
     let head=h.previousElementSibling;

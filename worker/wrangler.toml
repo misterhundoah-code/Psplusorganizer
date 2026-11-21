@@ -5,7 +5,7 @@ compatibility_date = "2025-06-01"
 # Sites allowed to call this API: your GitHub Pages address, comma-separated, no trailing slash.
 # e.g. "https://yourname.github.io"
 [vars]
-ALLOWED_ORIGINS = "https://misterhundoah-code.github.io"
+ALLOWED_ORIGINS = "https://wallofpsplus.com,https://www.wallofpsplus.com,https://misterhundoah-code.github.io"
 ALLOW_LOCALHOST = "0"
 MAX_NEW_ACCOUNTS_PER_DAY = "500"
 

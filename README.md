@@ -31,7 +31,7 @@ worker/               the optional Cloudflare Worker (accounts and store lookups
 
 1. Create a GitHub repository and push these files to it.
 2. In the repository, go to **Settings → Pages**, set **Source** to "Deploy from a branch", pick your main branch and the `/ (root)` folder, and save.
-3. After a minute the site is live at `https://misterhundoah-code.github.io/Psplusorganizer/`.
+3. After a minute the site is live at `https://misterhundoah-code.github.io/Psplusorganizer/`. (This repository's own site now lives at `https://wallofpsplus.com`, served by Cloudflare; see Custom domain below.)
 
 To try it on your own computer first, run `python3 -m http.server 8000` in this folder and open http://localhost:8000. Opening `index.html` straight from disk won't work, because the page loads its data files.
 
@@ -163,3 +163,9 @@ Metascores and completion times are other sites' data. Check their terms before 
 PlayStation, PS Plus, PS4 and PS5 are trademarks of Sony Interactive Entertainment. This is an independent fan-made tool, not affiliated with or endorsed by Sony, Metacritic or HowLongToBeat.
 
 No licence has been chosen yet. Add a `LICENSE` file if you want others to be able to reuse the code.
+
+## Custom domain
+
+The site is served at `https://wallofpsplus.com` by Cloudflare Workers static assets (`wrangler.jsonc`, `site/worker.js`, `.assetsignore`), deployed by Workers Builds from this repository with root directory `/` and deploy command `npx wrangler deploy`. The Worker sends `www.wallofpsplus.com` to `wallofpsplus.com`.
+
+GitHub Pages keeps serving the old address, `https://misterhundoah-code.github.io/Psplusorganizer/`. There, `move.js` checks that the new site is up, then forwards visitors to the same page on the new address, carrying their saved data (not their sign-in) in the link's `#fragment` so nothing is lost. Don't set a custom domain in the GitHub Pages settings: GitHub would then redirect on its own and that hand-over couldn't happen.

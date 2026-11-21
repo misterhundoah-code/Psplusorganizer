@@ -1,0 +1,14 @@
+# Files in the repository that are not part of the website (see wrangler.jsonc).
+.git
+.github
+.assetsignore
+wrangler.jsonc
+site
+worker
+tools
+node_modules
+README.md
+*.py
+.wrangler
+.gitignore
+__pycache__

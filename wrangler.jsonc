@@ -1,0 +1,19 @@
+// The website itself, served by Cloudflare at wallofpsplus.com.
+// Deployed by Workers Builds from this repository (root directory "/", deploy command
+// "npx wrangler deploy"). The account API is a separate Worker in worker/.
+{
+  "name": "wallofpsplus",
+  "main": "site/worker.js",
+  "compatibility_date": "2026-11-13",
+  "assets": {
+    "directory": "./",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  // Custom domains: Cloudflare creates the DNS records for these itself.
+  "routes": [
+    { "pattern": "wallofpsplus.com", "custom_domain": true },
+    { "pattern": "www.wallofpsplus.com", "custom_domain": true }
+  ],
+  "workers_dev": true
+}
