@@ -572,6 +572,12 @@ body.notime th[data-k="time"],body.notime td.tm,body.notime .ctm{display:none}
 .ratebar .stars.big button{font-size:28px;line-height:1;padding:2px 3px}
 .ratebar .ratex{background:none;border:0;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 6px}
 html:has(dialog[open]){overflow:hidden}
+
+/* Age rating chip: small and plain, like the sticker in the corner of a rental case. */
+.crt{display:inline-block;margin-left:6px;padding:0 4px;border:1.5px solid currentColor;border-radius:3px;font-size:11px;font-weight:800;
+  line-height:1.35;letter-spacing:.02em;vertical-align:1px;white-space:nowrap;opacity:.85}
+.crt.big{font-size:12px;margin:0 4px 0 0}
+.rdesc{display:block;color:var(--muted);font-size:13px;margin-top:2px}
 </style>
 </head>
 <body>
@@ -746,6 +752,16 @@ html:has(dialog[open]){overflow:hidden}
             <button type="button" data-v="s1">Solo only</button>
           </div>
           <span class="hint">From Wikidata, which lists game modes for about three quarters of the games. Games it says nothing about are hidden while this filter is on.</span>
+        </div>
+        <div class="grp">
+          <span class="lab">Age rating</span>
+          <div class="seg" id="agef" role="group" aria-label="Age rating, up to">
+            <button type="button" data-v="all">Any</button>
+            <button type="button" data-v="7">Up to 7</button>
+            <button type="button" data-v="12">Up to 12</button>
+            <button type="button" data-v="16">Up to 16</button>
+          </div>
+          <span class="hint" id="agehint">The official rating for your country, from the PlayStation Store. Games without one are hidden while this filter is on.</span>
         </div>
         <div class="grp">
           <span class="lab">Game style</span>
@@ -923,7 +939,7 @@ const PORDER={"PS5":0,"PS4/PS5":1,"PS4":2,"Elsewhere":3};
 const PNAME={"PS5":"PS5 only","PS4/PS5":"PS4 and PS5","PS4":"PS4 only","Elsewhere":"Added by me"};
 const HUE={"Action":14,"Adventure":172,"RPG":268,"Shooter":212,"Open World":142,"Platformer":44,"Strategy":236,"Simulation":190,"Horror":350,"Survival":84,"Puzzle":312,"Racing":28,"Sports":108,"Fighting":2,"Family":332,"Party":290,"Roguelike":58,"Metroidvania":252,"Stealth":200,"Hack & Slash":20,"Narrative":160,"Arcade":322,"Soulslike":280,"Other":220};
 const SERIES=[["Jak|Daxter","Jak and Daxter"],["Sly ","Sly Cooper"],["Syphon Filter","Syphon Filter"],["Tekken","Tekken"],["Twisted Metal","Twisted Metal"],["Wild Arms","Wild Arms"],["TimeSplitters","TimeSplitters"],["Resident Evil","Resident Evil"],["Worms","Worms"],["Ape Escape|Ape Academy","Ape Escape"],["Armored Core","Armored Core"],["Patapon","Patapon"],["LocoRoco","LocoRoco"],["Metro","Metro"],["MediEvil","MediEvil"],["Ridge Racer|R4: Ridge Racer","Ridge Racer"],["Legacy of Kain|Blood Omen","Legacy of Kain"],["Dark Cloud","Dark Cloud"],["Pursuit Force","Pursuit Force"],["Kurushi","Kurushi"],["Thrillville","Thrillville"],["Ratchet|Secret Agent Clank","Ratchet & Clank"],["Dino Crisis","Dino Crisis"],["Gravity Rush","Gravity Rush"],["Myst|Riven","Myst"],["Jet Rider","Jet Rider"],["Alone in the Dark","Alone in the Dark"],["Everybody's Golf|Hot Shots","Everybody's Golf"],["Atari Flashback","Atari Flashback"],["Disney","Disney"],["Echochrome|echochrome|echoshift","Echochrome"]].concat([["LEGO|The LEGO","LEGO"],["Assassin's Creed","Assassin's Creed"],["Far Cry","Far Cry"],["PAW Patrol","PAW Patrol"],["Tom Clancy's Ghost Recon","Ghost Recon"],["Tom Clancy's Rainbow Six","Rainbow Six"],["Tom Clancy's The Division","The Division"],["Wolfenstein","Wolfenstein"],["Earth Defense Force","Earth Defense Force"],["Story of Seasons","Story of Seasons"],["Warhammer 40,000","Warhammer 40,000"],["Warhammer:","Warhammer Fantasy"],["Uncharted","Uncharted"],["Marvel's Spider-Man","Marvel's Spider-Man"],["The Last of Us","The Last of Us"],["God of War","God of War"],["Horizon","Horizon"],["Final Fantasy","Final Fantasy"],["Persona","Persona"],["Death Stranding","Death Stranding"],["Dying Light","Dying Light"],["Sniper Elite|Zombie Army","Sniper Elite"],["Watch Dogs","Watch Dogs"],["Mafia","Mafia"],["Destiny 2","Destiny 2"],["Tomb Raider|Rise of the Tomb Raider|Shadow of the Tomb Raider","Tomb Raider"],["Trials","Trials"],["Two Point","Two Point"],["Cat Quest","Cat Quest"],["Monster Hunter","Monster Hunter"],["Like a Dragon","Like a Dragon"],["Kingdom Come","Kingdom Come"],["Dishonored","Dishonored"],["Call of Duty","Call of Duty"],["Alan Wake","Alan Wake"],["Five Nights at Freddy's","Five Nights at Freddy's"],["Poppy Playtime","Poppy Playtime"],["Hotline Miami","Hotline Miami"],["Coffee Talk","Coffee Talk"],["Citizen Sleeper","Citizen Sleeper"],["Ben 10","Ben 10"],["Rabbids","Rabbids"],["Monopoly","Monopoly"],["Dynasty Warriors|Samurai Warriors|Warriors:","Warriors"],["Until Dawn","Until Dawn"],["Hello Neighbor|Secret Neighbor","Hello Neighbor"],["Killing Floor","Killing Floor"],["Outlast|The Outlast","Outlast"],["Overpass","Overpass"],["World War Z","World War Z"],["Nioh","Nioh"],["NBA 2K","NBA 2K"],["PGA Tour","PGA Tour 2K"],["WWE 2K","WWE 2K"],["MLB The Show","MLB The Show"],["EA Sports FC","EA Sports FC"],["F1 ","F1"],["Need for Speed","Need for Speed"],["Monster Train","Monster Train"],["Fallout","Fallout"],["DOOM","Doom"],["Sonic","Sonic"],["Aliens","Aliens"],["The Elder Scrolls","The Elder Scrolls"],["Oddworld","Oddworld"],["The Crew","The Crew"],["Planet ","Planet"],["The Surge","The Surge"],["Ys ","Ys"],["Prince of Persia|The Rogue Prince of Persia","Prince of Persia"],["Minecraft","Minecraft"],["South Park","South Park"],["Farming Simulator","Farming Simulator"],["Star Wars","Star Wars"],["For The King","For The King"],["Mighty Morphin Power Rangers|Power Rangers","Power Rangers"]]).map(([p,n])=>[new RegExp("^(?:"+p.replace(/[.*+?^${}()[\]\\]/g,m=>m==="|"?m:"\\"+m)+")","i"),n]);
-const DEF={players:"all",layout:"wall",notime:false,tier:"",since:"",region:"",q:"",sort:"m",desc:true,plat:"all",minm:0,hideun:false,tmode:"h",tlen:"all",styles:[],src:"all",hidep:true,hideb:true,hidew:false,hidelib:false,sys:"all",onlyleave:false,syn:true,pv:[],view:"browse"};
+const DEF={age:"all",players:"all",layout:"wall",notime:false,tier:"",since:"",region:"",q:"",sort:"m",desc:true,plat:"all",minm:0,hideun:false,tmode:"h",tlen:"all",styles:[],src:"all",hidep:true,hideb:true,hidew:false,hidelib:false,sys:"all",onlyleave:false,syn:true,pv:[],view:"browse"};
 let S=Object.assign({},DEF,{styles:[],pv:[]});
 let MARKS={}; // game id -> "w" want | "p" played | "b" bounced off | "x" not interested
 try{const s=JSON.parse(localStorage.getItem("psplus-sorter")||"null");if(s&&typeof s==="object")S=Object.assign(S,s);if(!Array.isArray(S.styles))S.styles=[];if(!Array.isArray(S.pv))S.pv=[];}catch(e){}
@@ -1211,8 +1227,42 @@ function regionData(){const loc=regionNow(),R=REGDATA&&REGDATA.regions&&REGDATA.
   return REGION_SETS[loc];}
 const regionStreams=()=>{const R=regionData();return !R||R.stream;};
 let REGION_APPLIED=null;
+/* Official age ratings for the chosen region (data/ratings/<region>.json, also made by
+   tools/fetch_regions.py from Sony's lists): id -> [badge label, minimum age, Sony's full name, content
+   descriptors]. Only the chosen region's file is downloaded. Games Sony's lists don't cover (PS3
+   streaming, mostly) fall back to the ESRB or PEGI rating on Wikidata when the region uses that system. */
+let RATINGS=null,RATINGS_LOC="";
+async function loadRatings(){
+  const loc=regionNow();if(RATINGS_LOC===loc)return;RATINGS_LOC=loc;
+  if(!REGDATA||!REGDATA.regions||!REGDATA.regions[loc]){RATINGS=null;return;}
+  try{const r=await fetch(`data/ratings/${loc}.json`,{cache:"no-cache"});const j=r.ok?await r.json():null;
+    if(RATINGS_LOC!==loc)return;RATINGS=j&&j.games&&typeof j.games==="object"?j:null;}catch(e){RATINGS=null;}
+  ageUI();render(false);
+}
+const WD_ESRB={"Everyone":["E",6],"Kids to Adults":["E",6],"Everyone 10+":["E10+",10],"Teen":["T",13],"Mature 17+":["M",17],"Adults Only 18+":["AO",18]};
+function ratingOf(g){
+  const r=RATINGS&&RATINGS.games[g.id];
+  if(Array.isArray(r)&&typeof r[0]==="string")return {label:r[0],age:typeof r[1]==="number"?r[1]:null,full:String(r[2]||r[0]),desc:Array.isArray(r[3])?r[3]:[],src:"store"};
+  const f=FACTS[g.id]||{},auth=RATINGS?RATINGS.auth:(NA_REGIONS.has(regionNow())?"ESRB":"");
+  if(auth==="ESRB"&&WD_ESRB[f.esrb]){const [l,a]=WD_ESRB[f.esrb];return {label:l,age:a,full:"ESRB "+f.esrb,desc:[],src:"wikidata"};}
+  const pm=/^PEGI (\d+)$/.exec(f.pegi||"");
+  if(auth==="PEGI"&&pm)return {label:f.pegi,age:+pm[1],full:f.pegi,desc:[],src:"wikidata"};
+  return null;
+}
+const ageOf=g=>{const r=ratingOf(g);return r?r.age:null;};
+const AGE_LABELS={ESRB:{7:"E",12:"E10+",16:"T"},PEGI:{7:"PEGI 7",12:"PEGI 12",16:"PEGI 16"},USK:{7:"USK 6",12:"USK 12",16:"USK 16"}};
+function ageUI(){
+  const auth=RATINGS?RATINGS.auth:"",names={ESRB:"ESRB",PEGI:"PEGI",USK:"USK",ACB:"Australian Classification",CERO:"CERO",SKOREA:"GRAC",GENERIC:"IARC"};
+  const L=AGE_LABELS[auth];
+  document.querySelectorAll("#agef button").forEach(b=>{const v=b.dataset.v;if(v==="all")return;b.textContent=L?L[v]:"Up to "+v;
+    b.title=L?`Rated ${L[v]} or lower`:`Rated for ages ${v} and under`;});
+  $("agehint").textContent=RATINGS?`${names[auth]||"Official"} ratings for your country, from the PlayStation Store. Games without a rating are hidden while this filter is on.`
+    :"Age ratings aren't available for this country yet.";
+}
+function ratingChip(g){const r=ratingOf(g);return r?`<span class="crt" title="${esc(r.full)}">${esc(r.label)}</span>`:"";}
 function applyRegion(){
   const loc=regionNow();if(REGION_APPLIED===loc)return;REGION_APPLIED=loc;
+  loadRatings();
   const R=regionData(),na=NA_REGIONS.has(loc),gone=new Set(REMOVED);
   GAMES.forEach(g=>{
     if(g._c0===undefined){g._c0=g.cat||0;g._l0=g.cl||0;g._s0=g.s3||0;}
@@ -1233,6 +1283,7 @@ function pass(g){
   if(g.gone&&(!MARKS[g.id]||S.view==="browse"))return false;
   if(CTX.ser&&g.ser!==CTX.ser)return false;
   if(S.onlyleave&&!LEAVING[g.id])return false;
+  if(S.age!=="all"){const a=ageOf(g);if(a==null||a>+S.age)return false;}
   if(S.players!=="all"){const m=(FACTS[g.id]||{}).modes||"";if(S.players==="s1"?!(m.includes("s")&&!m.includes("m")):!m.includes(S.players))return false;}
   if(CTX.ser){/* a series view shows every entry, whatever its mark */}
   else if(S.view==="n"){if(LIB[g.id]!==-1)return false;}
@@ -1284,7 +1335,7 @@ function row(g,i){
       fy=`<span class="fy" title="${TASTE.on?esc(why||"Your ratings do not move this one."):"Rate or bounce off three games to personalise this. For now it is the Metascore."}"><span class="pri${TASTE.on?"":" plain"}" style="--pc:${col}">${p}</span><span class="delta ${dl>0?"up":dl<0?"dn":""}">${dl>0?"+"+dl:dl<0?"−"+(-dl):""}</span></span>`;}}
   const btns=MK.map(([k,cls,ic,label,tip])=>`<button type="button" class="${cls}" data-id="${esc(g.id)}" data-m="${k}" aria-pressed="${mk===k}" aria-label="${label}" title="${tip}">${ic}<span class="ml"> ${label}</span></button>`).join("");
   const dt=DATES[g.id];
-  const tags=`<div class="tags">${[(g.y?String(g.y):""),esc(g.pv),g.g.map(s=>`<span class="gs" style="--h:${HUE[s]??220}">${esc(s)}</span>`).join(", "),(g.s3&&!g.cl?"PS3 version streams too":"")].filter(Boolean).join('<span class="sep"> · </span>')}`
+  const tags=`<div class="tags">${[(g.y?String(g.y):""),esc(g.pv),g.g.map(s=>`<span class="gs" style="--h:${HUE[s]??220}">${esc(s)}</span>`).join(", "),(g.s3&&!g.cl?"PS3 version streams too":"")].filter(Boolean).join('<span class="sep"> · </span>')}${ratingChip(g)}`
     +(dt&&dt.s&&(mk==="g"||mk==="p")?`<span class="sep"> · </span>Started ${fmtD(dt.s)}`:"")+(dt&&dt.f&&mk==="p"?`<span class="sep"> · </span>Finished ${fmtD(dt.f)}`:"")+`</div>`
     +`<div class="links">${g.ser?`<button type="button" class="lnk" data-ser="${esc(g.ser)}" title="Show every ${esc(g.ser)} game together">${esc(g.ser)} series (${serCount[g.ser]})</button>`:""}<button type="button" class="lnk" data-like="${esc(g.id)}" title="Show the games most similar to this one">More like this</button></div>`;
   const note=NOTES[g.id];
@@ -1446,7 +1497,7 @@ const MKICON={g:"▶",w:"★",p:"✓",b:"↩",x:"✕"},MKNAME={g:"Playing",w:"Wa
 function caseHTML(g,i){
   const mk=MARKS[g.id]||"",[t]=timeOf(g),r=RATE[g.id];
   const kind=g.cl?(g.s3?"PS3 stream":"Classic"):g.e&&!g.cat?"Monthly "+g.el.replace(/ \d{2}(\d{2})$/," '$1"):(g.p.includes("PS5")?"PS5":g.p[0]||"");
-  const sub=[esc(kind),t!=null?`<span class="ctm">${fmtT(t)}</span>`:""].filter(Boolean).join(" · ");
+  const sub=[esc(kind),t!=null?`<span class="ctm">${fmtT(t)}</span>`:""].filter(Boolean).join(" · ")+ratingChip(g);
   return `<button type="button" class="card case${mk?" is-"+mk:""}" data-open="${esc(g.id)}" aria-label="${esc(g.t)}${g.m!=null?", Metascore "+g.m:""}${mk?", "+MKNAME[mk]:""}">`
     +tile(g)+(g.m!=null?`<span class="cstick">${scoreHTML(g.m)}</span>`:"")
     +(mk?`<span class="cmark m${mk}" title="${MKNAME[mk]}">${MKICON[mk]}${mk==="p"&&r?" "+"★".repeat(r):""}</span>`:"")
@@ -1554,7 +1605,7 @@ function render(animate){
   const asc=!S.desc;$("dir").textContent=asc?"↑":"↓";
   $("dir").title=asc?"Ascending. Click to reverse.":"Descending. Click to reverse.";
   const press=(sel,v)=>document.querySelectorAll(sel).forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===v));
-  press("#plat button",S.plat);press("#players button",S.players);press("#sysf button",S.sys);press("#tlen button",S.tlen);press("#src button",S.src);
+  press("#plat button",S.plat);press("#players button",S.players);press("#agef button",S.age);press("#sysf button",S.sys);press("#tlen button",S.tlen);press("#src button",S.src);
   document.querySelectorAll("#styles button").forEach(b=>b.setAttribute("aria-pressed",S.styles.includes(b.dataset.v)));
   document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===S.view));
   document.querySelectorAll("thead th[data-k]").forEach(th=>{
@@ -1815,8 +1866,8 @@ function fillFacts(g){
   if(f.ser)rows.push(["Series",esc(f.ser)]);
   if(f.modes){const m=f.modes,shown=[...m].filter(k=>k!=="m"||!/[col]/.test(m)).map(k=>MODE_NAMES[k]);rows.push(["Modes",shown.join(", ")+(f.max>1?` · up to ${f.max} players`:"")]);}
   else if(f.max>1)rows.push(["Players",`Up to ${f.max}`]);
-  const rate=[f.esrb&&("ESRB "+f.esrb.replace(/^ESRB\s*/i,"")),f.pegi].filter(Boolean);
-  if(rate.length)rows.push(["Rated",esc(rate.join(" · "))]);
+  const rt=ratingOf(g);
+  if(rt)rows.push(["Rated",`<span class="crt big">${esc(rt.label)}</span> ${rt.full!==rt.label?esc(rt.full):""}${rt.desc.length?`<span class="rdesc">${rt.desc.map(esc).join(", ")}</span>`:""}`]);
   const t=[["Main story",g.h],["Story and extras",g.x],["Completionist",g.c]].filter(x=>x[1]);
   if(t.length&&!S.notime)rows.push(["Playtime",t.map(([k,v])=>`${k} ${fmtT(v)}`).join(" · ")]);
   $("dlgfacts").innerHTML=rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join("");
@@ -2033,7 +2084,7 @@ const chk=(id)=>$(id).addEventListener("change",e=>{S[id]=e.target.checked;soon(
 chk("hideun");chk("hidep");chk("hideb");chk("hidew");chk("hidelib");chk("onlyleave");chk("syn");$("notime").addEventListener("change",e=>{S.notime=e.target.checked;soon(()=>{render();renderHero();});});
 $("pvs").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const v=b.dataset.v;S.pv=S.pv.includes(v)?S.pv.filter(x=>x!==v):S.pv.concat(v);soon(render);});
 const segClick=(id,key)=>$(id).addEventListener("click",e=>{const b=e.target.closest("button");if(b){S[key]=b.dataset.v;soon(render);}});
-segClick("plat","plat");segClick("players","players");segClick("sysf","sys");segClick("tlen","tlen");segClick("src","src");$("tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(b){CTX={ser:null,like:null};S.view=b.dataset.v;soon(render);}});
+segClick("plat","plat");segClick("players","players");segClick("agef","age");segClick("sysf","sys");segClick("tlen","tlen");segClick("src","src");$("tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(b){CTX={ser:null,like:null};S.view=b.dataset.v;soon(render);}});
 $("styles").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const v=b.dataset.v;S.styles=S.styles.includes(v)?S.styles.filter(s=>s!==v):S.styles.concat(v);soon(render);});
 $("bulkno").addEventListener("click",e=>{const b=e.currentTarget;
   if(!b.dataset.armed){b.dataset.armed="1";b.textContent=`Click again to confirm: ${b.dataset.n} games will be tagged`;setTimeout(()=>{delete b.dataset.armed;renderHero();},5000);return;}
@@ -2158,7 +2209,7 @@ document.querySelector("thead").addEventListener("click",e=>{const th=e.target.c
 /* Shorter sidebar: fixed explanations move behind "?" buttons beside their heading, and the
    less-used groups fold away. A folded group opens on its own when one of its filters is on,
    and shows a red dot when folded with a filter on. */
-const FOLDS={"Where it comes from":"Where it comes from","Platform":"Platform","Players":"Players","Perspective":"Perspective","Metacritic at least":"Metacritic score","Completion time":"Completion time","Game style":"Game style","Your data":"Backup and restore"};
+const FOLDS={"Where it comes from":"Where it comes from","Platform":"Platform","Players":"Players","Age rating":"Age rating","Perspective":"Perspective","Metacritic at least":"Metacritic score","Completion time":"Completion time","Game style":"Game style","Your data":"Backup and restore"};
 function foldKeys(grp){return [...grp.querySelectorAll("[id]")].map(e=>e.id in DEF?e.id:e.id.replace(/f$/,"") in DEF?e.id.replace(/f$/,""):null).filter(Boolean);}
 function foldState(){
   [["tierhint","tier"],["sincehint","since"]].forEach(([id,k])=>{const h=$(id);if(h&&h.classList.contains("xhint")&&!h.dataset.asked){h.classList.toggle("on",!!S[k]);}});document.querySelectorAll("#rail .fold").forEach(grp=>{

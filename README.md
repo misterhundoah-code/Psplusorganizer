@@ -132,6 +132,8 @@ Paste a `https://store.playstation.com/.../concept/...` or `.../product/...` lin
 ### Regions
 
 What's on PS Plus differs by country. `tools/fetch_regions.py` (run by `.github/workflows/regions.yml` twice a week and whenever the game data changes) downloads Sony's Game Catalogue and Classics lists for every region in the site's region menu and writes `data/regions.json`: which games each region gets, and whether its top tier is Premium (with cloud streaming and PS3 games) or Deluxe (without). Sony publishes no list for Brazil, so Brazil uses the Latin American list. The site hides games that aren't offered in the chosen region, unless you've marked, added or own them, and calls the top tier Deluxe where that's its name. Monthly games are shown everywhere.
+
+The same lists carry each game's official age rating for that region (ESRB, PEGI, USK, ACB, CERO, GRAC, IARC and so on), which the script saves to `data/ratings/<region>.json` as `id: [badge label, minimum age, Sony's full rating name, content descriptors]`. The site downloads only the chosen region's file, shows the rating on each game and in the game's details, and uses the minimum age for the Age rating filter. PS3 streaming games aren't in Sony's lists, so for those the site falls back to the ESRB or PEGI rating on Wikidata where the region uses that system. Brazil uses the Latin American list, so it shows ESRB ratings rather than ClassInd.
 | `e`, `el` | Monthly game and its month (the most recent, if it was offered twice) |
 
 People's marks are keyed by `id`, so don't change an existing game's id.
