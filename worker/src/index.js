@@ -12,6 +12,13 @@
 //   POST /api/data/put        {uid, auth, ct, iv, base} -> {ver}   (409 + current copy if base is stale)
 //   POST /api/account/delete  {uid, auth}
 //   GET  /api/store?url=https://store.playstation.com/...  -> basic listing
+//   POST /api/votes/put       {uid, auth, votes:{gameId:{m,r}}}  replace your community votes (opt-in)
+//   POST /api/votes/delete    {uid, auth}            withdraw them
+//   GET  /api/community       -> totals per game, only for games with enough votes
+//
+// Community votes are separate from the encrypted blob and only exist for people who tick
+// "add my ratings to the community scores". They hold a mark and a star rating per game, under
+// a code derived from the account id (not the id itself), and are only ever published as totals.
 
 import { parseStoreUrl, parseStorePage } from "./store.js";
 
@@ -20,6 +27,10 @@ const B64 = /^[A-Za-z0-9+/]+={0,2}$/;
 const MAX_BODY = 1_000_000;      // bytes per request
 const MAX_CT = 800_000;          // characters of encrypted data per account
 const LOCK_AFTER = 5;            // failed sign-ins before a cool-down starts
+const GAME_ID = /^[a-z0-9][a-z0-9-]{0,79}$/;
+const MARKS = new Set(["g", "w", "p", "b", "x"]);
+const MAX_VOTES = 3000;          // games per voter
+const MIN_SHOWN = 3;             // a game's totals are published only once this many people have voted on it
 
 export default {
   async fetch(request, env, ctx) {
@@ -33,6 +44,7 @@ export default {
       let res;
       if (url.pathname === "/api/health" && request.method === "GET") res = json({ ok: true });
       else if (url.pathname === "/api/store" && request.method === "GET") res = await storeLookup(url, ctx);
+      else if (url.pathname === "/api/community" && request.method === "GET") res = await community(env, ctx);
       else if (request.method === "POST" && url.pathname.startsWith("/api/")) {
         const body = await readJson(request);
         if (!body) res = json({ error: "bad_request" }, 400);
@@ -40,6 +52,8 @@ export default {
         else if (url.pathname === "/api/data/get") res = await getData(body, env);
         else if (url.pathname === "/api/data/put") res = await putData(body, env);
         else if (url.pathname === "/api/account/delete") res = await deleteAccount(body, env);
+        else if (url.pathname === "/api/votes/put") res = await putVotes(body, env);
+        else if (url.pathname === "/api/votes/delete") res = await deleteVotes(body, env);
         else res = json({ error: "not_found" }, 404);
       } else res = json({ error: "not_found" }, 404);
       return withHeaders(res, cors);
@@ -154,7 +168,60 @@ async function deleteAccount(body, env) {
   const row = await authorise(body, env);
   if (row instanceof Response) return row;
   await env.DB.prepare("DELETE FROM users WHERE uid = ?").bind(body.uid).run();
+  await env.DB.prepare("DELETE FROM votes WHERE vid = ?").bind(await voterId(body.uid)).run();
   return json({ ok: true });
+}
+
+/* ---------------- community scores (opt-in) ---------------- */
+
+/** The code votes are stored under: derived from the account id, so the votes table never holds account ids. */
+const voterId = (uid) => sha256hex("community-vote:" + uid);
+
+async function putVotes(body, env) {
+  const row = await authorise(body, env);
+  if (row instanceof Response) return row;
+  const v = body.votes;
+  if (!v || typeof v !== "object" || Array.isArray(v)) return json({ error: "bad_request" }, 400);
+  const rows = [];
+  for (const [game, x] of Object.entries(v)) {
+    if (rows.length >= MAX_VOTES) break;
+    if (!GAME_ID.test(game) || !x || typeof x !== "object") continue;
+    const m = MARKS.has(x.m) ? x.m : null;
+    const r = Number.isInteger(x.r) && x.r >= 1 && x.r <= 5 ? x.r : null;
+    if (m || r) rows.push([game, m, r]);
+  }
+  const vid = await voterId(body.uid), t = now();
+  const stmts = [env.DB.prepare("DELETE FROM votes WHERE vid = ?").bind(vid)];
+  for (const [game, m, r] of rows)
+    stmts.push(env.DB.prepare("INSERT INTO votes (vid, game, mark, stars, updated) VALUES (?, ?, ?, ?, ?)").bind(vid, game, m, r, t));
+  for (let i = 0; i < stmts.length; i += 100) await env.DB.batch(stmts.slice(i, i + 100));
+  return json({ ok: true, count: rows.length });
+}
+
+async function deleteVotes(body, env) {
+  const row = await authorise(body, env);
+  if (row instanceof Response) return row;
+  await env.DB.prepare("DELETE FROM votes WHERE vid = ?").bind(await voterId(body.uid)).run();
+  return json({ ok: true });
+}
+
+/** Totals per game: [voters, ratings, average stars, played, bounced, want, playing]. Cached for 30 minutes. */
+async function community(env, ctx) {
+  const cache = caches.default, key = new Request("https://psplus-sorter.cache/community/v1");
+  const hit = await cache.match(key);
+  if (hit) return new Response(hit.body, hit);
+  const { results } = await env.DB.prepare(
+    `SELECT game, COUNT(*) AS n, COUNT(stars) AS nr, AVG(stars) AS avg,
+            SUM(mark = 'p') AS p, SUM(mark = 'b') AS b, SUM(mark = 'w') AS w, SUM(mark = 'g') AS g
+       FROM votes GROUP BY game HAVING COUNT(*) >= ?`).bind(MIN_SHOWN).all();
+  const voters = await env.DB.prepare("SELECT COUNT(DISTINCT vid) AS n FROM votes").first();
+  const games = {};
+  for (const r of results || [])
+    games[r.game] = [r.n, r.nr, r.nr >= MIN_SHOWN ? Math.round(r.avg * 10) / 10 : null, r.p, r.b, r.w, r.g];
+  const res = json({ asOf: new Date().toISOString(), voters: voters ? voters.n : 0, min: MIN_SHOWN, games }, 200,
+    { "Cache-Control": "public, max-age=1800" });
+  ctx.waitUntil(cache.put(key, res.clone()));
+  return res;
 }
 
 /* ---------------- PlayStation Store lookup ---------------- */

@@ -12,7 +12,7 @@
 <header>
   <a href="./">Back to the rental wall</a>
   <h1>Privacy Policy</h1>
-  <p class="meta">Effective 17 November 2026</p>
+  <p class="meta">Effective 20 November 2026</p>
 </header>
 <div class="wrap">
 
@@ -59,6 +59,14 @@
   <p>The account service also keeps a count of how many accounts were created each day, with no details about any account, so it can cap sign-ups. Those counts are deleted after a week.</p>
   <p>The account service doesn't store your username, your password, your IP address or any readable version of your records. Because we can't read your records or see your password, we can't recover a forgotten password or restore an account whose password is lost.</p>
 
+  <h2 id="community">Community scores (optional)</h2>
+  <p>If you have an account, you can tick <b>Add my ratings to the community scores</b> under Account. It's off unless you turn it on, and it's set separately on each device you use. While it's on, each time your records sync your browser also sends, without encryption:</p>
+  <ul>
+    <li>for each game you've marked or rated, its id, your mark (playing, want to play, played, bounced off or not interested) and your star rating.</li>
+  </ul>
+  <p>Your notes, dates, added games and settings are never sent. These votes are stored under a code made by hashing your account id, so the votes table doesn't contain account ids. The site only publishes totals for each game (the number of people, the average rating and how many played, bounced off, want to play or are playing it), and only for games with at least three people. Nobody else can see an individual person's votes.</p>
+  <p>Untick the box to withdraw your votes; they're deleted from the database straight away. Deleting your account deletes them too. The same recovery-copy period described below applies.</p>
+
   <h2>Adding a game from a PlayStation Store link</h2>
   <p>When you paste a PlayStation Store link and press Look up, the link is sent to the account service. The account service fetches that one public store page, reads the title, platforms, genres and release year, and sends them back to your browser. It doesn't save the link or the result. The game you add is then saved like the rest of your records: in your browser, and in encrypted form in your account if you have one.</p>
 
@@ -84,7 +92,7 @@
   <ul>
     <li><b>See your data:</b> everything the site holds about you is visible on the site. Your data → Download backup gives you a complete copy.</li>
     <li><b>Correct it:</b> change any mark, rating, note or added game on the site.</li>
-    <li><b>Delete it:</b> use Account → Delete my account, and clear your browser's site data.</li>
+    <li><b>Delete it:</b> use Account → Delete my account, and clear your browser's site data. To withdraw only your community votes, untick <b>Add my ratings to the community scores</b>.</li>
     <li><b>Take it elsewhere:</b> the backup file is plain JSON.</li>
   </ul>
   <p>Because the account service only holds an id derived from your username and data it can't decrypt, we can't find or identify your account from anything other than your username and password. If you have a question or concern about your privacy, contact us through the GitHub issues page and we'll respond as best we can. Canadian residents may also contact the <a href="https://www.priv.gc.ca/">Office of the Privacy Commissioner of Canada</a>.</p>

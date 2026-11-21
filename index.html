@@ -222,6 +222,15 @@ dialog.dlgbox.gamebox{width:min(780px,calc(100vw - 24px));max-height:calc(100vh 
 .gamebox .whyfit{margin:14px 6px 0;padding:10px 12px;background:var(--myplus,#FFF6D8);border-left:5px solid var(--yellow);font-size:14.5px;line-height:1.45;max-width:68ch}
 .gamebox .whyfit b{display:inline;padding:0;margin:0;background:none;border:0;font-weight:700;font-size:inherit}
 .gamebox .whyfit .verdict{font-family:var(--marker);font-weight:400;font-size:16px;color:var(--ink);margin-right:4px}
+.gamebox .comm{margin:10px 6px 0;font-size:14px;color:var(--ink)}
+.gamebox .comm .lab{font-weight:800;margin-right:6px}
+.gamebox .comm b{color:var(--ink)}
+.gamebox .comm .cmempty{color:var(--muted)}
+.gamebox .facts{display:grid;grid-template-columns:max-content 1fr;gap:4px 16px;margin:12px 6px 0;font-size:14px;max-width:68ch}
+.gamebox .facts dt{font-weight:700;color:var(--muted)}
+.gamebox .facts dd{margin:0}
+.gamebox .dlglinks{margin:12px 6px 0}
+.gamebox .dlglinks .btn{text-decoration:none;display:inline-block}
 .gamebox .about{margin:12px 6px 0;max-width:68ch;font-size:14.5px;line-height:1.55}
 .gamebox .about p{margin:0 0 10px}
 .gamebox .about .credit{font-size:12px;color:var(--muted);margin-top:4px}
@@ -693,6 +702,16 @@ body.notime th[data-k="time"],body.notime td.tm,body.notime .ctm{display:none}
           </div>
         </div>
         <div class="grp">
+          <span class="lab">Players</span>
+          <div class="seg" id="players" role="group" aria-label="Players">
+            <button type="button" data-v="all">Any</button>
+            <button type="button" data-v="c">Co-op</button>
+            <button type="button" data-v="m">Multiplayer</button>
+            <button type="button" data-v="s1">Solo only</button>
+          </div>
+          <span class="hint">From Wikidata, which lists game modes for about three quarters of the games. Games it says nothing about are hidden while this filter is on.</span>
+        </div>
+        <div class="grp">
           <span class="lab">Game style</span>
           <div class="chips" id="styles" role="group" aria-label="Game style"></div>
           <span class="hint">Each style has its own colour, used on the tiles. Pick several to find games that match all of them.</span>
@@ -801,6 +820,9 @@ body.notime th[data-k="time"],body.notime td.tm,body.notime .ctm{display:none}
     <div class="dlg"><button type="button" class="dlgx" id="gamex" aria-label="Close">✕</button>
       <div class="tablebox"><table><tbody id="dlgrows"></tbody></table></div>
       <p class="whyfit" id="dlgwhy"></p>
+      <p class="comm" id="dlgcomm"></p>
+      <dl class="facts" id="dlgfacts"></dl>
+      <p class="dlglinks"><a id="dlgtrailer" class="btn" target="_blank" rel="noopener">▶ Watch trailers on YouTube</a></p>
       <div class="about" id="dlgabout"></div></div>
   </dialog>
   <dialog class="dlgbox" id="welcomedlg" aria-labelledby="welcomettl">
@@ -834,10 +856,10 @@ body.notime th[data-k="time"],body.notime td.tm,body.notime .ctm{display:none}
 (()=>{const f=()=>document.documentElement.style.setProperty("--sbw",(innerWidth-document.documentElement.clientWidth)+"px");addEventListener("resize",f);addEventListener("load",f);new ResizeObserver(f).observe(document.documentElement);})();
 (async function main(){
 "use strict";
-let GAMES,META,ARTLIST,LINKS,REGDATA;
+let GAMES,META,ARTLIST,LINKS,REGDATA,FACTS={};
 try{
   const get=u=>fetch(u,{cache:"no-cache"}).then(r=>{if(!r.ok)throw new Error(u+" "+r.status);return r.json();});
-  [GAMES,META,ARTLIST,LINKS,REGDATA]=await Promise.all([get("data/games.json"),get("data/catalogue.json"),get("data/art.json").catch(()=>[]),get("data/links.json").catch(()=>({})),get("data/regions.json").catch(()=>({}))]);
+  [GAMES,META,ARTLIST,LINKS,REGDATA,FACTS]=await Promise.all([get("data/games.json"),get("data/catalogue.json"),get("data/art.json").catch(()=>[]),get("data/links.json").catch(()=>({})),get("data/regions.json").catch(()=>({})),get("data/facts.json").catch(()=>({}))]);
 }catch(e){
   document.getElementById("count").textContent="Couldn't load the game list. Check your connection and reload the page.";
   return;
@@ -859,7 +881,7 @@ const PORDER={"PS5":0,"PS4/PS5":1,"PS4":2,"Elsewhere":3};
 const PNAME={"PS5":"PS5 only","PS4/PS5":"PS4 and PS5","PS4":"PS4 only","Elsewhere":"Added by me"};
 const HUE={"Action":14,"Adventure":172,"RPG":268,"Shooter":212,"Open World":142,"Platformer":44,"Strategy":236,"Simulation":190,"Horror":350,"Survival":84,"Puzzle":312,"Racing":28,"Sports":108,"Fighting":2,"Family":332,"Party":290,"Roguelike":58,"Metroidvania":252,"Stealth":200,"Hack & Slash":20,"Narrative":160,"Arcade":322,"Soulslike":280,"Other":220};
 const SERIES=[["Jak|Daxter","Jak and Daxter"],["Sly ","Sly Cooper"],["Syphon Filter","Syphon Filter"],["Tekken","Tekken"],["Twisted Metal","Twisted Metal"],["Wild Arms","Wild Arms"],["TimeSplitters","TimeSplitters"],["Resident Evil","Resident Evil"],["Worms","Worms"],["Ape Escape|Ape Academy","Ape Escape"],["Armored Core","Armored Core"],["Patapon","Patapon"],["LocoRoco","LocoRoco"],["Metro","Metro"],["MediEvil","MediEvil"],["Ridge Racer|R4: Ridge Racer","Ridge Racer"],["Legacy of Kain|Blood Omen","Legacy of Kain"],["Dark Cloud","Dark Cloud"],["Pursuit Force","Pursuit Force"],["Kurushi","Kurushi"],["Thrillville","Thrillville"],["Ratchet|Secret Agent Clank","Ratchet & Clank"],["Dino Crisis","Dino Crisis"],["Gravity Rush","Gravity Rush"],["Myst|Riven","Myst"],["Jet Rider","Jet Rider"],["Alone in the Dark","Alone in the Dark"],["Everybody's Golf|Hot Shots","Everybody's Golf"],["Atari Flashback","Atari Flashback"],["Disney","Disney"],["Echochrome|echochrome|echoshift","Echochrome"]].concat([["LEGO|The LEGO","LEGO"],["Assassin's Creed","Assassin's Creed"],["Far Cry","Far Cry"],["PAW Patrol","PAW Patrol"],["Tom Clancy's Ghost Recon","Ghost Recon"],["Tom Clancy's Rainbow Six","Rainbow Six"],["Tom Clancy's The Division","The Division"],["Wolfenstein","Wolfenstein"],["Earth Defense Force","Earth Defense Force"],["Story of Seasons","Story of Seasons"],["Warhammer 40,000","Warhammer 40,000"],["Warhammer:","Warhammer Fantasy"],["Uncharted","Uncharted"],["Marvel's Spider-Man","Marvel's Spider-Man"],["The Last of Us","The Last of Us"],["God of War","God of War"],["Horizon","Horizon"],["Final Fantasy","Final Fantasy"],["Persona","Persona"],["Death Stranding","Death Stranding"],["Dying Light","Dying Light"],["Sniper Elite|Zombie Army","Sniper Elite"],["Watch Dogs","Watch Dogs"],["Mafia","Mafia"],["Destiny 2","Destiny 2"],["Tomb Raider|Rise of the Tomb Raider|Shadow of the Tomb Raider","Tomb Raider"],["Trials","Trials"],["Two Point","Two Point"],["Cat Quest","Cat Quest"],["Monster Hunter","Monster Hunter"],["Like a Dragon","Like a Dragon"],["Kingdom Come","Kingdom Come"],["Dishonored","Dishonored"],["Call of Duty","Call of Duty"],["Alan Wake","Alan Wake"],["Five Nights at Freddy's","Five Nights at Freddy's"],["Poppy Playtime","Poppy Playtime"],["Hotline Miami","Hotline Miami"],["Coffee Talk","Coffee Talk"],["Citizen Sleeper","Citizen Sleeper"],["Ben 10","Ben 10"],["Rabbids","Rabbids"],["Monopoly","Monopoly"],["Dynasty Warriors|Samurai Warriors|Warriors:","Warriors"],["Until Dawn","Until Dawn"],["Hello Neighbor|Secret Neighbor","Hello Neighbor"],["Killing Floor","Killing Floor"],["Outlast|The Outlast","Outlast"],["Overpass","Overpass"],["World War Z","World War Z"],["Nioh","Nioh"],["NBA 2K","NBA 2K"],["PGA Tour","PGA Tour 2K"],["WWE 2K","WWE 2K"],["MLB The Show","MLB The Show"],["EA Sports FC","EA Sports FC"],["F1 ","F1"],["Need for Speed","Need for Speed"],["Monster Train","Monster Train"],["Fallout","Fallout"],["DOOM","Doom"],["Sonic","Sonic"],["Aliens","Aliens"],["The Elder Scrolls","The Elder Scrolls"],["Oddworld","Oddworld"],["The Crew","The Crew"],["Planet ","Planet"],["The Surge","The Surge"],["Ys ","Ys"],["Prince of Persia|The Rogue Prince of Persia","Prince of Persia"],["Minecraft","Minecraft"],["South Park","South Park"],["Farming Simulator","Farming Simulator"],["Star Wars","Star Wars"],["For The King","For The King"],["Mighty Morphin Power Rangers|Power Rangers","Power Rangers"]]).map(([p,n])=>[new RegExp("^(?:"+p.replace(/[.*+?^${}()[\]\\]/g,m=>m==="|"?m:"\\"+m)+")","i"),n]);
-const DEF={layout:"wall",notime:false,tier:"",since:"",region:"",q:"",sort:"m",desc:true,plat:"all",minm:0,hideun:false,tmode:"h",tlen:"all",styles:[],src:"all",hidep:true,hideb:true,hidew:false,hidelib:false,sys:"all",onlyleave:false,syn:true,pv:[],view:"browse"};
+const DEF={players:"all",layout:"wall",notime:false,tier:"",since:"",region:"",q:"",sort:"m",desc:true,plat:"all",minm:0,hideun:false,tmode:"h",tlen:"all",styles:[],src:"all",hidep:true,hideb:true,hidew:false,hidelib:false,sys:"all",onlyleave:false,syn:true,pv:[],view:"browse"};
 let S=Object.assign({},DEF,{styles:[],pv:[]});
 let MARKS={}; // game id -> "w" want | "p" played | "b" bounced off | "x" not interested
 try{const s=JSON.parse(localStorage.getItem("psplus-sorter")||"null");if(s&&typeof s==="object")S=Object.assign(S,s);if(!Array.isArray(S.styles))S.styles=[];if(!Array.isArray(S.pv))S.pv=[];}catch(e){}
@@ -1127,6 +1149,7 @@ function pass(g){
   if(g.gone&&(!MARKS[g.id]||S.view==="browse"))return false;
   if(CTX.ser&&g.ser!==CTX.ser)return false;
   if(S.onlyleave&&!LEAVING[g.id])return false;
+  if(S.players!=="all"){const m=(FACTS[g.id]||{}).modes||"";if(S.players==="s1"?!(m.includes("s")&&!m.includes("m")):!m.includes(S.players))return false;}
   if(CTX.ser){/* a series view shows every entry, whatever its mark */}
   else if(S.view==="n"){if(LIB[g.id]!==-1)return false;}
   else if(S.view==="browse"){
@@ -1345,7 +1368,10 @@ function layoutUI(){
 }
 let DLG_ID=null;
 function fillDlg(){if(!DLG_ID)return;const g=BYID.get(DLG_ID);if(!g)return;const syn=S.syn;S.syn=true;$("dlgrows").innerHTML=row(g,0);S.syn=syn;
-  const w=whyFor(g);$("dlgwhy").innerHTML=w;$("dlgwhy").hidden=!w;fillAbout(g);}
+  const w=whyFor(g);$("dlgwhy").innerHTML=w;$("dlgwhy").hidden=!w;fillAbout(g);
+  loadCommunity();const cl=communityLine(g);$("dlgcomm").innerHTML=cl?`<span class="lab">Rental Wall members</span> ${cl}`:"";$("dlgcomm").hidden=!cl;
+  fillFacts(g);
+  $("dlgtrailer").href="https://www.youtube.com/results?search_query="+encodeURIComponent(`${g.t} ${g.p.includes("PS5")?"PS5":g.p[0]||"PlayStation"} trailer`);}
 /* Longer description from Wikipedia (data/about.json, made by tools/fetch_wiki.py), loaded the first
    time a pop-up opens. Wikipedia text is CC BY-SA 4.0, so it's credited with a link to the article. */
 let ABOUT=null,ABOUT_LOADING=null;
@@ -1437,7 +1463,7 @@ function render(animate){
   const asc=!S.desc;$("dir").textContent=asc?"↑":"↓";
   $("dir").title=asc?"Ascending. Click to reverse.":"Descending. Click to reverse.";
   const press=(sel,v)=>document.querySelectorAll(sel).forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===v));
-  press("#plat button",S.plat);press("#sysf button",S.sys);press("#tlen button",S.tlen);press("#src button",S.src);
+  press("#plat button",S.plat);press("#players button",S.players);press("#sysf button",S.sys);press("#tlen button",S.tlen);press("#src button",S.src);
   document.querySelectorAll("#styles button").forEach(b=>b.setAttribute("aria-pressed",S.styles.includes(b.dataset.v)));
   document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===S.view));
   document.querySelectorAll("thead th[data-k]").forEach(th=>{
@@ -1602,7 +1628,7 @@ async function push(){
       const {ct,iv}=await seal(snap);
       try{
         const r=await api("/api/data/put",{uid:ACCT.uid,auth:ACCT.auth,ct,iv,base:ACCT.ver});
-        ACCT.ver=r.ver;ACCT.base=snap;remember();dirty=false;setSync(SYNCOK());break;
+        ACCT.ver=r.ver;ACCT.base=snap;remember();dirty=false;setSync(SYNCOK());queueVotes();break;
       }catch(e){
         if(e.status!==409)throw e;
         const server=await unseal(e.ct,e.iv);
@@ -1645,8 +1671,63 @@ async function signIn(user,pw){
   if(!sameSnap(merged,server))await push();else setSync(SYNCOK());
   return added;
 }
+/* Community scores (opt-in, signed-in only). When ticked, your marks and star ratings, never notes,
+   are sent to the server in the clear under an anonymous code so they can be counted. They're
+   replaced on every sync and withdrawn when you untick the box or delete the account. */
+const SHARE_KEY="psplus-share";
+const sharing=()=>{try{return !!ACCT&&localStorage.getItem(SHARE_KEY)==="1";}catch(e){return false;}};
+let votesTimer=null;
+function queueVotes(ms=4000){if(!sharing())return;clearTimeout(votesTimer);votesTimer=setTimeout(sendVotes,ms);}
+async function sendVotes(){
+  if(!sharing())return;
+  const votes={};
+  for(const id of new Set([...Object.keys(MARKS),...Object.keys(RATE)])){
+    if(CUSTOM[id]||!BYID.has(id))continue;
+    const v={};if(MARKS[id])v.m=MARKS[id];if(RATE[id])v.r=RATE[id];if(v.m||v.r)votes[id]=v;
+  }
+  try{await api("/api/votes/put",{uid:ACCT.uid,auth:ACCT.auth,votes});}catch(e){}
+}
+async function setSharing(on){
+  try{on?localStorage.setItem(SHARE_KEY,"1"):localStorage.removeItem(SHARE_KEY);}catch(e){}
+  if(!ACCT)return;
+  if(on)await sendVotes();else{try{await api("/api/votes/delete",{uid:ACCT.uid,auth:ACCT.auth});}catch(e){}}
+}
+let COMM=null,COMM_LOADING=null;
+function loadCommunity(){
+  if(COMM||COMM_LOADING||!API)return;
+  COMM_LOADING=fetch(API+"/api/community").then(r=>r.ok?r.json():null).catch(()=>null).then(c=>{COMM=c||{games:{}};if(DLG_ID)fillDlg();});
+}
+/* Facts from Wikidata (data/facts.json, made by tools/fetch_wiki.py). */
+const MODE_NAMES={s:"Single-player",c:"Co-op",o:"Online",l:"Local or split-screen",m:"Multiplayer"};
+function fillFacts(g){
+  const f=FACTS[g.id]||{},rows=[];
+  const list=a=>a.map(esc).join(", ");
+  if(f.dev)rows.push(["Developer",list(f.dev)]);
+  if(f.pub&&JSON.stringify(f.pub)!==JSON.stringify(f.dev))rows.push(["Publisher",list(f.pub)]);
+  if(f.dir)rows.push(["Director",list(f.dir)]);
+  if(f.mus)rows.push(["Music",list(f.mus)]);
+  if(f.ser)rows.push(["Series",esc(f.ser)]);
+  if(f.modes){const m=f.modes,shown=[...m].filter(k=>k!=="m"||!/[col]/.test(m)).map(k=>MODE_NAMES[k]);rows.push(["Modes",shown.join(", ")+(f.max>1?` · up to ${f.max} players`:"")]);}
+  else if(f.max>1)rows.push(["Players",`Up to ${f.max}`]);
+  const rate=[f.esrb&&("ESRB "+f.esrb.replace(/^ESRB\s*/i,"")),f.pegi].filter(Boolean);
+  if(rate.length)rows.push(["Rated",esc(rate.join(" · "))]);
+  const t=[["Main story",g.h],["Story and extras",g.x],["Completionist",g.c]].filter(x=>x[1]);
+  if(t.length&&!S.notime)rows.push(["Playtime",t.map(([k,v])=>`${k} ${fmtT(v)}`).join(" · ")]);
+  $("dlgfacts").innerHTML=rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join("");
+  $("dlgfacts").hidden=!rows.length;
+}
+function communityLine(g){
+  const c=COMM&&COMM.games&&COMM.games[g.id];
+  if(!c)return COMM&&COMM.voters!=null?`<span class="cmempty">No community scores for this one yet. ${ACCT?(sharing()?"":"Tick <b>Add my ratings to the community scores</b> under Account to help."):"Sign in and opt in to add yours."}</span>`:"";
+  const [n,nr,avg,p,b,w,pl]=c,bits=[];
+  if(avg!=null)bits.push(`<b>${"★".repeat(Math.round(avg))}${"☆".repeat(5-Math.round(avg))} ${avg.toFixed(1)}</b> from ${nr} ${nr===1?"rating":"ratings"}`);
+  if(p+b>=3)bits.push(`${Math.round(100*b/(p+b))}% bounced off`);
+  if(pl)bits.push(`${pl} playing now`);
+  if(w)bits.push(`${w} want to play`);
+  return bits.length?bits.join(" · "):"";
+}
 function signOut(clear){
-  ACCT=null;clearTimeout(pushTimer);clearTimeout(retryTimer);dirty=false;
+  ACCT=null;clearTimeout(pushTimer);clearTimeout(retryTimer);clearTimeout(votesTimer);dirty=false;
   try{localStorage.removeItem("psplus-acct");}catch(e){}
   if(clear){applySnap({});try{["psplus-marks","psplus-rate","psplus-lib","psplus-notes","psplus-dates","psplus-custom","psplus-sorter"].forEach(k=>localStorage.removeItem(k));}catch(e){}}
   setSync(clear?"Signed out, and your marks were cleared from this browser.":"Signed out. Your marks are still saved in this browser.");
@@ -1671,6 +1752,7 @@ function renderDlg(){
     b.innerHTML=`<p>Signed in as <b id="dlguser"></b>. Your marks, ratings, notes and added games are encrypted in this browser and synced to your account, so you can sign in on another device and pick up where you left off.</p>
       <div class="row"><button type="button" class="btn primary" data-act="sync">Sync now</button><button type="button" class="btn" data-act="out">Sign out</button><button type="button" class="btn" data-act="outclear">Sign out and clear this browser</button></div>
       <p class="small">Use "Sign out and clear this browser" on a shared or public computer.</p>
+      <label class="agree"><input type="checkbox" id="dlgshare"${sharing()?" checked":""}><span><b>Add my ratings to the community scores.</b> Your marks and star ratings (not your notes) are sent without encryption under an anonymous code and only ever shown as totals for games with at least three people. Untick to withdraw them. <a href="privacy.html#community" target="_blank">More in the Privacy Policy</a>.</span></label>
       <div class="row"><button type="button" class="btn danger" data-act="del">Delete my account</button></div>
       <div class="err" id="dlgmsg" aria-live="polite"></div>
       <div class="row" style="justify-content:flex-end"><button type="button" class="btn" data-act="close">Close</button></div>`;
@@ -1688,6 +1770,13 @@ function renderDlg(){
     <div class="row" style="justify-content:flex-end"><button type="button" class="btn" data-act="close">Cancel</button><button type="submit" class="btn primary" id="dlggo">${create?"Create account":"Sign in"}</button></div>`;
 }
 const dlgMsg=(t,ok)=>{const m=$("dlgmsg");if(m){m.textContent=t;m.classList.toggle("ok",!!ok);}};
+$("acctdlg").addEventListener("change",async e=>{
+  if(e.target.id!=="dlgshare")return;
+  dlgMsg(e.target.checked?"Adding your ratings…":"Withdrawing your ratings…",true);
+  await setSharing(e.target.checked);
+  dlgMsg(e.target.checked?"Thanks. Your ratings are counted in the community scores.":"Done. Your ratings are no longer counted.",true);
+  COMM=null;COMM_LOADING=null;
+});
 $("acctdlg").addEventListener("click",async e=>{
   const t=e.target.closest("button");if(!t)return;
   if(t.dataset.mode){DLGMODE=t.dataset.mode;renderDlg();$("dlgu").focus();return;}
@@ -1836,7 +1925,7 @@ const chk=(id)=>$(id).addEventListener("change",e=>{S[id]=e.target.checked;soon(
 chk("hideun");chk("hidep");chk("hideb");chk("hidew");chk("hidelib");chk("onlyleave");chk("syn");$("notime").addEventListener("change",e=>{S.notime=e.target.checked;soon(()=>{render();renderHero();});});
 $("pvs").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const v=b.dataset.v;S.pv=S.pv.includes(v)?S.pv.filter(x=>x!==v):S.pv.concat(v);soon(render);});
 const segClick=(id,key)=>$(id).addEventListener("click",e=>{const b=e.target.closest("button");if(b){S[key]=b.dataset.v;soon(render);}});
-segClick("plat","plat");segClick("sysf","sys");segClick("tlen","tlen");segClick("src","src");$("tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(b){CTX={ser:null,like:null};S.view=b.dataset.v;soon(render);}});
+segClick("plat","plat");segClick("players","players");segClick("sysf","sys");segClick("tlen","tlen");segClick("src","src");$("tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(b){CTX={ser:null,like:null};S.view=b.dataset.v;soon(render);}});
 $("styles").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const v=b.dataset.v;S.styles=S.styles.includes(v)?S.styles.filter(s=>s!==v):S.styles.concat(v);soon(render);});
 $("bulkno").addEventListener("click",e=>{const b=e.currentTarget;
   if(!b.dataset.armed){b.dataset.armed="1";b.textContent=`Click again to confirm: ${b.dataset.n} games will be tagged`;setTimeout(()=>{delete b.dataset.armed;renderHero();},5000);return;}
@@ -1954,7 +2043,7 @@ document.querySelector("thead").addEventListener("click",e=>{const th=e.target.c
 /* Shorter sidebar: fixed explanations move behind "?" buttons beside their heading, and the
    less-used groups fold away. A folded group opens on its own when one of its filters is on,
    and shows a red dot when folded with a filter on. */
-const FOLDS={"Where it comes from":"Where it comes from","Platform":"Platform","Perspective":"Perspective","Metacritic at least":"Metacritic score","Completion time":"Completion time","Game style":"Game style","Your data":"Backup and restore"};
+const FOLDS={"Where it comes from":"Where it comes from","Platform":"Platform","Players":"Players","Perspective":"Perspective","Metacritic at least":"Metacritic score","Completion time":"Completion time","Game style":"Game style","Your data":"Backup and restore"};
 function foldKeys(grp){return [...grp.querySelectorAll("[id]")].map(e=>e.id in DEF?e.id:e.id.replace(/f$/,"") in DEF?e.id.replace(/f$/,""):null).filter(Boolean);}
 function foldState(){
   [["tierhint","tier"],["sincehint","since"]].forEach(([id,k])=>{const h=$(id);if(h&&h.classList.contains("xhint")&&!h.dataset.asked){h.classList.toggle("on",!!S[k]);}});document.querySelectorAll("#rail .fold").forEach(grp=>{

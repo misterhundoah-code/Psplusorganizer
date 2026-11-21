@@ -20,3 +20,16 @@ CREATE TABLE IF NOT EXISTS signups (
   day TEXT PRIMARY KEY,
   n   INTEGER NOT NULL
 );
+
+-- Community scores, only for people who opt in. One row per game they've marked or rated.
+-- vid is SHA-256 of a fixed prefix and the account id, so this table holds no account ids.
+-- Published only as totals per game, and only for games with at least 3 voters.
+CREATE TABLE IF NOT EXISTS votes (
+  vid     TEXT NOT NULL,
+  game    TEXT NOT NULL,
+  mark    TEXT,
+  stars   INTEGER,
+  updated INTEGER,
+  PRIMARY KEY (vid, game)
+);
+CREATE INDEX IF NOT EXISTS votes_game ON votes (game);
