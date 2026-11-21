@@ -46,7 +46,7 @@ npx wrangler login                       # opens a browser to sign in to Cloudfl
 npx wrangler d1 create psplus-sorter     # prints a database_id
 ```
 
-Then edit `worker/wrangler.toml`:
+Then edit `worker/wrangler.jsonc`:
 
 - paste the `database_id` it printed
 - set `ALLOWED_ORIGINS` to your Pages address with no path and no trailing slash, for this repository `https://misterhundoah-code.github.io` (already filled in)

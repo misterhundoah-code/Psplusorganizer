@@ -1,0 +1,18 @@
+// Account API (psplus-sorter-api). This is .jsonc on purpose: wrangler looks for wrangler.jsonc in
+// parent folders before it looks for wrangler.toml, so a .toml here would lose to the site's
+// wrangler.jsonc at the repository root and the site would be deployed in place of this API.
+{
+  "name": "psplus-sorter-api",
+  "main": "src/index.js",
+  "compatibility_date": "2025-06-01",
+  "vars": {
+    // Sites allowed to call this API, comma-separated, no trailing slash.
+    "ALLOWED_ORIGINS": "https://wallofpsplus.com,https://www.wallofpsplus.com,https://misterhundoah-code.github.io",
+    "ALLOW_LOCALHOST": "0",
+    "MAX_NEW_ACCOUNTS_PER_DAY": "500"
+  },
+  // Created with: npx wrangler d1 create psplus-sorter
+  "d1_databases": [
+    { "binding": "DB", "database_name": "psplus-sorter", "database_id": "2af9fe18-b0a7-4c23-adbe-970108e5464b" }
+  ]
+}
