@@ -1,7 +1,8 @@
 name: Fetch regional catalogues
 
 # Downloads Sony's Game Catalogue and Classics lists for every store region the
-# site offers and saves which games each region gets in data/regions.json.
+# site offers and saves which games each region gets in data/regions.json,
+# and each region's official age ratings in data/ratings/.
 # Runs weekly, whenever the game data changes, or by hand from the Actions tab.
 on:
   workflow_dispatch:
@@ -33,7 +34,7 @@ jobs:
       - name: Commit any changes
         id: commit
         run: |
-          git add data/regions.json
+          git add data/regions.json data/ratings
           if git diff --cached --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "No changes."

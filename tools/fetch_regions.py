@@ -17,6 +17,9 @@ a game in data/games.json, and writes data/regions.json:
     }
   }
 
+It also writes each region's official age ratings, taken from the same lists, to
+data/ratings/<region>.json (see rating_entry for the format).
+
 A region whose lists can't be downloaded is left out, and the site then shows
 the full list for it. Sony doesn't publish its PS3 streaming list, so the only
 thing recorded about PS3 streaming is whether the region has it at all: regions
@@ -79,6 +82,57 @@ def top_tier(loc):
     return None
 
 
+# Minimum age for ratings whose name carries no number.
+NAMED_AGES = {
+    "ESRB_EARLY_CHILDHOOD": 3, "ESRB_EVERYONE": 6, "ESRB_EVERYONE_10": 10, "ESRB_E_10_T": 13,
+    "ESRB_TEEN": 13, "ESRB_MATURE": 17, "ESRB_MATURE_17": 17, "ESRB_ADULTS_ONLY": 18,
+    "CERO_A": 0, "CERO_B": 12, "CERO_C": 15, "CERO_D": 17, "CERO_Z": 18,
+    "ACB_G": 0, "ACB_PG": 8, "ACB_M": 15, "ACB_MA15": 15, "ACB_MA_15": 15, "ACB_R18": 18, "ACB_R_18": 18,
+    "CLASSIND_L": 0, "GRAC_ALL": 0, "OFLC_G": 0, "OFLC_PG": 8, "OFLC_M": 16,
+}
+ESRB_SHORT = {6: "E", 10: "E10+", 13: "T", 17: "M", 18: "AO", 3: "EC"}
+UNKNOWN_RATINGS = set()
+
+
+def rating_age(name):
+    """Minimum age for a Sony rating name such as ESRB_TEEN, PEGI_16 or CLASSIND_14. None if unclear."""
+    n = (name or "").upper()
+    if not n or "PENDING" in n or n.endswith("_RP") or "NOT_RATED" in n:
+        return None
+    if n in NAMED_AGES:
+        return NAMED_AGES[n]
+    m = re.search(r"(\d{1,2})(?!.*\d)", n)
+    if m and 0 <= int(m.group(1)) <= 21:
+        return int(m.group(1))
+    if re.search(r"_(ALL|L|G|E|EVERYONE)$", n):
+        return 0
+    UNKNOWN_RATINGS.add(n)
+    return None
+
+
+def rating_entry(e):
+    """[label, minimum age or null, full name, [content descriptors]] from a feed entry, or None.
+    The label is short enough for a badge (E10+, PEGI 16, CERO C); the full name and the descriptors
+    are Sony's own wording in the region's language."""
+    a = e.get("ageRating") or {}
+    name = (a.get("name") or "").upper()
+    if not name:
+        return None
+    age = rating_age(name)
+    auth = (a.get("authority") or name.split("_")[0]).upper()
+    full = (a.get("description") or "").strip()
+    if auth == "ESRB" and age in ESRB_SHORT:
+        label = ESRB_SHORT[age]
+    else:
+        tail = name[len(auth) + 1:] if name.startswith(auth + "_") else name
+        label = f"{auth} {tail.replace('_', ' ')}".strip()
+        if len(label) > 14:
+            label = full[:14] or label[:14]
+    descs = [d.get("description") for d in (a.get("descriptors") or []) + (a.get("interactiveElements") or [])
+             if isinstance(d, dict) and d.get("description")]
+    return [label, age, full or label, descs[:12]]
+
+
 def platforms(g):
     dev = g.get("device") or []
     if isinstance(dev, str):
@@ -125,8 +179,10 @@ def main():
         return best[0]["id"]
 
     out = {"asOf": date.today().isoformat(), "regions": {}}
+    (ROOT / "data/ratings").mkdir(exist_ok=True)
     for loc in site_regions():
         reg, ok = {"cat": [], "cl": [], "extra": []}, True
+        ratings, auths = {}, {}
         src = STAND_IN.get(loc, loc)
         if src != loc:
             reg["from"] = src
@@ -141,6 +197,12 @@ def main():
             seen = set()
             for e in entries:
                 gid = match(e, kind)
+                if gid and gid not in ratings:
+                    r = rating_entry(e)
+                    if r:
+                        ratings[gid] = r
+                        a = ((e.get("ageRating") or {}).get("authority") or "").upper()
+                        auths[a] = auths.get(a, 0) + 1
                 if gid:
                     if gid not in seen:
                         seen.add(gid)
@@ -160,11 +222,18 @@ def main():
         reg["cat"].sort()
         reg["cl"].sort()
         out["regions"][loc] = reg
-        print(f"{loc}: {len(reg['cat'])} catalogue, {len(reg['cl'])} classics matched; {len(reg['extra'])} not on the site")
+        auth = max(auths, key=auths.get) if auths else ""
+        (ROOT / f"data/ratings/{loc}.json").write_text(json.dumps(
+            {"asOf": out["asOf"], "auth": auth, "games": dict(sorted(ratings.items()))},
+            ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+        print(f"{loc}: {len(reg['cat'])} catalogue, {len(reg['cl'])} classics matched; {len(reg['extra'])} not on the site; "
+              f"{len(ratings)} rated ({auths})")
 
     if not out["regions"]:
         sys.exit("No region lists could be downloaded; leaving data/regions.json alone.")
     (ROOT / "data/regions.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    if UNKNOWN_RATINGS:
+        print("Ratings with no known minimum age (add them to NAMED_AGES):", sorted(UNKNOWN_RATINGS))
 
 
 if __name__ == "__main__":
