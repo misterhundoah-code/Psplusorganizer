@@ -12,7 +12,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - run: node worker/test/votes.smoke.mjs
+      - name: From wallofpsplus.com
+        run: node worker/test/votes.smoke.mjs
+        env:
+          API: https://psplus-sorter-api.misterhundo-ah.workers.dev
+          ORIGIN: https://wallofpsplus.com
+      - name: From the old GitHub address
+        if: always()
+        run: node worker/test/votes.smoke.mjs
         env:
           API: https://psplus-sorter-api.misterhundo-ah.workers.dev
           ORIGIN: https://misterhundoah-code.github.io
