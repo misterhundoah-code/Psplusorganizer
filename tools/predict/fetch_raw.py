@@ -57,7 +57,10 @@ for qid in ("Q63184502", "Q5014725"):
         if g: d = b["rel"]["value"][:10]; g["rel"] = min(filter(None, [g["rel"], d]))
     time.sleep(3)
     for name, prop in PROPS.items():
-        rows = sparql(f"""SELECT ?g ?l WHERE {{ ?g wdt:P400 wd:{qid} ; wdt:{prop} ?x . ?x rdfs:label ?l . FILTER(LANG(?l) = "en") }}""") or []
+        if name == "plat":   # the console items have no English label on Wikidata, so keep their ids
+            rows = sparql(f"""SELECT ?g ?l WHERE {{ ?g wdt:P400 wd:{qid} ; wdt:P400 ?x . BIND(STRAFTER(STR(?x), "entity/") AS ?l) }}""") or []
+        else:
+            rows = sparql(f"""SELECT ?g ?l WHERE {{ ?g wdt:P400 wd:{qid} ; wdt:{prop} ?x . ?x rdfs:label ?l . FILTER(LANG(?l) = "en") }}""") or []
         print(name, qid, len(rows))
         for b in rows:
             g = games.get(b["g"]["value"].rsplit("/", 1)[1])

@@ -60,6 +60,15 @@ for g in wl:
         continue
     add({"t": g["t"], "w": g.get("w"), "rel": g.get("rel"), "pub": sorted({normpub(x) for x in g["pub"]}), "dev": g["dev"], "ser": [],
          "plats": ["PlayStation 5" if p == "PS5" else "PlayStation 4" for p in g["p"]], "free": False, "multi": False})
+# The wall's own PS4/PS5 games, so past additions that neither list has still count.
+F = load("facts.json"); AB = load("about.json")
+for g in load("games.json"):
+    if not ({"PS4", "PS5"} & set(g["p"])) or norm_ed(g["t"]) in seen: continue
+    f = F.get(g["id"], {})
+    add({"t": g["t"], "w": (AB.get(g["id"]) or {}).get("w"), "rel": f"{g['y']}-06-30" if g.get("y") else None,
+         "pub": sorted({normpub(x) for x in f.get("pub", [])}), "dev": f.get("dev", []), "ser": [f["ser"]] if f.get("ser") else [],
+         "plats": ["PlayStation 5" if p == "PS5" else "PlayStation 4" for p in g["p"] if p in ("PS4", "PS5")],
+         "free": False, "multi": "m" in f.get("modes", "") or "c" in f.get("modes", "")})
 for g in pool:
     g["views"] = V.get(g["w"] or "", 0) or V.get(g["t"], 0)
     g["sony"] = "Sony" in g["pub"]
@@ -94,17 +103,19 @@ print("extra additions linked", len(extra_add), "| monthly linked", len(ess_add)
 # ---------- features ----------
 FEATS = ["day one", "under 6 months old", "6 to 12 months old", "1 to 2 years old", "2 to 4 years old",
          "Sony game", "Sony game, 1 to 3 years old", "PlayStation exclusive", "popularity", "publisher track record",
-         "developer track record", "sequel or follow-up due soon", "was a monthly game", "already on Extra", "multiplayer", "PS5 game"]
+         "developer track record", "sequel or follow-up due soon", "was a monthly game", "already on Extra", "multiplayer", "PS5 game",
+         "big new release", "publisher's other track record"]
 
-def track(kind_adds, m):
+def track(kind_adds, m, which=None):
     """For each publisher and developer: games added before month m, out of their games released at least 6 months before."""
     tot_p, hit_p, tot_d, hit_d = collections.Counter(), collections.Counter(), collections.Counter(), collections.Counter()
     for i, g in enumerate(pool):
         if g["rm"] is None or g["rm"] > m - 6 or g["skip"]: continue
-        hit = any(a < m for a in (kind_adds[0].get(i, 10**9), kind_adds[1].get(i, 10**9)))
+        src = kind_adds if which is None else (kind_adds[which],)
+        hit = any(a.get(i, 10**9) < m for a in src)
         for p in g["pub"]: tot_p[p] += 1; hit_p[p] += hit
         for d in g["dev"]: tot_d[d] += 1; hit_d[d] += hit
-    base = sum(hit_p.values()) / max(1, sum(tot_p.values()))
+    base = max(1e-4, sum(hit_p.values()) / max(1, sum(tot_p.values())))
     return tot_p, hit_p, tot_d, hit_d, base
 
 def lift(names, tot, hit, base, k=6):
@@ -131,13 +142,14 @@ def sequel(i, m):
 
 def row(i, m, tr, kind):
     g = pool[i]; age = m - g["rm"]
-    tp, hp, td, hd, base = tr
-    pl = lift(g["pub"], tp, hp, base); dl = lift(g["dev"], td, hd, base)
+    (tp, hp, td, hd, base), (tp2, hp2, _, _, base2) = tr
+    pl = lift(g["pub"], tp, hp, base); dl = lift(g["dev"], td, hd, base); pl2 = lift(g["pub"], tp2, hp2, base2)
     sq = sequel(i, m)
     in_extra = i in launch or extra_add.get(i, 10**9) < m
     x = [age <= 0, 0 < age <= 6, 6 < age <= 12, 12 < age <= 24, 24 < age <= 48,
          g["sony"], g["sony"] and 12 <= age <= 36, g["excl"], math.log1p(g["views"]) / 10,
-         pl[0], dl[0], sq is not None, ess_add.get(i, 10**9) < m, in_extra, g["multi"], g["ps5"]]
+         pl[0], dl[0], sq is not None, ess_add.get(i, 10**9) < m, in_extra, g["multi"], g["ps5"],
+         (age <= 12) * max(0.0, math.log10(max(g["views"], 1)) - 4.5), pl2[0]]
     return [float(v) for v in x], {"pub": pl, "dev": dl, "seq": sq, "age": age}
 
 def cands(m, kind):
@@ -152,19 +164,29 @@ def cands(m, kind):
         out.append(i)
     return out
 
+def trk(m, kind):
+    w = 0 if kind == "extra" else 1
+    return track((extra_add, ess_add), m, w), track((extra_add, ess_add), m, 1 - w)
+
 def build(kind, months):
     X, y, meta = [], [], []
     adds = extra_add if kind == "extra" else ess_add
     for m in months:
-        tr = track((extra_add, ess_add), m)
+        tr = trk(m, kind)
         for i in cands(m, kind):
             x, _ = row(i, m, tr, kind)
             X.append(x); y.append(adds.get(i) == m); meta.append((m, i))
     return np.array(X), np.array(y, dtype=int), meta
 
+MODEL = sys.argv[2] if len(sys.argv) > 2 else "lr"
+def make():
+    if MODEL == "gb":
+        from sklearn.ensemble import HistGradientBoostingClassifier
+        return HistGradientBoostingClassifier(max_iter=200, learning_rate=0.05, max_leaf_nodes=15, min_samples_leaf=40, l2_regularization=1.0)
+    return LogisticRegression(C=0.5, max_iter=3000)
 def evaluate(kind, months_train, months_test):
     Xtr, ytr, _ = build(kind, months_train)
-    clf = LogisticRegression(C=0.5, max_iter=2000).fit(Xtr, ytr)
+    clf = make().fit(Xtr, ytr)
     Xte, yte, meta = build(kind, months_test)
     p = clf.predict_proba(Xte)[:, 1]
     res = []
@@ -192,10 +214,11 @@ for kind, start in (("extra", "2022-07"), ("essential", "2019-01")):
           f" median rank {allranks[len(allranks) // 2] if allranks else '-'} of ~{res[-1]['cands'] if res else 0}")
     for r in res[-4:]: print("  ", r["month"], "added", r["added"], "ranks", r["ranks"][:10], "expected", r["expected"], "| found", r["found"][:5])
     # final model on every month, then score the next three months
-    clf = LogisticRegression(C=0.5, max_iter=2000).fit(*build(kind, allm)[:2])
+    if "--eval" in sys.argv: continue
+    clf = LogisticRegression(C=0.5, max_iter=3000).fit(*build(kind, allm)[:2])
     coef = dict(zip(FEATS, clf.coef_[0].round(3)))
     print("   weights:", {k: v for k, v in coef.items()})
-    m0 = mi(NOW_M); tr = track((extra_add, ess_add), m0)
+    m0 = mi(NOW_M); tr = trk(m0, kind)
     rows = []
     for i in cands(m0, kind):
         p3 = 1.0; detail = None
@@ -214,4 +237,4 @@ for kind, start in (("extra", "2022-07"), ("essential", "2019-01")):
     rows.sort(key=lambda r: -r["p"])
     out[kind] = {"backtest": res, "weights": coef, "top": rows[:400], "n": len(rows)}
     print("   top 15 for", NOW_M, ":", [(r["t"], r["p"]) for r in rows[:15]])
-(ROOT / "data" / "predict.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+if "--eval" not in sys.argv: (ROOT / "data" / "predict.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
