@@ -1,0 +1,43 @@
+name: Fetch coming soon
+
+# Games Sony has announced for PS Plus but that haven't arrived yet, read from the PlayStation Blog
+# (see tools/fetch_coming.py). Runs twice a day so a Wednesday announcement shows up the same day,
+# whenever the script changes, or by hand from the Actions tab.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 16,22 * * *"
+  push:
+    branches: [main]
+    paths: ["tools/fetch_coming.py", "data/coming-manual.json"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: coming
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests pillow
+      - run: python tools/fetch_coming.py
+      - name: Commit any changes
+        run: |
+          git add data/coming.json
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Update coming soon"
+            git pull --rebase
+            git push
+          fi
