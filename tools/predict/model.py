@@ -72,8 +72,14 @@ for g in load("games.json"):
          "pub": sorted({normpub(x) for x in f.get("pub", [])}), "dev": f.get("dev", []), "ser": [f["ser"]] if f.get("ser") else [],
          "plats": ["PlayStation 5" if p == "PS5" else "PlayStation 4" for p in g["p"] if p in ("PS4", "PS5")],
          "free": False, "multi": "m" in f.get("modes", "") or "c" in f.get("modes", "")})
+# Sony's own studios: their games are Sony's, whoever Wikidata names as publisher.
+SONY_STUDIOS = re.compile(r"^(sucker punch|insomniac|naughty dog|santa monica studio|guerrilla|bend studio|sie bend|media molecule|polyphony|"
+                          r"bluepoint|housemarque|firesprite|haven|team asobi|japan studio|nixxes|valkyrie entertainment|"
+                          r"(sie |sony )?san diego studio|(sie |sony )?london studio|pixelopus|playstation studios|sony interactive)", re.I)
 for g in pool:
     g["views"] = V.get(g["w"] or "", 0) or V.get(g["t"], 0)
+    if any(SONY_STUDIOS.search(d) for d in g["dev"]) and "Sony" not in g["pub"]:
+        g["pub"] = sorted(set(g["pub"]) | {"Sony"})
     g["sony"] = "Sony" in g["pub"]
     g["excl"] = g.get("src") == "wd" and not g["sony"] and not any(re.search(r"Windows|Xbox|Switch|Stadia", p) for p in g["plats"])
     g["ps5"] = "PlayStation 5" in g["plats"]
@@ -121,9 +127,12 @@ def track(kind_adds, m, which=None):
     for i, g in enumerate(pool):
         if g["rm"] is None or g["rm"] > m - 6 or g["skip"]: continue
         src = kind_adds if which is None else (kind_adds[which],)
-        hit = any(a.get(i, 10**9) < m for a in src)
-        for p in set(g["pub"]) | set(g["dev"]): tot_p[p] += 1; hit_p[p] += hit
-        for d in set(g["dev"]) | set(g["pub"]): tot_d[d] += 1; hit_d[d] += hit
+        hit = any(a.get(i, 10**9) < m for a in src) or (i in launch and (which in (None, 0)) and m > mi("2022-06"))
+        # A game Sony published counts for Sony and its own studios only: Bloodborne says nothing about
+        # whether FromSoftware's own games come to PS Plus.
+        names = ({"Sony"} | {d for d in g["dev"] if SONY_STUDIOS.search(d)}) if g["sony"] else set(g["pub"]) | set(g["dev"])
+        for p in names: tot_p[p] += 1; hit_p[p] += hit
+        for d in names: tot_d[d] += 1; hit_d[d] += hit
     base = max(1e-4, sum(hit_p.values()) / max(1, sum(tot_p.values())))
     return tot_p, hit_p, tot_d, hit_d, base
 
@@ -224,7 +233,7 @@ def reasons(g, i, d, c, kind, m):
     if g["sony"] and abs(c.get("Sony game, 1 to 3 years old", 0)) > 0.04: add("Sony game, 1 to 3 years old", f"Sony's own game, {yrs} old: about when Sony tends to add its own games")
     elif g["sony"]: add("Sony game", "Sony's own game")
     if d["pub"][1]: add("publisher track record", f"{d['pub'][1]}: {d['pub'][2]} of {d['pub'][3]} of its games have joined {where}")
-    if d["dev"][1] and d["dev"][1] not in g["pub"]: add("developer track record", f"{d['dev'][1]}: {d['dev'][2]} of {d['dev'][3]} of its games have joined {where}")
+    if d["dev"][1] and d["dev"][1] not in g["pub"] and not g["sony"]: add("developer track record", f"{d['dev'][1]}: {d['dev'][2]} of {d['dev'][3]} of its games have joined {where}")
     if d["seq"]:
         h = d["seq"]; due = rel_m(h["rel"]) >= m
         add("sequel or follow-up due soon", f"{h['t']} {'is due' if due else 'came out'} {nice(h['rel'])}")
