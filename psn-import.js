@@ -36,7 +36,7 @@
     for (let start = 0, page = 0; page < 40; page++, start += 100) {
       const d = await q("getPurchasedGameList", PURCHASED, { isActive: true, platform: ["ps4", "ps5"], size: 100, start, sortBy: "ACTIVE_DATE", sortDirection: "desc" });
       const games = (d && d.purchasedTitlesRetrieve && d.purchasedTitlesRetrieve.games) || [];
-      for (const g of games) owned.push({ n: g.name, c: g.conceptId, t: g.titleId, pf: g.platform, plus: g.membership === "PS_PLUS" ? 1 : 0 });
+      for (const g of games) owned.push({ n: g.name, c: g.conceptId, t: g.titleId, pf: g.platform, plus: g.membership === "PS_PLUS" ? 1 : 0, img: g.image && g.image.url });
       if (games.length < 100) break;
     }
   } catch (e) { err += "Bought and claimed games: " + e.message + ". "; }

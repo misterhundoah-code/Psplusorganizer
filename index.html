@@ -653,7 +653,7 @@ dialog.dlgbox#psndlg{width:min(640px,calc(100vw - 24px))}
 /* This month's games shelf */
 .eyebrow.mon{color:#62D995}
 #mondeck .talk.claim,#mondeck .card:nth-child(n) .talk.claim{background:#1F8A4C;color:#fff;transform:rotate(-3deg);white-space:nowrap;font-size:13px}
-#mondeck .talk.got,#mondeck .card:nth-child(n) .talk.got{background:var(--case);color:var(--ink);border:2px solid var(--ink);transform:rotate(-3deg);white-space:nowrap;font-size:13px}
+#comedeck .talk.got,#comedeck .card:nth-child(n) .talk.got,#mondeck .talk.got,#mondeck .card:nth-child(n) .talk.got{background:var(--case);color:var(--ink);border:2px solid var(--ink);transform:rotate(-3deg);white-space:nowrap;font-size:13px}
 </style>
 </head>
 <body>
@@ -787,6 +787,7 @@ dialog.dlgbox#psndlg{width:min(640px,calc(100vw - 24px))}
             <button type="button" data-v="e">Monthly games</button>
             <button type="button" data-v="cl">Classics</button>
             <button type="button" data-v="mine">Added by me</button>
+            <button type="button" data-v="buy" title="Games from your PlayStation import that aren't part of PS Plus">My purchases</button>
           </div>
           <label class="check"><input type="checkbox" id="hidelib"> Also hide monthly games I haven't tagged yet</label>
           <span class="lab" style="margin-top:4px">Classics by original system</span>
@@ -1097,7 +1098,7 @@ try{const s=JSON.parse(localStorage.getItem("psplus-sorter")||"null");if(s&&type
    query is then removed from the address bar so a reload doesn't undo later changes. Unknown keys and
    values are ignored. */
 {const P=new URLSearchParams(location.search),one=a=>v=>a.includes(v)?v:undefined,list=v=>v.split(",").map(x=>x.trim()).filter(x=>x&&x.length<40).slice(0,6);
-  const LINK={src:one(["all","c","e","cl","plus"]),players:one(["all","c","m","s1","xp"]),age:one(["all","7","12","16"]),
+  const LINK={src:one(["all","c","e","cl","plus","buy"]),players:one(["all","c","m","s1","xp"]),age:one(["all","7","12","16"]),
     tlen:v=>/^\d{1,4}-\d{1,4}$/.test(v)?v:undefined,tmode:one(["h","x","c"]),sort:one(["m","time","p","g","t","y"]),
     desc:v=>v==="0"?false:v==="1"?true:undefined,minm:v=>/^\d{1,2}$/.test(v)?+v:undefined,styles:list,pv:list,
     plat:one(["all","PS5","PS4","only5"]),sys:one(["all","PS1","PS2","PSP","PS3","PS4 remaster","Arcade"]),
@@ -1122,9 +1123,23 @@ try{const m=JSON.parse(localStorage.getItem("psplus-lib")||"null");if(m&&typeof 
 try{const m=JSON.parse(localStorage.getItem("psplus-notes")||"null");if(m&&typeof m==="object")NOTES=m;}catch(e){}
 try{const m=JSON.parse(localStorage.getItem("psplus-dates")||"null");if(m&&typeof m==="object")DATES=m;}catch(e){}
 try{const m=JSON.parse(localStorage.getItem("psplus-custom")||"null");if(m&&typeof m==="object")CUSTOM=m;}catch(e){}
-/* The last PlayStation import, for My library (see savePsnLib). Local only. */
-let PSNLIB=null;
-try{const v=JSON.parse(localStorage.getItem("psplus-psnlib")||"null");if(v&&Array.isArray(v.games)&&typeof v.at==="string")PSNLIB={at:v.at.slice(0,30),games:v.games.filter(g=>g&&typeof g.n==="string"&&g.n.length<=150&&(g.id==null||typeof g.id==="string")).slice(0,5000)};}catch(e){}
+/* Purchases imported from PlayStation (see savePurchases): key -> {t, p, c, img, plus, id}. Kept in this
+   browser; synced with the account only after the visitor opts in (OWNSYNC holds when they agreed). */
+let OWNED={},OWNSYNC=null;
+try{const m=JSON.parse(localStorage.getItem("psplus-owned")||"null");if(m&&typeof m==="object")OWNED=m;}catch(e){}
+try{const v=localStorage.getItem("psplus-ownsync");if(v&&/^\d{4}-\d{2}-\d{2}T[\d:.]+Z$/.test(v))OWNSYNC=v;}catch(e){}
+const normT=t=>String(t).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[™®©]/g,"")
+  .replace(/\b(ps4 (?:&|and) ps5|ps5 (?:&|and) ps4|ps4|ps5)\b/g," ").replace(/&/g," and ").replace(/[^a-z0-9]+/g,"");
+/* Title matching that ignores edition words, so "Ghost of Tsushima Director's Cut" still differs from the
+   original but "Hogwarts Legacy Deluxe Edition" matches "Hogwarts Legacy". Used for "already yours". */
+const normEd=t=>normT(String(t).replace(/\b(digital )?(deluxe|standard|gold|ultimate|complete|premium|special|collector'?s|launch|day one|anniversary|definitive|game of the year|goty)( edition)?\b/gi," ").replace(/\bedition\b/gi," "));
+let OWNIDX=null;
+// The first version of the import (22 Nov 2026) kept a plain list in psplus-psnlib: carry it over once.
+try{const v=JSON.parse(localStorage.getItem("psplus-psnlib")||"null");
+  if(v&&Array.isArray(v.games)&&!Object.keys(OWNED).length)v.games.slice(0,5000).forEach(x=>{if(!x||typeof x.n!=="string"||!x.n.trim()||x.n.length>150)return;
+    const k="n"+normT(x.n).slice(0,120);if(!/^[a-z0-9][a-z0-9-]{0,139}$/.test(k))return;
+    OWNED[k]={t:x.n,p:String(x.pf||"").split(/,\s*/).filter(p=>p==="PS4"||p==="PS5"),c:null,img:null,plus:x.plus?1:0,id:typeof x.id==="string"?x.id:null};});
+  localStorage.removeItem("psplus-psnlib");}catch(e){}
 /* Every saved map passes through cleanSnap, whatever it came from (this browser's storage, a backup file or
    the account), so a hand-edited or damaged file can't put bad values into the app. Anything that doesn't
    match the expected shape is dropped. Stored keys stay short (m, r, d.f and so on) because they are the
@@ -1161,9 +1176,14 @@ function cleanSnap(x){
         y:Number.isInteger(v.y)&&v.y>=1970&&v.y<=2100?v.y:null,d:isStr(v.d,300)?v.d:"",
         p:Array.isArray(v.p)?v.p.filter(k=>k==="PS4"||k==="PS5"):[],u:isStr(v.u,500)&&/^https:\/\//.test(v.u)?v.u:null};})
   };
+  // o: PlayStation purchases (only with consent to sync, or from a backup). s: settings, so far only ownsync.
+  out.o=map(x.o,v=>{if(!v||typeof v!=="object"||!isStr(v.t,150)||!v.t.trim())return undefined;
+    return {t:v.t,p:Array.isArray(v.p)?v.p.filter(k=>k==="PS4"||k==="PS5").slice(0,2):[],c:typeof v.c==="string"&&/^\d{1,12}$/.test(v.c)?v.c:null,
+      img:isStr(v.img,400)&&/^https:\/\/image\.api\.playstation\.com\//.test(v.img)?v.img:null,plus:v.plus?1:0,id:typeof v.id==="string"&&ID_RE.test(v.id)?v.id:null};});
+  out.s={};if(x.s&&typeof x.s==="object"&&typeof x.s.ownsync==="string"&&/^\d{4}-\d{2}-\d{2}T[\d:.]+Z$/.test(x.s.ownsync))out.s.ownsync=x.s.ownsync;
   return [out,dropped];
 }
-{const [c]=cleanSnap({m:MARKS,r:RATE,l:LIB,n:NOTES,d:DATES,c:CUSTOM});MARKS=c.m;RATE=c.r;LIB=c.l;NOTES=c.n;DATES=c.d;CUSTOM=c.c;}
+{const [c]=cleanSnap({m:MARKS,r:RATE,l:LIB,n:NOTES,d:DATES,c:CUSTOM,o:OWNED});MARKS=c.m;RATE=c.r;LIB=c.l;NOTES=c.n;DATES=c.d;CUSTOM=c.c;OWNED=c.o;}
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const IDS=new Set(GAMES.map(g=>g.id));
@@ -1226,6 +1246,17 @@ function syncCustom(){ // rebuild the viewer's own entries inside GAMES from CUS
     prep(g);g.ser=null;GAMES.push(g);IDS.add(id);BYID.set(id,g);}
 }
 syncCustom();
+/* Purchases that aren't PS Plus games on the wall become private listings ("buy-" ids), shown under My library
+   and the My purchases source, never in Browse. Built from OWNED; nothing here leaves the browser. */
+function syncPurchases(){
+  for(let i=GAMES.length-1;i>=0;i--)if(GAMES[i].buy){IDS.delete(GAMES[i].id);BYID.delete(GAMES[i].id);GAMES.splice(i,1);}
+  for(const k in OWNED){const o=OWNED[k];if(!o||typeof o.t!=="string"||(o.id&&BYID.has(o.id)))continue;
+    const id="buy-"+k;if(IDS.has(id))continue;
+    const g={id,t:o.t.slice(0,150),p:o.p&&o.p.length?o.p.slice():["PS4"],m:null,y:null,g:[],pv:"",d:"",cat:0,buy:1,img:o.img||null,
+      u:o.c?"https://store.playstation.com/en-ca/concept/"+o.c:"https://store.playstation.com/en-ca/search/"+encodeURIComponent(o.t)};
+    prep(g);g.ser=null;GAMES.push(g);IDS.add(id);BYID.set(id,g);}
+}
+syncPurchases();
 const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
 const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
 function talker(g,i){const t=S.notime?null:(g.h);
@@ -1272,7 +1303,7 @@ const fmtD=iso=>{const [y,m,d]=iso.split("-").map(Number);return d+" "+MONTHS[m-
 const ART=new Set(Array.isArray(ARTLIST)?ARTLIST:[]);
 /* Cover art, or for games without any a blank VHS tape with the title written on its label */
 const tapeName=t=>t.length>34?t.slice(0,32).replace(/\s+\S*$/,"")+"…":t;
-const tile=g=>`<span class="tile${ART.has(g.id)?" art":""}" aria-hidden="true"><span class="tape"><span class="lab" style="--tilt:${((g.hue||0)%5)-2}deg">${esc(tapeName(g.t))}</span><span class="vhs">VHS</span></span>${ART.has(g.id)?`<img src="art/${encodeURIComponent(g.id)}.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()">`:""}</span>`;
+const tile=g=>`<span class="tile${ART.has(g.id)||g.img?" art":""}" aria-hidden="true"><span class="tape"><span class="lab" style="--tilt:${((g.hue||0)%5)-2}deg">${esc(tapeName(g.t))}</span><span class="vhs">VHS</span></span>${ART.has(g.id)?`<img src="art/${encodeURIComponent(g.id)}.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()">`:g.img?`<img src="${esc(g.img)}?w=440" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()">`:""}</span>`;
 
 /* HowLongToBeat time for the chosen play style. No stand-in when a style has no figure: HLTB's "all styles"
    average is not comparable (it can be shorter than the story), so those games show "no data" and are left
@@ -1378,7 +1409,7 @@ function band(g){
 const TIERS=["essential","extra","premium"];
 const tierAt=t=>TIERS.indexOf(S.tier||"premium")>=TIERS.indexOf(t);
 function tierOK(g){
-  if(!S.tier||g.own||MARKS[g.id]||LIB[g.id]===1||g.e)return true;
+  if(!S.tier||g.own||g.buy||MARKS[g.id]||LIB[g.id]===1||g.e)return true;
   if(g.cat&&!g.gone&&tierAt("extra"))return true;
   if((g.cl||g.s3)&&tierAt("premium"))return true;
   return false;
@@ -1442,7 +1473,7 @@ function applyRegion(){
     g.offhere=(g._c0||g._l0||g._s0)&&!g.cat&&!g.cl&&!g.s3&&!g.gone?1:0;
   });
 }
-const regionOK=g=>!g.offhere||!!g.e||!!g.own||!!MARKS[g.id]||LIB[g.id]===1;
+const regionOK=g=>!g.offhere||!!g.e||!!g.own||!!g.buy||!!MARKS[g.id]||LIB[g.id]===1;
 const inScope=g=>tierOK(g)&&!preJoin(g)&&regionOK(g);
 function preJoin(g){return !!(S.since&&g.e&&g.e<S.since&&!(g.cat&&!g.gone)&&!g.cl&&!g.own&&!MARKS[g.id]&&LIB[g.id]!==1);}
 function pass(g){
@@ -1455,9 +1486,11 @@ function pass(g){
   if(S.age!=="all"){const a=ageOf(g);if(a==null||a>+S.age)return false;}
   if(S.players==="xp"){if(!XPLAY[g.id])return false;}
   else if(S.players!=="all"){const m=(FACTS[g.id]||{}).modes||"";if(S.players==="s1"?!(m.includes("s")&&!m.includes("m")):!m.includes(S.players))return false;}
+  if(g.buy&&S.view!=="l"&&S.src!=="buy"&&!CTX.ser)return false;   // purchases: only in My library and My purchases
+  if(S.src==="buy"&&!g.buy)return false;
   if(CTX.ser){/* a series view shows every entry, whatever its mark */}
   else if(S.view==="n"){if(LIB[g.id]!==-1)return false;}
-  else if(S.view==="l"){if(LIB[g.id]!==1)return false;}
+  else if(S.view==="l"){if(LIB[g.id]!==1&&!g.buy)return false;}
   else if(S.view==="browse"){
     if(LIB[g.id]===-1&&!g.cat)return false;
     if(mk==="x")return false;
@@ -1497,7 +1530,7 @@ function row(g,i){
   const tm=t==null?`<span class="time est" title="HowLongToBeat has no ${TMNAME[S.tmode]} time for this game">no data</span>`:`<span class="time${low?" est":""}" title="${low?"Based on fewer than 10 player reports. ":""}">${fmtT(t)}</span>`;
   const pl=g.pk==="Elsewhere"?"":g.p.map(p=>`<span class="${p==="PS5"?"p5":""}">${p}</span>`).join("");
   const lv=LIB[g.id]||0;
-  const flags=(g.own?`<span class="flag own">Added by me</span>`:"")+(g.cl?`<span class="flag cl" title="PS Plus Premium Classic, originally ${esc(g.sys==="PS4 remaster"?"a PS4 remaster or port":g.sys==="Arcade"?"an arcade game":"a "+g.sys+" game")}">Classic · ${esc(g.sys==="PS4 remaster"?"PS4":g.sys)}</span>`:"")+(g.s3&&g.cl?`<span class="flag stream" title="Streamed from the cloud with PS Plus Premium; it can't be downloaded${g.rg==="na"?". Offered in the US and Canada only":""}">Streaming only</span>`:"")+(g.new?`<span class="flag new">New ${esc(g.new.split(" ")[0])}</span>`:"")+(g.e?`<span class="flag mon" title="PS Plus Essential monthly game, ${esc(g.el)}${g.cat?". Also in the Game Catalogue, so you can play it either way.":""}">Monthly ${esc(g.el)}</span><span class="libset" role="group" aria-label="Is it in my library?"><button type="button" class="yes" data-lib="${esc(g.id)}" data-lv="1" aria-pressed="${lv===1}" title="I claimed this one">✓ In my library</button><button type="button" class="no" data-lib="${esc(g.id)}" data-lv="-1" aria-pressed="${lv===-1}" title="I never claimed this one">✕ Not in my library</button></span>`:"");
+  const flags=(g.own?`<span class="flag own">Added by me</span>`:"")+(g.buy?`<span class="flag own">My purchase</span>`:boughtIds().has(g.id)?`<span class="flag own" title="You bought this game, so it stays yours without PS Plus">Bought</span>`:"")+(g.cl?`<span class="flag cl" title="PS Plus Premium Classic, originally ${esc(g.sys==="PS4 remaster"?"a PS4 remaster or port":g.sys==="Arcade"?"an arcade game":"a "+g.sys+" game")}">Classic · ${esc(g.sys==="PS4 remaster"?"PS4":g.sys)}</span>`:"")+(g.s3&&g.cl?`<span class="flag stream" title="Streamed from the cloud with PS Plus Premium; it can't be downloaded${g.rg==="na"?". Offered in the US and Canada only":""}">Streaming only</span>`:"")+(g.new?`<span class="flag new">New ${esc(g.new.split(" ")[0])}</span>`:"")+(g.e?`<span class="flag mon" title="PS Plus Essential monthly game, ${esc(g.el)}${g.cat?". Also in the Game Catalogue, so you can play it either way.":""}">Monthly ${esc(g.el)}</span><span class="libset" role="group" aria-label="Is it in my library?"><button type="button" class="yes" data-lib="${esc(g.id)}" data-lv="1" aria-pressed="${lv===1}" title="I claimed this one">✓ In my library</button><button type="button" class="no" data-lib="${esc(g.id)}" data-lv="-1" aria-pressed="${lv===-1}" title="I never claimed this one">✕ Not in my library</button></span>`:"");
   let fy;
   if(mk==="p"){const r=RATE[g.id]||0;fy=`<span class="stars" role="group" aria-label="My rating">${[1,2,3,4,5].map(n=>`<button type="button" class="${n<=r?"on":""}" data-rate="${n}" data-id="${esc(g.id)}" aria-label="${n} ${n===1?"star":"stars"}" aria-pressed="${n===r}" title="${n===r?"Click to clear":"Rate "+n+" out of 5"}">★</button>`).join("")}</span>`;}
   else if(mk==="b"||mk==="x"){fy='<span class="time est">–</span>';}
@@ -1537,7 +1570,7 @@ function renderHero(){
   $("lg").textContent=c.g;$("ng").textContent=c.g;$("lw").textContent=c.w;$("lp").textContent=c.p;$("lb").textContent=c.b;$("lx").textContent=c.x;
   $("nw").textContent=c.w;$("np").textContent=c.p;$("nb").textContent=c.b;$("nx").textContent=c.x;
   const nolib=GAMES.filter(g=>LIB[g.id]===-1).length,untag=GAMES.filter(g=>g.e&&!g.cat&&!LIB[g.id]&&inScope(g)).length;
-  $("nn").textContent=nolib;$("nl").textContent=GAMES.filter(g=>LIB[g.id]===1).length;
+  $("nn").textContent=nolib;$("nl").textContent=GAMES.filter(g=>LIB[g.id]===1||g.buy).length;
   const bb=$("bulkno");bb.dataset.n=untag;bb.disabled=!untag;if(!bb.dataset.armed)bb.textContent=untag?`Tag all ${untag} untagged monthly games as not in my library`:"Every monthly game is tagged";
   const pv=g=>priority(g)[0]??-1;
   const byScore=(a,b)=>pv(b)-pv(a)||a.st.localeCompare(b.st);
@@ -1576,7 +1609,7 @@ function renderComing(){
     const p=COMING.posts[x.post],href=g?gameUrl(g):(p&&/^https:\/\/blog\.playstation\.com\//.test(p.url||"")?p.url:"");
     const pic=g?tile(g):`<span class="tile ext" aria-hidden="true"><span class="tape"><span class="lab">${esc(tapeName(x.t))}</span><span class="vhs">VHS</span></span>${img?`<img src="${esc(img)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()">`:""}</span>`;
     const plats=Array.isArray(x.p)?x.p.filter(v=>typeof v==="string").join(", "):"";
-    return `<${href?`a href="${esc(href)}" target="_blank" rel="noopener"`:"div"} class="card">${pic}<span class="ct">${esc(x.t)}</span><span class="cm">${esc([x.tier,plats].filter(Boolean).join(" · "))}</span><span class="talk arr">Arrives ${esc(short(x.date))}</span></${href?"a":"div"}>`;}).join("");
+    return `<${href?`a href="${esc(href)}" target="_blank" rel="noopener"`:"div"} class="card">${pic}<span class="ct">${esc(x.t)}</span><span class="cm">${esc([x.tier,plats].filter(Boolean).join(" · "))}</span>${(()=>{const ay=alreadyYours(x.t,x.p,g);return ay&&ay.state!=="other"?`<span class="talk got">Already yours</span>`:`<span class="talk arr">Arrives ${esc(short(x.date))}</span>`;})()}</${href?"a":"div"}>`;}).join("");
 }
 /* This month's games: the Monthly Games (every tier gets them) you can claim now, and the last day to claim.
    From Sony's post when known (COMING.monthly, from tools/fetch_coming.py), otherwise worked out from the data:
@@ -1600,13 +1633,13 @@ function renderMonthly(){
   const left=Math.round((d-new Date(todayISO()+"T12:00:00"))/864e5);
   $("monnote").textContent=`Free to claim with every PS Plus tier until ${day} ${short}${left<=7?` (${left===0?"last day":left===1?"1 day left":left+" days left"})`:""}. Claimed games stay playable while you're a member.`;
   const src=$("monsrc");src.hidden=!M.url;if(M.url)src.href=M.url;
-  const known=M.games.filter(x=>x.g),allIn=known.length&&known.every(x=>LIB[x.g.id]===1);
+  const known=M.games.filter(x=>x.g),allIn=known.length&&known.every(x=>{const a=alreadyYours(x.t,x.p,x.g);return a&&a.state!=="other";});
   $("monclaimed").hidden=!known.length||allIn;
   $("mondeck").innerHTML=M.games.map(x=>{
-    const g=x.g,img=/^https:\/\/blog\.playstation\.com\/tachyon\//.test(x.img||"")?x.img:"",mine=g&&LIB[g.id]===1;
+    const g=x.g,img=/^https:\/\/blog\.playstation\.com\/tachyon\//.test(x.img||"")?x.img:"",ay=alreadyYours(x.t,x.p,g);
     const pic=g?tile(g):`<span class="tile ext" aria-hidden="true"><span class="tape"><span class="lab">${esc(tapeName(x.t))}</span><span class="vhs">VHS</span></span>${img?`<img src="${esc(img)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()">`:""}</span>`;
     const href=g?gameUrl(g):M.url,plats=Array.isArray(x.p)?x.p.join(", "):"";
-    return `<${href?`a href="${esc(href)}"${g?"":` target="_blank" rel="noopener"`}`:"div"} class="card">${pic}<span class="ct">${esc(x.t)}</span><span class="cm">${esc([plats,g&&g.m?"Metascore "+g.m:""].filter(Boolean).join(" · "))}</span><span class="talk ${mine?"got":"claim"}">${mine?"In your library":"Claim by "+esc(short)}</span></${href?"a":"div"}>`;}).join("");
+    return `<${href?`a href="${esc(href)}"${g?"":` target="_blank" rel="noopener"`}`:"div"} class="card">${pic}<span class="ct">${esc(x.t)}</span><span class="cm">${esc([plats,g&&g.m?"Metascore "+g.m:""].filter(Boolean).join(" · "))}</span>${ay&&ay.state!=="other"?`<span class="talk got">${ay.state==="lib"?"In your library":"Already yours"}</span>`:ay?`<span class="talk claim" title="You own the ${esc(ay.plat)} version; claim this one if you want the other platform">You own the ${esc(ay.plat)} version</span>`:`<span class="talk claim">Claim by ${esc(short)}</span>`}</${href?"a":"div"}>`;}).join("");
 }
 function icsArrivals(list){
   const esc_=t=>String(t).replace(/\\/g,"\\\\").replace(/([,;])/g,"\\$1").replace(/\r?\n/g,"\\n");
@@ -1830,7 +1863,7 @@ function render(animate){
   if($("gamedlg").open)fillDlg();
   $("empty").hidden=list.length>0;$("empty").textContent=S.q&&!list.length?`No games here match "${S.q.trim()}".`:EMPTY[S.view];
   searchHints(list.length);
-  const c=counts();const pool=CTX.ser?serCount[CTX.ser]:S.view==="browse"?GAMES.filter(inScope).length:S.view==="n"?GAMES.filter(g=>LIB[g.id]===-1).length:S.view==="l"?GAMES.filter(g=>LIB[g.id]===1).length:c[S.view];
+  const c=counts();const pool=CTX.ser?serCount[CTX.ser]:S.view==="browse"?GAMES.filter(inScope).length:S.view==="n"?GAMES.filter(g=>LIB[g.id]===-1).length:S.view==="l"?GAMES.filter(g=>LIB[g.id]===1||g.buy).length:c[S.view];
   renderLibExtra();
   $("count").innerHTML=`<b>${list.length}</b> of ${pool} games`;
   const scored=list.filter(g=>g.m!=null);
@@ -1854,7 +1887,8 @@ function render(animate){
 
 /* ---- saving marks: this browser always, plus the account when signed in ---- */
 function setSync(t){$("sync").textContent=t;}
-function saveLocal(){try{localStorage.setItem("psplus-marks",JSON.stringify(MARKS));localStorage.setItem("psplus-rate",JSON.stringify(RATE));localStorage.setItem("psplus-lib",JSON.stringify(LIB));localStorage.setItem("psplus-notes",JSON.stringify(NOTES));localStorage.setItem("psplus-dates",JSON.stringify(DATES));localStorage.setItem("psplus-custom",JSON.stringify(CUSTOM));}catch(e){}}
+function saveLocal(){try{localStorage.setItem("psplus-marks",JSON.stringify(MARKS));localStorage.setItem("psplus-rate",JSON.stringify(RATE));localStorage.setItem("psplus-lib",JSON.stringify(LIB));localStorage.setItem("psplus-notes",JSON.stringify(NOTES));localStorage.setItem("psplus-dates",JSON.stringify(DATES));localStorage.setItem("psplus-custom",JSON.stringify(CUSTOM));
+  localStorage.setItem("psplus-owned",JSON.stringify(OWNED));if(OWNSYNC)localStorage.setItem("psplus-ownsync",OWNSYNC);else localStorage.removeItem("psplus-ownsync");}catch(e){}}
 function saveMarks(){saveLocal();queuePush();}
 function stamp(id){const mk=MARKS[id];const t=Object.assign({},DATES[id]);
   if(mk==="g"){if(!t.s)t.s=today();delete t.f;}
@@ -1927,7 +1961,7 @@ $("askcopy").addEventListener("click",async()=>{
 
 /* ---- backups ---- */
 $("backup").addEventListener("click",()=>{
-  const blob=new Blob([JSON.stringify({app:"psplus-sorter",v:1,exported:new Date().toISOString(),data:snapshot()},null,1)],{type:"application/json"});
+  const blob=new Blob([JSON.stringify({app:"psplus-sorter",v:1,exported:new Date().toISOString(),data:Object.assign(snapshot(),{o:OWNED})},null,1)],{type:"application/json"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="psplus-sorter-backup-"+today()+".json";
   document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);
   $("datamsg").textContent="Backup downloaded.";
@@ -1940,7 +1974,7 @@ $("restorefile").addEventListener("change",async e=>{
     const j=JSON.parse(await f.text());
     if(!j||j.app!=="psplus-sorter"||!j.data||typeof j.data!=="object")throw new Error("not a backup");
     if(!confirm("Replace your current marks, ratings, notes and added games with this backup from "+String(j.exported||"an unknown date").slice(0,10)+"?"))return;
-    const dropped=applySnap(j.data);queuePush(0);
+    const dropped=applySnap(j.data,"restore");queuePush(0);
     $("datamsg").textContent=dropped?`Backup restored. ${dropped} ${dropped===1?"entry wasn't":"entries weren't"} valid and ${dropped===1?"was":"were"} skipped.`:"Backup restored.";
   }catch(err){$("datamsg").textContent="That file isn't a backup from this site.";}
 });
@@ -1958,14 +1992,19 @@ const fromHex=h=>new Uint8Array(String(h).match(/../g).map(x=>parseInt(x,16)));
 const toB64=b=>{const a=new Uint8Array(b);let t="";for(let i=0;i<a.length;i+=0x8000)t+=String.fromCharCode.apply(null,a.subarray(i,i+0x8000));return btoa(t);};
 const fromB64=v=>Uint8Array.from(atob(v),c=>c.charCodeAt(0));
 const canon=v=>JSON.stringify(v,(k,x)=>x&&typeof x==="object"&&!Array.isArray(x)?Object.keys(x).sort().reduce((o,kk)=>(o[kk]=x[kk],o),{}):x);
-const MAPKEYS=["m","r","l","n","d","c"];
+const MAPKEYS=["m","r","l","n","d","c","o","s"];
 const USER_RE=/^[a-z0-9][a-z0-9._-]{2,31}$/;
 const normUser=u=>String(u||"").normalize("NFKC").trim().toLowerCase();
 let ACCT=null,pushTimer=null,pushing=false,pushAgain=false,lastPull=0,dirty=false,retryTimer=null;
 
-function snapshot(){return JSON.parse(JSON.stringify({m:MARKS,r:RATE,l:LIB,n:NOTES,d:DATES,c:CUSTOM}));}
-function applySnap(x){const [c,dropped]=cleanSnap(x);
+// Purchases are only part of the synced data once the visitor has agreed (OWNSYNC); otherwise they stay here.
+function snapshot(){return JSON.parse(JSON.stringify(Object.assign({m:MARKS,r:RATE,l:LIB,n:NOTES,d:DATES,c:CUSTOM},OWNSYNC?{o:OWNED,s:{ownsync:OWNSYNC}}:{})));}
+function applySnap(x,from){const [c,dropped]=cleanSnap(x);
   MARKS=c.m;RATE=c.r;LIB=c.l;NOTES=c.n;DATES=c.d;CUSTOM=c.c;
+  if(from==="restore"){if(x&&x.o)OWNED=c.o;}
+  else if(c.s.ownsync){OWNED=OWNSYNC?c.o:Object.assign({},OWNED,c.o);OWNSYNC=c.s.ownsync;}   // agreed here or on another device
+  else if(OWNSYNC&&from==="sync")OWNSYNC=null;   // withdrawn on another device: stop syncing, keep this device's copy
+  OWNIDX=null;syncPurchases();
   syncCustom();saveLocal();renderHero();render(false);return dropped;}
 function merge3(base,local,server){ // keep this browser's changes since the last sync; take everything else from the account
   const out={};
@@ -2024,7 +2063,7 @@ async function push(){
         if(e.status!==409)throw e;
         const server=await unseal(e.ct,e.iv);
         const merged=merge3(ACCT.base,snapshot(),server);
-        ACCT.ver=e.ver;ACCT.base=server;applySnap(merged);remember();
+        ACCT.ver=e.ver;ACCT.base=server;applySnap(merged,"sync");remember();
       }
     }
   }catch(e){syncError(e);}
@@ -2038,7 +2077,7 @@ async function pull(){
   if(r.ver!==ACCT.ver){
     const server=await unseal(r.ct,r.iv);
     const merged=merge3(ACCT.base,snapshot(),server);
-    ACCT.ver=r.ver;ACCT.base=server;applySnap(merged);remember();
+    ACCT.ver=r.ver;ACCT.base=server;applySnap(merged,"sync");remember();
   }
   if(!sameSnap(snapshot(),ACCT.base))queuePush(0);else{dirty=false;setSync(SYNCOK());}
 }
@@ -2058,7 +2097,7 @@ async function signIn(user,pw){
   const added=MAPKEYS.reduce((n,k)=>n+Object.keys(local[k]||{}).filter(id=>!(server[k]||{})[id]).length,0);
   ACCT=Object.assign(d,{key,ver:r.ver,base:server});
   const merged=union(local,server);
-  applySnap(merged);remember();
+  applySnap(merged,"sync");remember();
   if(!sameSnap(merged,server))await push();else setSync(SYNCOK());
   return added;
 }
@@ -2128,7 +2167,7 @@ function communityLine(g){
 function signOut(clear){
   ACCT=null;clearTimeout(pushTimer);clearTimeout(retryTimer);clearTimeout(votesTimer);dirty=false;
   try{localStorage.removeItem("psplus-acct");}catch(e){}
-  if(clear){applySnap({});try{["psplus-marks","psplus-rate","psplus-lib","psplus-notes","psplus-dates","psplus-custom","psplus-sorter","psplus-psnlib"].forEach(k=>localStorage.removeItem(k));}catch(e){}}
+  if(clear){OWNED={};OWNSYNC=null;applySnap({});try{["psplus-marks","psplus-rate","psplus-lib","psplus-notes","psplus-dates","psplus-custom","psplus-sorter","psplus-owned","psplus-ownsync"].forEach(k=>localStorage.removeItem(k));}catch(e){}}
   setSync(clear?"Signed out, and your marks were cleared from this browser.":"Signed out. Your marks are still saved in this browser.");
   acctUI();
 }
@@ -2560,8 +2599,6 @@ $("madebtn").addEventListener("click",()=>$("madedlg").showModal());
    haven't marked yet become Playing (played in the last 30 days) or Played. Nothing already marked is
    changed, and the whole import can be undone. */
 let PSNIDS=null,PSNPLAN=null,PSNUNDO=null;
-const normT=t=>String(t).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[™®©]/g,"")
-  .replace(/\b(ps4 (?:&|and) ps5|ps5 (?:&|and) ps4|ps4|ps5)\b/g," ").replace(/&/g," and ").replace(/[^a-z0-9]+/g,"");
 async function psnPrep(){
   if(!PSNIDS)PSNIDS=await fetch("data/psn-ids.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>({}));
   const bm=$("psnbm");if(bm.dataset.ready)return;
@@ -2578,56 +2615,83 @@ function psnMatch(x){
   return id&&BYID.has(id)?id:null;
 }
 let NAMEIDX=null;
-/* The whole imported library, kept in this browser only (psplus-psnlib) so My library can also list the
-   games you own that aren't on PS Plus. It isn't synced or backed up: run the import again on another
-   device. Only names, platforms and whether each was a PS Plus claim are kept. */
-function savePsnLib(j){
-  const seen=new Map(),add=(x,played)=>{if(!x||typeof x.n!=="string"||!x.n.trim())return;const id=psnMatch(x),k=id||normT(x.n);
-    const cur=seen.get(k)||{n:x.n.slice(0,150),pf:"",plus:0,played:0,id:id||null};
-    if(typeof x.pf==="string"&&/^(PS4|PS5|PS3|PSVITA|Vita|UNKNOWN)$/i.test(x.pf)&&!cur.pf.includes(x.pf))cur.pf=(cur.pf?cur.pf+", ":"")+x.pf;
-    if(x.plus)cur.plus=1;if(played)cur.played=1;seen.set(k,cur);};
-  j.owned.slice(0,5000).forEach(x=>add(x,false));j.played.slice(0,5000).forEach(x=>add(x,true));
-  PSNLIB={at:typeof j.at==="string"?j.at.slice(0,30):new Date().toISOString(),games:[...seen.values()]};
-  try{localStorage.setItem("psplus-psnlib",JSON.stringify(PSNLIB));}catch(e){}
+function ownedIndex(){ // name -> purchases, and wall id -> purchase, rebuilt when OWNED changes
+  if(OWNIDX)return OWNIDX;const byName=new Map(),byId=new Map();
+  for(const k in OWNED){const o=OWNED[k];if(!o)continue;const n=normEd(o.t);if(!byName.has(n))byName.set(n,[]);byName.get(n).push(o);if(o.id)byId.set(o.id,o);}
+  return OWNIDX={byName,byId};
 }
+const boughtIds=()=>{const ix=ownedIndex(),out=new Set();ix.byId.forEach((o,id)=>{if(!o.plus)out.add(id);});return out;};
+/* Is this game already yours? {state:"lib"} tagged in your library; {state:"own"} you have it on a matching
+   platform; {state:"other", plat} you own it, but for another platform (a PS4 copy isn't always a PS5 one). */
+function alreadyYours(t,plats,g){
+  const ix=ownedIndex(),list=[...(g&&ix.byId.get(g.id)?[ix.byId.get(g.id)]:[]),...(ix.byName.get(normEd(t))||[])];
+  if(!list.length)return g&&LIB[g.id]===1?{state:"lib"}:null;   // tagged by hand: no platform to compare
+  const want=Array.isArray(plats)?plats.filter(p=>p==="PS4"||p==="PS5"):[],have=[...new Set(list.flatMap(o=>o.p||[]))];
+  if(!want.length||!have.length||want.some(p=>have.includes(p)))return {state:"own"};
+  return {state:"other",plat:have.join("/")};
+}
+const ownKey=x=>x.c!=null&&/^\d{1,12}$/.test(String(x.c))?"c"+x.c:"n"+normT(x.n).slice(0,120);
+function purchasesFrom(j){ // the import's bought/claimed list as OWNED entries
+  const out={};
+  j.owned.slice(0,5000).forEach(x=>{if(!x||typeof x.n!=="string"||!x.n.trim())return;const k=ownKey(x);if(!/^[a-z0-9][a-z0-9-]{0,139}$/.test(k))return;
+    const cur=out[k]||{t:x.n.trim().slice(0,150),p:[],c:x.c!=null&&/^\d{1,12}$/.test(String(x.c))?String(x.c):null,img:null,plus:1,id:psnMatch(x)};
+    const pf=String(x.pf||"").toUpperCase();if((pf==="PS4"||pf==="PS5")&&!cur.p.includes(pf))cur.p.push(pf);
+    if(!x.plus)cur.plus=0;   // bought on any platform counts as bought
+    if(!cur.img&&typeof x.img==="string"&&/^https:\/\/image\.api\.playstation\.com\//.test(x.img)&&x.img.length<=400)cur.img=x.img;
+    if(!cur.id)cur.id=psnMatch(x);out[k]=cur;});
+  return out;
+}
+function ownedChanged(){OWNIDX=null;syncPurchases();}
 function renderLibExtra(){
-  const box=$("libextra");if(S.view!=="l"||CTX.ser||!PSNLIB){box.hidden=true;return;}
-  const others=PSNLIB.games.filter(g=>!g.id||!BYID.has(g.id)).sort((a,b)=>a.n.localeCompare(b.n));
-  const onWall=GAMES.filter(g=>LIB[g.id]===1).length,when=new Date(PSNLIB.at);
+  const box=$("libextra");if(S.view!=="l"||CTX.ser){box.hidden=true;return;}
+  const n=Object.keys(OWNED).length;if(!n){box.hidden=true;return;}
+  const buys=GAMES.filter(g=>g.buy).length,plusOnes=GAMES.filter(g=>LIB[g.id]===1&&!g.buy).length;
   box.hidden=false;
-  box.innerHTML=`<h2 id="libextrattl">Everything in your PlayStation library</h2>
-    <p><b>${onWall+others.length}</b> games in total: <b>${onWall}</b> on the wall above, and <b>${others.length}</b> ${others.length===1?"that isn't":"that aren't"} part of PS Plus${others.length?", listed below":""}. From your import on ${isNaN(when)?"":when.toLocaleDateString(undefined,{day:"numeric",month:"long",year:"numeric"})}; run it again to refresh. This list is kept in this browser only.</p>
-    ${others.length?`<ul class="libothers">${others.map(g=>`<li><span class="ln">${esc(g.n)}</span><span class="lm">${esc([g.pf,g.plus?"PS Plus claim":"",g.played?"played":""].filter(Boolean).join(" · "))}</span></li>`).join("")}</ul>`:""}
-    <button type="button" class="btn" id="libforget">Forget this list</button>`;
-  $("libforget").addEventListener("click",()=>{PSNLIB=null;try{localStorage.removeItem("psplus-psnlib");}catch(e){}renderLibExtra();});
+  box.innerHTML=`<h2 id="libextrattl">Your PlayStation purchases</h2>
+    <p>Your import found <b>${n}</b> games you've bought or claimed. <b>${plusOnes}</b> PS Plus games are tagged as in your library, and <b>${buys}</b> other ${buys===1?"purchase appears":"purchases appear"} above as private ${buys===1?"listing":"listings"} only you can see.</p>
+    ${ACCT?`<label class="check"><input type="checkbox" id="ownsync" ${OWNSYNC?"checked":""}> Keep my purchases in my account, so they sync to my other devices</label>
+      <p class="hint">${OWNSYNC?`You agreed on ${new Date(OWNSYNC).toLocaleDateString(undefined,{day:"numeric",month:"long",year:"numeric"})}. `:""}They're encrypted with your password like the rest of your data, so nobody else can read them. Untick this to remove them from your account; they stay on this device. <a href="privacy.html#psn-import" target="_blank">Privacy policy</a></p>`
+      :`<p class="hint">Saved in this browser only. Sign in to an account if you'd like the option to sync them to your other devices.</p>`}
+    <button type="button" class="btn" id="ownforget">Remove my purchases</button>`;
+  const cb=$("ownsync");
+  if(cb)cb.addEventListener("change",()=>{OWNSYNC=cb.checked?new Date().toISOString():null;saveMarks();renderLibExtra();});
+  $("ownforget").addEventListener("click",()=>{if(!confirm("Remove your imported purchases from the wall"+(OWNSYNC?" and from your account":"")+"? Your marks and PS Plus library tags stay."))return;
+    OWNED={};OWNSYNC=null;ownedChanged();saveMarks();renderHero();render(false);});
 }
 $("psncheck").addEventListener("click",async()=>{
   await psnPrep();
-  if(!NAMEIDX){NAMEIDX=new Map();GAMES.forEach(g=>{const k=normT(g.t);if(!NAMEIDX.has(k))NAMEIDX.set(k,g.id);});}
+  if(!NAMEIDX){NAMEIDX=new Map();GAMES.forEach(g=>{if(g.buy)return;const k=normT(g.t);if(!NAMEIDX.has(k))NAMEIDX.set(k,g.id);});}
   const out=$("psnresult");out.hidden=false;let j;
   try{j=JSON.parse($("psnpaste").value.trim());if(!j||j.app!=="psplus-import"||!Array.isArray(j.owned)||!Array.isArray(j.played))throw 0;}
   catch(e){out.innerHTML=`<p class="err">That doesn't look like a list from the bookmark. Run the bookmark on library.playstation.com, then paste again.</p>`;return;}
-  const owned=new Set(),played=new Map();
-  j.owned.slice(0,5000).forEach(x=>{const id=psnMatch(x);if(id)owned.add(id);});
-  const now=Date.now();
-  j.played.slice(0,5000).forEach(x=>{const id=psnMatch(x);if(!id)return;const ts=Date.parse(x&&x.last)||0;if(!played.has(id)||ts>played.get(id))played.set(id,ts);});
+  const buys=purchasesFrom(j),owned=new Set(Object.values(buys).map(o=>o.id).filter(Boolean)),others=Object.values(buys).filter(o=>!o.id).length;
+  const played=new Map(),now=Date.now();
+  j.played.slice(0,5000).forEach(x=>{if(!x||typeof x.n!=="string")return;const id=psnMatch(x)||(buys[ownKey(x)]&&!buys[ownKey(x)].id?"buy-"+ownKey(x):null);if(!id)return;
+    const ts=Date.parse(x.last)||0;if(!played.has(id)||ts>played.get(id))played.set(id,ts);});
   const toLib=[...owned].filter(id=>LIB[id]!==1),toMark=[...played].filter(([id])=>!MARKS[id]);
   const recent=toMark.filter(([,ts])=>now-ts<30*864e5).length;
-  PSNPLAN={toLib,toMark};
-  out.innerHTML=`<p>Found <b>${j.owned.length}</b> bought or claimed games and <b>${j.played.length}</b> played games on your account. <b>${owned.size+[...played.keys()].filter(id=>!owned.has(id)).length}</b> of them are on the wall.</p>
-    <label class="check"><input type="checkbox" id="psnlib" ${toLib.length?"checked":"disabled"}> Tag ${toLib.length} ${toLib.length===1?"game":"games"} you own or claimed as in your library</label>
+  PSNPLAN={toLib,toMark,buys};
+  out.innerHTML=`<p>Found <b>${j.owned.length}</b> bought or claimed games and <b>${j.played.length}</b> played games on your account. <b>${owned.size}</b> of the games you own are on the wall.</p>
+    <label class="check"><input type="checkbox" id="psnlib" ${toLib.length?"checked":"disabled"}> Tag ${toLib.length} PS Plus ${toLib.length===1?"game":"games"} you own or claimed as in your library</label>
+    <label class="check"><input type="checkbox" id="psnbuy" ${others?"checked":"disabled"}> Add your ${others} other ${others===1?"purchase":"purchases"} to My library as private listings, with Sony's cover art</label>
     <label class="check"><input type="checkbox" id="psnplay" ${toMark.length?"checked":"disabled"}> Mark ${toMark.length} played ${toMark.length===1?"game":"games"}: ${recent} as Playing (played in the last 30 days), ${toMark.length-recent} as Played</label>
+    ${ACCT?`<label class="check consent"><input type="checkbox" id="psnsync"> Also keep my purchases in my account, so they sync to my other devices</label>
+      <p class="hint">Optional, and off unless you tick it. Your purchases (game names, platforms, Sony's game ids and cover links, and whether each was a PS Plus claim) would be saved with your account, encrypted with your password like the rest of your data. You can turn this off at any time under My library. <a href="privacy.html#psn-import" target="_blank">Privacy policy</a></p>`
+      :`<p class="hint">Your purchases are saved in this browser only.</p>`}
     <p class="hint">Games you've already marked aren't changed. PS3 and Vita games aren't in Sony's lists.</p>
     <button type="button" class="btn primary" id="psngo">Import</button>`;
   $("psngo").addEventListener("click",()=>{
-    const lib=$("psnlib").checked,pl=$("psnplay").checked;if(!PSNPLAN)return;
-    PSNUNDO={MARKS:Object.assign({},MARKS),LIB:Object.assign({},LIB)};
+    const lib=$("psnlib").checked,pl=$("psnplay").checked,bu=$("psnbuy").checked,sync=$("psnsync")&&$("psnsync").checked;if(!PSNPLAN)return;
+    PSNUNDO={MARKS:Object.assign({},MARKS),LIB:Object.assign({},LIB),OWNED:Object.assign({},OWNED),OWNSYNC};
     let a=0,b=0;
     if(lib)PSNPLAN.toLib.forEach(id=>{LIB[id]=1;a++;});
-    if(pl)PSNPLAN.toMark.forEach(([id,ts])=>{if(MARKS[id])return;MARKS[id]=now-ts<30*864e5?"g":"p";b++;});
-    PSNPLAN=null;savePsnLib(j);saveMarks();renderHero();render(false);
-    out.innerHTML=`<p class="ok">Imported: ${a} tagged as in your library, ${b} marked as played or playing. Your full list is under My library.</p><button type="button" class="btn" id="psnundo">Undo the import</button>`;
-    $("psnundo").addEventListener("click",()=>{if(!PSNUNDO)return;MARKS=PSNUNDO.MARKS;LIB=PSNUNDO.LIB;PSNUNDO=null;saveMarks();renderHero();render(false);out.innerHTML=`<p>Import undone.</p>`;});
+    if(bu){OWNED=PSNPLAN.buys;ownedChanged();}
+    else{const keep={};for(const k in PSNPLAN.buys)if(PSNPLAN.buys[k].id)keep[k]=PSNPLAN.buys[k];OWNED=keep;ownedChanged();} // still remember which wall games you bought
+    if(sync&&!OWNSYNC)OWNSYNC=new Date().toISOString();
+    if(pl)PSNPLAN.toMark.forEach(([id,ts])=>{if(MARKS[id]||!IDS.has(id))return;MARKS[id]=now-ts<30*864e5?"g":"p";b++;});
+    const n=bu?others:0;PSNPLAN=null;saveMarks();renderHero();render(false);
+    out.innerHTML=`<p class="ok">Imported: ${a} tagged as in your library, ${n} other ${n===1?"purchase":"purchases"} added, ${b} marked as played or playing.${sync?" Your purchases will sync with your account.":""} See them all under My library.</p><button type="button" class="btn" id="psnundo">Undo the import</button>`;
+    $("psnundo").addEventListener("click",()=>{if(!PSNUNDO)return;MARKS=PSNUNDO.MARKS;LIB=PSNUNDO.LIB;OWNED=PSNUNDO.OWNED;OWNSYNC=PSNUNDO.OWNSYNC;PSNUNDO=null;ownedChanged();saveMarks();renderHero();render(false);out.innerHTML=`<p>Import undone.</p>`;});
   });
 });
 const wd=$("welcomedlg");
