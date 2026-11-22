@@ -88,3 +88,4 @@ td.num,th.num{text-align:center;white-space:nowrap}
 .plinks a:last-child{background:var(--blue);border-color:var(--blue);color:#fff}
 .faq h3{font-size:17px;margin:20px 0 4px}.faq p{margin:0;max-width:72ch}
 @media (max-width:720px){.pick{grid-template-columns:1fr}.pick .art{border-right:0;border-bottom:3px solid var(--ink)}}
+@media (min-width:721px){.pick .art{align-self:stretch;aspect-ratio:auto;min-height:225px}.pick .art.wide img{position:absolute;inset:0}}
