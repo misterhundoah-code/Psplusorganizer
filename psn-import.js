@@ -58,7 +58,7 @@
   try { await navigator.clipboard.writeText(text); copied = true; } catch (e) {}
   say((copied ? "Copied" : "Found") + " <b>" + owned.length + "</b> bought or claimed games and <b>" + played.length + "</b> played games." +
     (copied ? " Go back to the wall and paste them into the import box." : ' Copy the text below, then paste it into the import box on the wall.<textarea readonly style="display:block;width:100%;height:90px;margin-top:8px">' + text.replace(/</g, "&lt;") + "</textarea>") +
-    (err ? '<div style="font-size:12px;margin-top:6px;opacity:.8">' + err.replace(/</g, "&lt;") + "</div>" : "") +
+    (err ? '<div style="margin-top:8px;padding:6px 8px;background:#fff;border:2px solid #0E1636;font-size:13px"><b>Part of it didn\'t work:</b> ' + err.replace(/</g, "&lt;") + "</div>" : "") +
     '<div style="margin-top:8px"><button style="font:inherit;font-weight:700;padding:4px 10px;border:2px solid #0E1636;background:#fff;cursor:pointer">Close</button></div>');
   box.querySelector("button").onclick = () => box.remove();
   const ta = box.querySelector("textarea"); if (ta) ta.select();

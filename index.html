@@ -2631,9 +2631,11 @@ function alreadyYours(t,plats,g){
   return {state:"other",plat:have.join("/")};
 }
 const ownKey=x=>x.c!=null&&/^\d{1,12}$/.test(String(x.c))?"c"+x.c:"n"+normT(x.n).slice(0,120);
+// Sony's list also has apps, demos and extras; they aren't games to put on the wall.
+const NOT_GAME=/(?:^|[^a-z])(demo|trial version|soundtrack|official music|bonus content|artbook|art of|sketchbook|dynamic theme|avatar pack|season pass|media player|prime video|disney\+|netflix|youtube|spotify|twitch|dazn|crunchyroll|apple tv|plex|ea play hub|share ?factory)(?![a-z])/i;
 function purchasesFrom(j){ // the import's bought/claimed list as OWNED entries
   const out={};
-  j.owned.slice(0,5000).forEach(x=>{if(!x||typeof x.n!=="string"||!x.n.trim())return;const k=ownKey(x);if(!/^[a-z0-9][a-z0-9-]{0,139}$/.test(k))return;
+  j.owned.slice(0,5000).forEach(x=>{if(!x||typeof x.n!=="string"||!x.n.trim()||NOT_GAME.test(x.n))return;const k=ownKey(x);if(!/^[a-z0-9][a-z0-9-]{0,139}$/.test(k))return;
     const cur=out[k]||{t:x.n.trim().slice(0,150),p:[],c:x.c!=null&&/^\d{1,12}$/.test(String(x.c))?String(x.c):null,img:null,plus:1,id:psnMatch(x)};
     const pf=String(x.pf||"").toUpperCase();if((pf==="PS4"||pf==="PS5")&&!cur.p.includes(pf))cur.p.push(pf);
     if(!x.plus)cur.plus=0;   // bought on any platform counts as bought
