@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://wallofpsplus.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://wallofpsplus.com/privacy.html</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
-  <url><loc>https://wallofpsplus.com/terms.html</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
+  <url><loc>https://wallofpsplus.com/</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://wallofpsplus.com/lists/</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://wallofpsplus.com/lists/leaving-ps-plus</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://wallofpsplus.com/lists/best-ps-plus-extra-games</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://wallofpsplus.com/lists/best-ps-plus-premium-classics</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://wallofpsplus.com/lists/ps-plus-co-op-games</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://wallofpsplus.com/lists/ps-plus-crossplay-games</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://wallofpsplus.com/lists/short-ps-plus-games</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://wallofpsplus.com/lists/long-ps-plus-games</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://wallofpsplus.com/lists/ps-plus-ps5-games</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://wallofpsplus.com/lists/ps-plus-rpgs</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://wallofpsplus.com/lists/ps-plus-horror-games</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://wallofpsplus.com/lists/ps-plus-shooters</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://wallofpsplus.com/lists/ps-plus-open-world-games</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://wallofpsplus.com/lists/ps-plus-games-for-kids</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://wallofpsplus.com/privacy.html</loc><changefreq>yearly</changefreq></url>
+  <url><loc>https://wallofpsplus.com/terms.html</loc><changefreq>yearly</changefreq></url>
 </urlset>

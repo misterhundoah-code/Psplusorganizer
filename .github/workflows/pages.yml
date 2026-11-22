@@ -1,0 +1,48 @@
+name: Build list pages
+
+# Rebuilds the plain-HTML pages search engines read (lists/*.html, the guide block and structured data
+# in index.html, and sitemap.xml) from the data files; see tools/build_pages.py. Runs when the data or
+# the script changes, after each data-fetching workflow (their commits don't trigger push events), daily
+# as a safety net, or by hand.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "41 13 * * *"
+  push:
+    branches: [main]
+    paths: ["data/**", "tools/build_pages.py", "lists/lists.css"]
+  workflow_run:
+    workflows: ["Fetch artwork", "Fetch crossplay list", "Fetch regional catalogues", "Fetch Wikipedia descriptions and covers"]
+    types: [completed]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages-build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python tools/build_pages.py
+      - name: Commit any changes
+        run: |
+          git add lists index.html sitemap.xml
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Rebuild list pages"
+            git pull --rebase
+            git push
+          fi
