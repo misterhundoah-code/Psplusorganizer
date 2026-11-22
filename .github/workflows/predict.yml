@@ -9,7 +9,7 @@ on:
   schedule:
     - cron: "17 15 * * 4"
   push:
-    branches: [main, predict]
+    branches: [main]
     paths: ["tools/predict/**", ".github/workflows/predict.yml"]
 
 permissions:

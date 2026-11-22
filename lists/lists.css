@@ -68,3 +68,4 @@ footer{max-width:980px;margin:30px auto 0;padding:20px clamp(16px,4vw,40px) 40px
 .sbar i{position:absolute;top:0;bottom:0}.sbar i.up{background:var(--up)}.sbar i.down{background:var(--down)}
 td.num,th.num{text-align:center;white-space:nowrap}
 @media (max-width:560px){.plist li.g{grid-template-columns:30px 1fr 70px}.plist .pc b{font-size:19px}}
+.note{max-width:72ch;background:var(--case);border-left:6px solid var(--yellow);padding:10px 14px;margin:0 0 16px;font-size:15px}

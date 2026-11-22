@@ -234,6 +234,10 @@ def predict_page():
     desc = (f"Every PS4 and PS5 game ranked by its chance of joining the PS Plus Game Catalog or the monthly games in the next three months. "
             f"Top picks right now: {top3}.")
     body = f"""<h1>Which games are coming to PS Plus next?</h1>
+<p class="note"><b>A note on accuracy:</b> these are educated guesses, not inside information. The model catches a fair share of each
+month's additions but misses plenty, and the game details it learns from, like publishers and release dates, come from Wikipedia and
+Wikidata and are sometimes wrong. We're always refining it and checking the data, so if you spot something off,
+<a href="https://github.com/misterhundoah-code/Psplusorganizer/issues/new/choose" rel="noopener">let us know</a>.</p>
 <p class="intro">Every PS4 and PS5 game that isn't on PS Plus yet, ranked by how likely it is to join in the next three months. The odds come from a
 model trained on every lineup Sony has announced since PS Plus Extra launched in 2022, so treat this as a watchlist rather than a promise.
 Open any game to see how its chances change month by month.</p>
