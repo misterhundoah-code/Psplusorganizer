@@ -1941,7 +1941,7 @@ function saveNote(id,text){text=(text||"").trim().slice(0,2000);if(text)NOTES[id
 let askCtl=null;
 const ASKCOPY={not_granted:"Claude isn't allowed for this page, so this feature is off.",sampling_disabled:"Claude isn't available for this account.",rate_limited:"You've hit a usage limit. Try again later.",session_expired:"Your session expired. Sign in again and retry.",refused:"Claude declined that request. Try rewording your question.",prompt_too_large:"There is too much to send at once. Shorten some notes and retry.",upstream_error:"Something went wrong reaching Claude. Try again."};
 function askPrompt(extra){
- const line=g=>`${g.t}${g.cl?` (Premium Classic, ${g.sys})`:""} | ${g.g.join(", ")} | ${g.pv} | ${g.h??"?"} h | Metascore ${g.m??"none"}`;
+ const line=g=>`${g.t}${g.cl?` (Premium Classic${g.sys?", "+g.sys:""})`:""} | ${g.g.join(", ")} | ${g.pv} | ${g.h??"?"} h | Metascore ${g.m??"none"}`;
   const withNote=g=>line(g)+(NOTES[g.id]?` | My note: ${NOTES[g.id].replace(/\s+/g," ")}`:"");
   const why=g=>{const w=(DATES[g.id]&&DATES[g.id].why)||[];return w.length?" | Reasons they dropped it: "+w.map(k=>WHYNAME[k]||k).join(", "):"";};
   const prog=g=>{const t=DATES[g.id]||{};return (t.pg?" | Progress: "+PGNAME[t.pg].toLowerCase():"")+(t.hr?" | Hours played: "+t.hr:"");};
@@ -1950,7 +1950,11 @@ function askPrompt(extra){
   const unr=GAMES.filter(g=>MARKS[g.id]==="p"&&!RATE[g.id]);
   const by=k=>GAMES.filter(g=>MARKS[g.id]===k);
   const noted=GAMES.filter(g=>NOTES[g.id]&&!MARKS[g.id]);
-  const cand=GAMES.filter(g=>(!MARKS[g.id]||MARKS[g.id]==="w")&&(g.cat||g.cl||LIB[g.id]===1)).sort((a,b)=>(priority(b)[0]??0)-(priority(a)[0]??0)).slice(0,60);
+  // Leave out add-ons, and other versions (remaster, remake, director's cut…) of games they've already played or dropped.
+  const base=t=>normT(String(t).replace(/\((?:PS\d|PSP|\d{4})\)|\b(remastered|remaster|remake|director'?s cut|definitive|complete|enhanced|game of the year|goty|hd|redux|special|ultimate|deluxe|collection|edition|intergrade)\b/gi," "));
+  const seenBase=new Set(GAMES.filter(g=>MARKS[g.id]==="p"||MARKS[g.id]==="b").map(g=>base(g.t)));
+  const addon=g=>/\((?:expansion|dlc|add-on)\)|\b(expansion pass|season pass|dlc)\b/i.test(g.t);
+  const cand=GAMES.filter(g=>(!MARKS[g.id]||MARKS[g.id]==="w")&&(g.cat||g.cl||LIB[g.id]===1)&&!addon(g)&&!seenBase.has(base(g.t))).sort((a,b)=>(priority(b)[0]??0)-(priority(a)[0]??0)).slice(0,60);
   return "You are helping one person choose what to play next from their PlayStation Plus library. Everything you know about them is below.\n"
    +"Each game line reads: title | styles | camera | main-story hours | Metascore | their own note if any.\n"
    +sec("GAMES THEY PLAYED AND RATED (stars out of 5 first):",rated,g=>RATE[g.id]+" stars: "+withNote(g))
