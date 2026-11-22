@@ -40,7 +40,7 @@
   --sign:#FFC925; --sign-ink:#1E3A9E; --band:#1E3A9E; --band-ink:#FFFFFF; --band-muted:#B9C6F2;
   --accent:#1E3A9E; --accent-ink:#FFFFFF; --chip:#EEF0F5; --field:#FFFFFF;
   --great:#FFC925; --good:#FFE08A; --mid:#FFA552; --bad:#E23D28; --none:#8A93AD;
-  --classic:#0D7C86; --playing:#D9690B; --want:#1E3A9E; --played:#1F8A4C; --bounced:#E23D28; --skip:#7C849C; --monthly:#A85A00;
+  --classic:#0D7C86; --playing:#D9690B; --paused:#9A7300; --want:#1E3A9E; --played:#1F8A4C; --bounced:#E23D28; --skip:#7C849C; --monthly:#A85A00;
   --stream:#6A3FD0;
   --font:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
   --display:"Bungee","Arial Black",Impact,sans-serif;
@@ -52,7 +52,7 @@
     --floor:#0F1733; --case:#172146; --ink:#EEF1FA; --muted:#A3ACC8; --line:#2B386A; --lip:#0A1029;
     --accent:#9DB2FF; --accent-ink:#0F1733; --chip:#212C58; --field:#111A3A;
     --sign:#FFC925; --sign-ink:#13286F; --band:#13286F; --band-muted:#A9B8EE; --myplus:#1D2A56;
-    --none:#6F7899; --classic:#4CC3CD; --playing:#FF9B45; --want:#9DB2FF; --played:#4CC982; --bounced:#FF7A66; --skip:#8E97B5; --monthly:#F5B04A; --stream:#B79CFF;
+    --none:#6F7899; --classic:#4CC3CD; --playing:#FF9B45; --paused:#F2C94C; --want:#9DB2FF; --played:#4CC982; --bounced:#FF7A66; --skip:#8E97B5; --monthly:#F5B04A; --stream:#B79CFF;
     color-scheme:dark;
   }
 }
@@ -60,7 +60,7 @@
   --floor:#0F1733; --case:#172146; --ink:#EEF1FA; --muted:#A3ACC8; --line:#2B386A; --lip:#0A1029;
   --accent:#9DB2FF; --accent-ink:#0F1733; --chip:#212C58; --field:#111A3A;
   --sign:#FFC925; --sign-ink:#13286F; --band:#13286F; --band-muted:#A9B8EE; --myplus:#1D2A56;
-  --none:#6F7899; --classic:#4CC3CD; --playing:#FF9B45; --want:#9DB2FF; --played:#4CC982; --bounced:#FF7A66; --skip:#8E97B5; --monthly:#F5B04A; --stream:#B79CFF;
+  --none:#6F7899; --classic:#4CC3CD; --playing:#FF9B45; --paused:#F2C94C; --want:#9DB2FF; --played:#4CC982; --bounced:#FF7A66; --skip:#8E97B5; --monthly:#F5B04A; --stream:#B79CFF;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -89,7 +89,7 @@ h1 em{font-style:normal}
 .plabel span{color:var(--band-muted);font-weight:600;font-stretch:100%;font-size:14px}
 .pbar{display:flex;height:16px;border-radius:2px;overflow:hidden;background:rgba(255,255,255,.16);margin-top:9px}
 .pbar i{display:block;height:100%;width:0;transition:width .6s cubic-bezier(.2,.8,.2,1)}
-.pbar .sg{background:#FF9B45}.pbar .sw{background:#FFFFFF}.pbar .sp{background:#4CC982}.pbar .sb{background:#FF7A66}.pbar .sx{background:#8E97B5}
+.pbar .sg{background:#FF9B45}.pbar .su{background:#F2C94C}.pbar .sw{background:#FFFFFF}.pbar .sp{background:#4CC982}.pbar .sb{background:#FF7A66}.pbar .sx{background:#8E97B5}
 .legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-size:13.5px;color:var(--band-muted)}
 .legend b{color:var(--band-ink);font-weight:700;font-variant-numeric:tabular-nums}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:1px;margin-right:6px;vertical-align:-1px}
@@ -194,7 +194,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 mark.hit{background:var(--yellow);color:var(--yellow-ink);padding:0 1px}
 .tabs{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 12px}
 .tabs button{--c:var(--accent);font:inherit;font-weight:800;font-stretch:104%;font-size:14.5px;color:var(--ink);background:var(--case);border:2px solid var(--line);border-radius:3px;padding:6px 13px;cursor:pointer}
-.tabs button[data-v=g]{--c:var(--playing)}.tabs button[data-v=w]{--c:var(--want)}.tabs button[data-v=p]{--c:var(--played)}.tabs button[data-v=b]{--c:var(--bounced)}.tabs button[data-v=x]{--c:var(--skip)}.tabs button[data-v=n]{--c:var(--bad)}
+.tabs button[data-v=g]{--c:var(--playing)}.tabs button[data-v=u]{--c:var(--paused)}.tabs button[data-v=w]{--c:var(--want)}.tabs button[data-v=p]{--c:var(--played)}.tabs button[data-v=b]{--c:var(--bounced)}.tabs button[data-v=x]{--c:var(--skip)}.tabs button[data-v=n]{--c:var(--bad)}
 .tabs button:hover{border-color:var(--c)}
 .tabs button[aria-selected=true]{background:var(--c);border-color:var(--c);color:#fff}
 .tabs button[data-v=browse][aria-selected=true]{background:var(--yellow);border-color:var(--yellow-ink);color:var(--yellow-ink)}
@@ -223,7 +223,7 @@ mark.hit{background:var(--yellow);color:var(--yellow-ink);padding:0 1px}
 .case .cm{font-size:12.5px;color:var(--muted)}
 .cstick{position:absolute;top:2px;right:2px;transform:rotate(8deg) scale(.86);transform-origin:top right;pointer-events:none}
 .cmark{position:absolute;left:4px;top:4px;padding:2px 7px;font-weight:800;font-size:13px;color:#fff;background:var(--mc,var(--ink));box-shadow:1px 2px 0 rgba(0,0,0,.2)}
-.cmark.mg{--mc:var(--playing)}.cmark.mw{--mc:var(--want)}.cmark.mp{--mc:var(--played)}.cmark.mb{--mc:var(--bounced)}.cmark.mx{--mc:var(--muted)}
+.cmark.mg{--mc:var(--playing)}.cmark.mu{--mc:var(--paused)}.cmark.mw{--mc:var(--want)}.cmark.mp{--mc:var(--played)}.cmark.mb{--mc:var(--bounced)}.cmark.mx{--mc:var(--muted)}
 .wall .case .talk.due{position:absolute;left:2px;bottom:64px;background:var(--red);color:#fff;font-family:var(--marker);font-size:13px;padding:2px 8px;transform:rotate(-3deg);white-space:nowrap}
 .case.is-x{opacity:.55}
 
@@ -290,7 +290,7 @@ tr.band th{text-align:left;padding:18px 14px 9px;background:transparent;font-fam
 tr.band th small{font-family:var(--font);font-weight:500;font-stretch:100%;font-size:13px;letter-spacing:0;color:var(--muted);margin-left:10px}
 tr.game{--st:transparent}
 tr.game td:first-child{box-shadow:inset 6px 0 0 var(--st)}
-tr.is-g{--st:var(--playing)} tr.is-w{--st:var(--want)} tr.is-p{--st:var(--played)} tr.is-b{--st:var(--bounced)} tr.is-x{--st:var(--skip)}
+tr.is-g{--st:var(--playing)} tr.is-u{--st:var(--paused)} tr.is-w{--st:var(--want)} tr.is-p{--st:var(--played)} tr.is-b{--st:var(--bounced)} tr.is-x{--st:var(--skip)}
 tr.game:hover td{background:color-mix(in srgb,var(--yellow) 10%,var(--case))}
 td.num,th.num{text-align:right}
 th.num button{text-align:right}
@@ -337,7 +337,7 @@ tr.game:hover .score:not(.n){transform:rotate(-2deg) scale(1.06)}
 /* marking a game: plain buttons that become stickers */
 .marks{display:inline-flex;gap:4px;white-space:nowrap}
 .marks button{--c:var(--ink);font:inherit;font-size:12.5px;font-weight:700;line-height:1;color:var(--muted);background:var(--case);border:2px solid var(--line);border-radius:3px;padding:6px 8px;cursor:pointer;transition:transform .12s}
-.marks button.mg{--c:var(--playing)}.marks button.mn{--c:var(--monthly)}.marks button.mw{--c:var(--want)}.marks button.mp{--c:var(--played)}.marks button.mb{--c:var(--bounced)}.marks button.mx{--c:var(--skip)}
+.marks button.mg{--c:var(--playing)}.marks button.mu{--c:var(--paused)}.marks button.mn{--c:var(--monthly)}.marks button.mw{--c:var(--want)}.marks button.mp{--c:var(--played)}.marks button.mb{--c:var(--bounced)}.marks button.mx{--c:var(--skip)}
 .marks button:hover{color:var(--c);border-color:var(--c)}
 .marks button[aria-pressed=true]{background:var(--c);border-color:var(--c);color:#fff;transform:rotate(-3deg)}
 :root[data-theme="dark"] .marks button[aria-pressed=true]{color:#0F1733}
@@ -661,6 +661,37 @@ dialog.dlgbox#psndlg{width:min(640px,calc(100vw - 24px))}
 .buyhide{font:inherit;font-size:12px;font-weight:700;padding:1px 8px;margin-right:6px;border:1.5px solid var(--muted);background:transparent;color:var(--muted);border-radius:3px;cursor:pointer}
 .buyhide:hover{border-color:var(--ink);color:var(--ink)}
 #dlgrows .buyhide{display:none}
+
+/* Bounced, but might try again */
+.why .retry{margin-left:auto;--c:var(--paused)}
+.why .retry[aria-pressed=true]{background:var(--paused);color:#0E1636;border-color:var(--paused)}
+
+/* "This month" panel */
+.shelf{margin-top:22px}
+.shelftabs{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;border-bottom:2px solid rgba(255,255,255,.14);padding-bottom:0}
+.shelfttl{font-family:var(--display);font-weight:400;font-size:24px;margin:0;color:var(--yellow);white-space:nowrap}
+#shelftabs{display:flex;flex-wrap:wrap;gap:2px}
+#shelftabs button{--c:var(--yellow);font:inherit;font-weight:800;font-size:14.5px;color:var(--band-muted);background:transparent;border:0;border-bottom:4px solid transparent;margin-bottom:-2px;padding:6px 10px;cursor:pointer;white-space:nowrap}
+#shelftabs button.mon{--c:#62D995}#shelftabs button.last{--c:#FF8A78}#shelftabs button.come{--c:#9DB8FF}
+#shelftabs button:hover{color:#fff}
+#shelftabs button[aria-selected=true]{color:#fff;border-bottom-color:var(--c)}
+#shelftabs button b{margin-left:6px;color:var(--c);font-variant-numeric:tabular-nums}
+#shelftabs button b:empty{display:none}
+.shelf .pane .eyebrow{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.shelf .pane .deckhead{margin:12px 0 12px}
+/* compact progress row */
+.progress{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px}
+.progress .plabel{flex:0 0 auto}
+.progress .pbar{flex:1 1 200px;margin:0}
+.progress .legend{flex:0 1 auto;margin-top:0}
+/* "My games" menu */
+.mymenu{position:relative}
+.mybtn{--c:var(--accent)}
+.mybtn.on{background:var(--c);border-color:var(--c);color:#fff}
+.mylist{position:absolute;z-index:30;top:calc(100% + 4px);left:0;display:flex;flex-direction:column;gap:4px;min-width:200px;padding:6px;background:var(--case);border:2px solid var(--line);border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.mylist[hidden]{display:none}
+.mylist button{text-align:left;display:flex;justify-content:space-between}
+@media (max-width:640px){.tabs .lg{display:none}.tabs{gap:5px}.tabs button{padding:5px 7px}.shelfttl{font-size:20px}#shelftabs button{font-size:13.5px;padding:6px 7px}.progress .legend{flex-basis:100%}}
 </style>
 </head>
 <body>
@@ -674,15 +705,16 @@ dialog.dlgbox#psndlg{width:min(640px,calc(100vw - 24px))}
     </div>
     <div class="herotop">
       <h1>PS Plus<br>Rental Wall</h1>
-      <div class="sub">Every game PS Plus lets you play: the Game Catalogue as of <span id="asof">17 November 2026</span>, the Classics and PS3 streaming where your country has them, and every PS4 and PS5 monthly game since 2013. Mark what you want, rate what you've played, and the wall learns what to put out front.</div>
+      <div class="sub">Every PS Plus game on one wall, as of <span id="asof">17 November 2026</span>. Mark what you want, rate what you've played, and the wall learns what to put out front.</div>
     </div>
    </div>
    <div class="counter">
     <div class="progress">
       <div class="plabel"><div id="ptext">Sorted 0 of 0</div><span id="pleft"></span></div>
-      <div class="pbar" role="progressbar" aria-labelledby="ptext" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" id="pbar"><i class="sg"></i><i class="sw"></i><i class="sp"></i><i class="sb"></i><i class="sx"></i></div>
+      <div class="pbar" role="progressbar" aria-labelledby="ptext" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" id="pbar"><i class="sg"></i><i class="su"></i><i class="sw"></i><i class="sp"></i><i class="sb"></i><i class="sx"></i></div>
       <div class="legend">
         <span><i style="background:#FF9B45"></i>Now playing <b id="lg">0</b></span>
+        <span><i style="background:#F2C94C"></i>Paused <b id="lu">0</b></span>
         <span><i style="background:#FFFFFF"></i>Want to play <b id="lw">0</b></span>
         <span><i style="background:#4CC982"></i>Played <b id="lp">0</b></span>
         <span><i style="background:#FF7A66"></i>Bounced off <b id="lb">0</b></span>
@@ -691,20 +723,30 @@ dialog.dlgbox#psndlg{width:min(640px,calc(100vw - 24px))}
       </div>
     </div>
     <div class="legend" id="leavealert" hidden></div>
-    <div id="monwrap" hidden>
-      <div class="deckhead"><h2 class="eyebrow mon">This month's games</h2><span id="monnote"></span><span class="lastbtns"><button type="button" class="lastall" id="monclaimed" title="Tag all of this month's games as in your library">I've claimed these</button><button type="button" class="lastall" id="moncal" title="Download a calendar reminder for the last day to claim">Remind me to claim</button><a class="lastall" id="monsrc" target="_blank" rel="noopener" hidden>Sony's announcement</a></span></div>
-      <div class="deck" id="mondeck"></div>
-    </div>
-    <div id="lastwrap" hidden>
-      <div class="deckhead"><h2 class="eyebrow last">Last chance</h2><span id="lastnote"></span><span class="lastbtns"><button type="button" class="lastall" id="lastcal" title="Download calendar reminders: your want-to-play games if any are leaving, otherwise all of these">Add these to my calendar</button><button type="button" class="lastall" id="lastall">Show them all on the shelf</button></span></div>
-      <div class="deck" id="lastdeck"></div>
-    </div>
-    <div id="comewrap" hidden>
-      <div class="deckhead"><h2 class="eyebrow come">Coming soon</h2><span id="comenote"></span><span class="lastbtns"><button type="button" class="lastall" id="comecal" title="Download calendar reminders for the day each game arrives">Add arrivals to my calendar</button><a class="lastall" id="comesrc" target="_blank" rel="noopener">Sony's announcement</a></span></div>
-      <div class="deck" id="comedeck"></div>
-    </div>
-    <div class="deckhead"><h2 class="eyebrow">Staff picks</h2><span id="decknote"></span></div>
-    <div class="deck" id="deck"></div>
+    <section class="shelf" id="shelf" aria-labelledby="shelfttl">
+      <div class="shelftabs"><h2 class="shelfttl" id="shelfttl">This month</h2><div role="tablist" aria-labelledby="shelfttl" id="shelftabs">
+        <button type="button" role="tab" id="sh-mon" data-pane="monwrap" class="mon">Claim now<b></b></button>
+        <button type="button" role="tab" id="sh-last" data-pane="lastwrap" class="last">Leaving<b></b></button>
+        <button type="button" role="tab" id="sh-come" data-pane="comewrap" class="come">Coming<b></b></button>
+        <button type="button" role="tab" id="sh-pick" data-pane="pickwrap">Staff picks<b></b></button>
+      </div></div>
+      <div id="monwrap" class="pane" role="tabpanel" aria-labelledby="sh-mon" hidden>
+        <div class="deckhead"><h2 class="eyebrow mon">This month's games</h2><span id="monnote"></span><span class="lastbtns"><button type="button" class="lastall" id="monclaimed" title="Tag all of this month's games as in your library">I've claimed these</button><button type="button" class="lastall" id="moncal" title="Download a calendar reminder for the last day to claim">Remind me to claim</button><a class="lastall" id="monsrc" target="_blank" rel="noopener" hidden>Sony's announcement</a></span></div>
+        <div class="deck" id="mondeck"></div>
+      </div>
+      <div id="lastwrap" class="pane" role="tabpanel" aria-labelledby="sh-last" hidden>
+        <div class="deckhead"><h2 class="eyebrow last">Last chance</h2><span id="lastnote"></span><span class="lastbtns"><button type="button" class="lastall" id="lastcal" title="Download calendar reminders: your want-to-play games if any are leaving, otherwise all of these">Add these to my calendar</button><button type="button" class="lastall" id="lastall">Show them all on the shelf</button></span></div>
+        <div class="deck" id="lastdeck"></div>
+      </div>
+      <div id="comewrap" class="pane" role="tabpanel" aria-labelledby="sh-come" hidden>
+        <div class="deckhead"><h2 class="eyebrow come">Coming soon</h2><span id="comenote"></span><span class="lastbtns"><button type="button" class="lastall" id="comecal" title="Download calendar reminders for the day each game arrives">Add arrivals to my calendar</button><a class="lastall" id="comesrc" target="_blank" rel="noopener">Sony's announcement</a></span></div>
+        <div class="deck" id="comedeck"></div>
+      </div>
+      <div id="pickwrap" class="pane" role="tabpanel" aria-labelledby="sh-pick">
+        <div class="deckhead"><h2 class="eyebrow">Staff picks</h2><span id="decknote"></span></div>
+        <div class="deck" id="deck"></div>
+      </div>
+    </section>
    </div>
   </header>
 
@@ -917,13 +959,19 @@ dialog.dlgbox#psndlg{width:min(640px,calc(100vw - 24px))}
       </div>
       <div class="tabs" role="tablist" id="tabs">
         <button type="button" role="tab" data-v="browse">Browse</button>
-        <button type="button" role="tab" data-v="g">▶ Now playing<b id="ng">0</b></button>
-        <button type="button" role="tab" data-v="w">★ Want to play<b id="nw">0</b></button>
-        <button type="button" role="tab" data-v="p">✓ Played<b id="np">0</b></button>
-        <button type="button" role="tab" data-v="b">↩ Bounced off<b id="nb">0</b></button>
-        <button type="button" role="tab" data-v="x">✕ Not interested<b id="nx">0</b></button>
-        <button type="button" role="tab" data-v="l">My library<b id="nl">0</b></button>
-        <button type="button" role="tab" data-v="n">Not in library<b id="nn">0</b></button>
+        <button type="button" role="tab" data-v="g">▶ <span class="lg">Now </span>playing<b id="ng">0</b></button>
+        <button type="button" role="tab" data-v="w">★ Want<span class="lg"> to play</span><b id="nw">0</b></button>
+        <div class="mymenu" id="mymenu">
+          <button type="button" class="mybtn" id="mybtn" aria-haspopup="true" aria-expanded="false" aria-controls="mylist"><span id="mylabel">My games</span> ▾</button>
+          <div class="mylist" id="mylist" role="group" aria-label="My games" hidden>
+            <button type="button" role="tab" data-v="u">‖ Paused<b id="nu">0</b></button>
+            <button type="button" role="tab" data-v="p">✓ Played<b id="np">0</b></button>
+            <button type="button" role="tab" data-v="b">↩ Bounced off<b id="nb">0</b></button>
+            <button type="button" role="tab" data-v="x">✕ Not interested<b id="nx">0</b></button>
+            <button type="button" role="tab" data-v="l">My library<b id="nl">0</b></button>
+            <button type="button" role="tab" data-v="n">Not in library<b id="nn">0</b></button>
+          </div>
+        </div>
       </div>
       <div class="countrow"><div class="count" id="count" aria-live="polite"></div>
         <div class="layoutsw" role="group" aria-label="Show games as"><button type="button" data-layout="wall">Cover wall</button><button type="button" data-layout="list">List</button></div></div>
@@ -1098,7 +1146,7 @@ const HUE={"Action":14,"Adventure":172,"RPG":268,"Shooter":212,"Open World":142,
 const SERIES=[["Jak|Daxter","Jak and Daxter"],["Sly ","Sly Cooper"],["Syphon Filter","Syphon Filter"],["Tekken","Tekken"],["Twisted Metal","Twisted Metal"],["Wild Arms","Wild Arms"],["TimeSplitters","TimeSplitters"],["Resident Evil","Resident Evil"],["Worms","Worms"],["Ape Escape|Ape Academy","Ape Escape"],["Armored Core","Armored Core"],["Patapon","Patapon"],["LocoRoco","LocoRoco"],["Metro","Metro"],["MediEvil","MediEvil"],["Ridge Racer|R4: Ridge Racer","Ridge Racer"],["Legacy of Kain|Blood Omen","Legacy of Kain"],["Dark Cloud","Dark Cloud"],["Pursuit Force","Pursuit Force"],["Kurushi","Kurushi"],["Thrillville","Thrillville"],["Ratchet|Secret Agent Clank","Ratchet & Clank"],["Dino Crisis","Dino Crisis"],["Gravity Rush","Gravity Rush"],["Myst|Riven","Myst"],["Jet Rider","Jet Rider"],["Alone in the Dark","Alone in the Dark"],["Everybody's Golf|Hot Shots","Everybody's Golf"],["Atari Flashback","Atari Flashback"],["Disney","Disney"],["Echochrome|echochrome|echoshift","Echochrome"]].concat([["LEGO|The LEGO","LEGO"],["Assassin's Creed","Assassin's Creed"],["Far Cry","Far Cry"],["PAW Patrol","PAW Patrol"],["Tom Clancy's Ghost Recon","Ghost Recon"],["Tom Clancy's Rainbow Six","Rainbow Six"],["Tom Clancy's The Division","The Division"],["Wolfenstein","Wolfenstein"],["Earth Defense Force","Earth Defense Force"],["Story of Seasons","Story of Seasons"],["Warhammer 40,000","Warhammer 40,000"],["Warhammer:","Warhammer Fantasy"],["Uncharted","Uncharted"],["Marvel's Spider-Man","Marvel's Spider-Man"],["The Last of Us","The Last of Us"],["God of War","God of War"],["Horizon","Horizon"],["Final Fantasy","Final Fantasy"],["Persona","Persona"],["Death Stranding","Death Stranding"],["Dying Light","Dying Light"],["Sniper Elite|Zombie Army","Sniper Elite"],["Watch Dogs","Watch Dogs"],["Mafia","Mafia"],["Destiny 2","Destiny 2"],["Tomb Raider|Rise of the Tomb Raider|Shadow of the Tomb Raider","Tomb Raider"],["Trials","Trials"],["Two Point","Two Point"],["Cat Quest","Cat Quest"],["Monster Hunter","Monster Hunter"],["Like a Dragon","Like a Dragon"],["Kingdom Come","Kingdom Come"],["Dishonored","Dishonored"],["Call of Duty","Call of Duty"],["Alan Wake","Alan Wake"],["Five Nights at Freddy's","Five Nights at Freddy's"],["Poppy Playtime","Poppy Playtime"],["Hotline Miami","Hotline Miami"],["Coffee Talk","Coffee Talk"],["Citizen Sleeper","Citizen Sleeper"],["Ben 10","Ben 10"],["Rabbids","Rabbids"],["Monopoly","Monopoly"],["Dynasty Warriors|Samurai Warriors|Warriors:","Warriors"],["Until Dawn","Until Dawn"],["Hello Neighbor|Secret Neighbor","Hello Neighbor"],["Killing Floor","Killing Floor"],["Outlast|The Outlast","Outlast"],["Overpass","Overpass"],["World War Z","World War Z"],["Nioh","Nioh"],["NBA 2K","NBA 2K"],["PGA Tour","PGA Tour 2K"],["WWE 2K","WWE 2K"],["MLB The Show","MLB The Show"],["EA Sports FC","EA Sports FC"],["F1 ","F1"],["Need for Speed","Need for Speed"],["Monster Train","Monster Train"],["Fallout","Fallout"],["DOOM","Doom"],["Sonic","Sonic"],["Aliens","Aliens"],["The Elder Scrolls","The Elder Scrolls"],["Oddworld","Oddworld"],["The Crew","The Crew"],["Planet ","Planet"],["The Surge","The Surge"],["Ys ","Ys"],["Prince of Persia|The Rogue Prince of Persia","Prince of Persia"],["Minecraft","Minecraft"],["South Park","South Park"],["Farming Simulator","Farming Simulator"],["Star Wars","Star Wars"],["For The King","For The King"],["Mighty Morphin Power Rangers|Power Rangers","Power Rangers"]]).map(([p,n])=>[new RegExp("^(?:"+p.replace(/[.*+?^${}()[\]\\]/g,m=>m==="|"?m:"\\"+m)+")","i"),n]);
 const DEF={nosc:false,noage:false,noplat:false,nodue:false,notags:false,age:"all",players:"all",layout:"wall",notime:false,tier:"",since:"",region:"",q:"",sort:"m",desc:true,plat:"all",minm:0,hideun:false,tmode:"h",tlen:"all",styles:[],src:"all",hidep:true,hideb:true,hidew:false,hidelib:false,sys:"all",onlyleave:false,syn:true,pv:[],view:"browse"};
 let S=Object.assign({},DEF,{styles:[],pv:[]});
-let MARKS={}; // game id -> "w" want | "p" played | "b" bounced off | "x" not interested
+let MARKS={}; // game id -> "g" playing | "u" paused (played some, coming back) | "w" want | "p" played | "b" bounced off | "x" not interested
 try{const s=JSON.parse(localStorage.getItem("psplus-sorter")||"null");if(s&&typeof s==="object")S=Object.assign(S,s);if(!Array.isArray(S.styles))S.styles=[];if(!Array.isArray(S.pv))S.pv=[];}catch(e){}
 /* Links can open the wall with filters already set, e.g. /?players=c&tlen=0-10&styles=Horror (the
    landing pages in /lists use this). Only the filters named in the link change: everything else is reset
@@ -1142,6 +1190,7 @@ const normT=t=>String(t).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLower
    original but "Hogwarts Legacy Deluxe Edition" matches "Hogwarts Legacy". Used for "already yours". */
 const normEd=t=>normT(String(t).replace(/\b(digital )?(deluxe|standard|gold|ultimate|complete|premium|special|collector'?s|launch|day one|anniversary|definitive|game of the year|goty)( edition)?\b/gi," ").replace(/\bedition\b/gi," "));
 let OWNIDX=null;
+function boughtIds(){const ix=ownedIndex(),out=new Set();ix.byId.forEach((o,id)=>{if(!o.plus)out.add(id);});return out;}
 // The first version of the import (22 Nov 2026) kept a plain list in psplus-psnlib: carry it over once.
 try{const v=JSON.parse(localStorage.getItem("psplus-psnlib")||"null");
   if(v&&Array.isArray(v.games)&&!Object.keys(OWNED).length)v.games.slice(0,5000).forEach(x=>{if(!x||typeof x.n!=="string"||!x.n.trim()||x.n.length>150)return;
@@ -1152,11 +1201,11 @@ try{const v=JSON.parse(localStorage.getItem("psplus-psnlib")||"null");
    the account), so a hand-edited or damaged file can't put bad values into the app. Anything that doesn't
    match the expected shape is dropped. Stored keys stay short (m, r, d.f and so on) because they are the
    format of existing backups and synced accounts; the names are listed here.
-     marks   m: id -> "g" playing | "w" want | "p" played | "b" bounced | "x" not interested
+     marks   m: id -> "g" playing | "u" paused | "w" want | "p" played | "b" bounced | "x" not interested
      ratings r: id -> whole number 1 to 5
      library l: id -> 1 in my library | -1 not in it
      notes   n: id -> text, up to 2000 characters
-     dates   d: id -> { s: started "YYYY-MM-DD", f: finished "YYYY-MM-DD", pg: progress 1-5, hr: hours 0-5000, why: bounce reasons }
+     dates   d: id -> { s: started "YYYY-MM-DD", f: finished "YYYY-MM-DD", pg: progress 1-5, hr: hours 0-5000, why: bounce reasons, retry: 1 if a bounced game might get another go }
      added   c: id "my-…" -> { t title, g styles, pv perspective, h hours, y year, d description, p platforms, u store link } */
 const ID_RE=/^[a-z0-9][a-z0-9-]{0,139}$/;
 const isDay=v=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&!isNaN(Date.parse(v+"T00:00:00Z"))&&new Date(v+"T00:00:00Z").toISOString().slice(0,10)===v;
@@ -1167,7 +1216,7 @@ function cleanSnap(x){
     for(const id of Object.keys(v)){const c=ID_RE.test(id)?fn(v[id],id):undefined;if(c===undefined)dropped++;else out[id]=c;}return out;};
   const WHYK=new Set(WHY.map(w=>w[0]));
   const out={
-    m:map(x.m,v=>["g","w","p","b","x"].includes(v)?v:undefined),
+    m:map(x.m,v=>["g","u","w","p","b","x"].includes(v)?v:undefined),
     r:map(x.r,v=>Number.isInteger(v)&&v>=1&&v<=5?v:undefined),
     l:map(x.l,v=>v===1||v===-1?v:undefined),
     n:map(x.n,v=>typeof v==="string"&&v.trim()?v.slice(0,2000):undefined),
@@ -1176,6 +1225,7 @@ function cleanSnap(x){
       if("f" in v){if(isDay(v.f))o.f=v.f;else dropped++;}
       if("pg" in v){if(Number.isInteger(v.pg)&&v.pg>=1&&v.pg<=5)o.pg=v.pg;else dropped++;}
       if("hr" in v){if(typeof v.hr==="number"&&isFinite(v.hr)&&v.hr>=0&&v.hr<=5000)o.hr=v.hr;else dropped++;}
+      if("retry" in v){if(v.retry===1)o.retry=1;else dropped++;}
       if("why" in v){const w=Array.isArray(v.why)?[...new Set(v.why.filter(k=>WHYK.has(k)))]:[];if(w.length)o.why=w;if(!Array.isArray(v.why)||w.length!==v.why.length)dropped++;}
       return Object.keys(o).length?o:undefined;}),
     c:map(x.c,(v,id)=>{if(!id.startsWith("my-")||!v||typeof v!=="object"||!isStr(v.t,120)||!v.t.trim())return undefined;
@@ -1331,7 +1381,8 @@ const lenBand=g=>{const t=g.h??g.x??g.c;return t==null?-1:t<5?0:t<10?1:t<20?2:t<
 let TASTE={on:false,style:{},len:{},n:0};
 function signal(id){const mk=MARKS[id];
   if(mk==="p")return RATE[id]?[RATE[id]-3,true]:null;
-  if(mk==="b"){const w=(DATES[id]&&DATES[id].why)||[];return [w.length&&!w.some(x=>TASTEWHY.has(x))?-0.4:-1.5,true];}
+  if(mk==="b"){const w=(DATES[id]&&DATES[id].why)||[];if(retry(id))return [-0.3,false];return [w.length&&!w.some(x=>TASTEWHY.has(x))?-0.4:-1.5,true];}
+  if(mk==="u")return [0.6,false];
   if(mk==="w"||mk==="g")return [0.5,false];
   if(mk==="x")return [-0.5,false];
   return null;}
@@ -1505,7 +1556,7 @@ function pass(g){
     if(LIB[g.id]===-1&&!g.cat)return false;
     if(mk==="x")return false;
     if(S.hidep&&mk==="p")return false;
-    if(S.hideb&&mk==="b")return false;
+    if(S.hideb&&mk==="b"&&!retry(g.id))return false;
     if(S.hidew&&mk==="w")return false;
     if(S.hidelib&&g.e&&!g.cat&&LIB[g.id]!==1)return false;
   } else if(mk!==S.view) return false;
@@ -1533,7 +1584,7 @@ const mcUrl=g=>"https://www.metacritic.com/search/"+encodeURIComponent(g.t.repla
   .replace(/\s*[-–:]?\s*\b(digital )?(deluxe|standard|gold|ultimate|complete|premium|collector'?s|game of the year|goty|cross-gen)( edition| bundle)?\s*$/i,"").trim())+"/?category=13";
 const scoreLink=g=>g.m==null?(g.buy?`<a class="mclink" href="${esc(mcUrl(g))}" target="_blank" rel="noopener" title="Look it up on Metacritic">${scoreHTML(g.m)}</a>`:scoreHTML(g.m)):`<a class="mclink" href="${esc(mcUrl(g))}" target="_blank" rel="noopener" title="Metascore ${g.m}: see the reviews on Metacritic" aria-label="Metascore ${g.m}, opens Metacritic">${scoreHTML(g.m)}</a>`;
 const scoreHTML=m=>m==null?'<span class="score n" title="No Metascore">tbd</span>':`<span class="score ${m>=90?"s":m>=75?"g":m>=50?"m":"b"}">${m}</span>`;
-const MK=[["g","mg","▶","Playing","I'm playing this now"],["w","mw","★","Want","Add to my want-to-play list"],["p","mp","✓","Played","I have played this"],["b","mb","↩","Bounced","I tried it and bounced off"],["x","mx","✕","Not interested","Hide this game"]];
+const MK=[["g","mg","▶","Playing","I'm playing this now"],["u","mu","‖","Paused","I've played some of this and mean to come back to it"],["w","mw","★","Want","Add to my want-to-play list"],["p","mp","✓","Played","I have played this"],["b","mb","↩","Bounced","I tried it and bounced off"],["x","mx","✕","Not interested","Hide this game"]];
 const TMNAME={h:"main story",x:"main story + extras",c:"completionist"};
 function row(g,i){
   const [t,fb]=timeOf(g);const mk=MARKS[g.id]||"";
@@ -1542,7 +1593,7 @@ function row(g,i){
   const pl=g.pk==="Elsewhere"?"":g.p.map(p=>`<span class="${p==="PS5"?"p5":""}">${p}</span>`).join("");
   const lv=LIB[g.id]||0;
   const hideBtn=g.buy?`<button type="button" class="buyhide" data-buyhide="${esc(g.okey)}" title="Hide this from my library">Hide</button>`:"";
-  const flags=hideBtn+(g.own?`<span class="flag own">Added by me</span>`:"")+(g.buy?`<span class="flag own">My purchase</span>`:boughtIds().has(g.id)?`<span class="flag own" title="You bought this game, so it stays yours without PS Plus">Bought</span>`:"")+(g.cl?`<span class="flag cl" title="PS Plus Premium Classic, originally ${esc(g.sys==="PS4 remaster"?"a PS4 remaster or port":g.sys==="Arcade"?"an arcade game":"a "+g.sys+" game")}">Classic · ${esc(g.sys==="PS4 remaster"?"PS4":g.sys)}</span>`:"")+(g.s3&&g.cl?`<span class="flag stream" title="Streamed from the cloud with PS Plus Premium; it can't be downloaded${g.rg==="na"?". Offered in the US and Canada only":""}">Streaming only</span>`:"")+(g.new?`<span class="flag new">New ${esc(g.new.split(" ")[0])}</span>`:"")+(g.e?`<span class="flag mon" title="PS Plus Essential monthly game, ${esc(g.el)}${g.cat?". Also in the Game Catalogue, so you can play it either way.":""}">Monthly ${esc(g.el)}</span><span class="libset" role="group" aria-label="Is it in my library?"><button type="button" class="yes" data-lib="${esc(g.id)}" data-lv="1" aria-pressed="${lv===1}" title="I claimed this one">✓ In my library</button><button type="button" class="no" data-lib="${esc(g.id)}" data-lv="-1" aria-pressed="${lv===-1}" title="I never claimed this one">✕ Not in my library</button></span>`:"");
+  const flags=hideBtn+(retry(g.id)?`<span class="flag" style="--fc:var(--paused)" title="You bounced off this but might give it another go">Might try again</span>`:"")+(g.own?`<span class="flag own">Added by me</span>`:"")+(g.buy?`<span class="flag own">My purchase</span>`:boughtIds().has(g.id)?`<span class="flag own" title="You bought this game, so it stays yours without PS Plus">Bought</span>`:"")+(g.cl?`<span class="flag cl" title="PS Plus Premium Classic, originally ${esc(g.sys==="PS4 remaster"?"a PS4 remaster or port":g.sys==="Arcade"?"an arcade game":"a "+g.sys+" game")}">Classic · ${esc(g.sys==="PS4 remaster"?"PS4":g.sys)}</span>`:"")+(g.s3&&g.cl?`<span class="flag stream" title="Streamed from the cloud with PS Plus Premium; it can't be downloaded${g.rg==="na"?". Offered in the US and Canada only":""}">Streaming only</span>`:"")+(g.new?`<span class="flag new">New ${esc(g.new.split(" ")[0])}</span>`:"")+(g.e?`<span class="flag mon" title="PS Plus Essential monthly game, ${esc(g.el)}${g.cat?". Also in the Game Catalogue, so you can play it either way.":""}">Monthly ${esc(g.el)}</span><span class="libset" role="group" aria-label="Is it in my library?"><button type="button" class="yes" data-lib="${esc(g.id)}" data-lv="1" aria-pressed="${lv===1}" title="I claimed this one">✓ In my library</button><button type="button" class="no" data-lib="${esc(g.id)}" data-lv="-1" aria-pressed="${lv===-1}" title="I never claimed this one">✕ Not in my library</button></span>`:"");
   let fy;
   if(mk==="p"){const r=RATE[g.id]||0;fy=`<span class="stars" role="group" aria-label="My rating">${[1,2,3,4,5].map(n=>`<button type="button" class="${n<=r?"on":""}" data-rate="${n}" data-id="${esc(g.id)}" aria-label="${n} ${n===1?"star":"stars"}" aria-pressed="${n===r}" title="${n===r?"Click to clear":"Rate "+n+" out of 5"}">★</button>`).join("")}</span>`;}
   else if(mk==="b"||mk==="x"){fy='<span class="time est">–</span>';}
@@ -1558,28 +1609,29 @@ function row(g,i){
   const note=NOTES[g.id];
   const noteHTML=OPEN_NOTE===g.id?`<div class="noteedit"><textarea id="notebox" aria-label="My note on ${esc(g.t)}" placeholder="Why you liked it, why you bounced, where you left off…">${esc(note||"")}</textarea><div><button type="button" class="btn primary" data-notesave="${esc(g.id)}">Save note</button><button type="button" class="btn" data-notecancel="1">Cancel</button>${note?`<button type="button" class="btn" data-notedel="${esc(g.id)}">Delete note</button>`:""}</div></div>`:(note?`<div class="note">${esc(note)}</div>`:"");
   let extra="";
-  if(mk==="g"||mk==="p"){const pg=(dt&&dt.pg)||0,hr=dt&&dt.hr,avg=g.h;
-    extra=`<div class="prog">`+(mk==="g"?`<span class="seg5" role="group" aria-label="How far in">${[1,2,3,4,5].map(n=>`<button type="button" class="${n<=pg?"on":""}" data-pg="${n}" data-id="${esc(g.id)}" aria-pressed="${n===pg}" aria-label="${PGNAME[n]}" title="${PGNAME[n]}"></button>`).join("")}</span><span>${pg?PGNAME[pg]:"How far in?"}</span>`:"")
-      +`<label>${mk==="g"?"Hours so far":"My hours"} <input type="number" min="0" max="5000" step="0.5" data-hr="${esc(g.id)}" value="${hr??""}" aria-label="${mk==="g"?"Hours so far":"My hours"} for ${esc(g.t)}"></label>`
-      +(hr&&avg?`<span>${mk==="g"?`of about ${fmtT(avg)} for the main story`:hr>avg*1.15?`${fmtT(hr-avg)} over the ${fmtT(avg)} average`:hr<avg*0.85?`${fmtT(avg-hr)} under the ${fmtT(avg)} average`:`close to the ${fmtT(avg)} average`}</span>`:"")+`</div>`;}
+  if(mk==="g"||mk==="p"||mk==="u"){const pg=(dt&&dt.pg)||0,hr=dt&&dt.hr,avg=g.h;
+    extra=`<div class="prog">`+(mk==="g"||mk==="u"?`<span class="seg5" role="group" aria-label="How far in">${[1,2,3,4,5].map(n=>`<button type="button" class="${n<=pg?"on":""}" data-pg="${n}" data-id="${esc(g.id)}" aria-pressed="${n===pg}" aria-label="${PGNAME[n]}" title="${PGNAME[n]}"></button>`).join("")}</span><span>${pg?PGNAME[pg]:"How far in?"}</span>`:"")
+      +`<label>${mk!=="p"?"Hours so far":"My hours"} <input type="number" min="0" max="5000" step="0.5" data-hr="${esc(g.id)}" value="${hr??""}" aria-label="${mk!=="p"?"Hours so far":"My hours"} for ${esc(g.t)}"></label>`
+      +(hr&&avg?`<span>${mk!=="p"?`of about ${fmtT(avg)} for the main story`:hr>avg*1.15?`${fmtT(hr-avg)} over the ${fmtT(avg)} average`:hr<avg*0.85?`${fmtT(avg-hr)} under the ${fmtT(avg)} average`:`close to the ${fmtT(avg)} average`}</span>`:"")+`</div>`;}
   else if(mk==="b"){const w=(dt&&dt.why)||[];
-    extra=`<div class="why" role="group" aria-label="Why I bounced off"><span>Why?</span>${WHY.map(([k,l])=>`<button type="button" data-why="${k}" data-id="${esc(g.id)}" aria-pressed="${w.includes(k)}">${l}</button>`).join("")}</div>`;}
+    extra=`<div class="why" role="group" aria-label="Why I bounced off"><span>Why?</span>${WHY.map(([k,l])=>`<button type="button" data-why="${k}" data-id="${esc(g.id)}" aria-pressed="${w.includes(k)}">${l}</button>`).join("")}<button type="button" class="retry" data-retry="${esc(g.id)}" aria-pressed="${retry(g.id)}" title="Keep it in mind: it stays in Browse and can come up in Staff picks">↻ Might try again</button></div>`;}
   const leave=(g.gone?`<span class="flag leave" title="No longer in the Game Catalogue">Left the catalogue</span>`:"")+(LEAVING[g.id]?`<span class="flag leave" title="Confirmed to leave the Game Catalogue">Leaving ${fmtD(LEAVING[g.id])}${daysLeft(LEAVING[g.id])}</span><button type="button" class="remind" data-remind="${esc(g.id)}" title="Download a calendar reminder for the last day, with an alert a week before">Remind me</button>`:"");
   return `<tr class="game${mk?" is-"+mk:""}${lv===-1&&!g.cat?" nolib":""}" style="--i:${Math.min(i,28)}"><td class="title"><div class="g">${tile(g)}<div class="gt"><a href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${hl(g.t)}</a>${leave}${flags}${tags}${S.syn&&g.d?`<div class="syn">${esc(g.d)}</div>`:""}${extra}${noteHTML}</div></div></td><td class="pl"><span class="plat">${pl}</span></td><td class="num sc">${scoreLink(g)}</td><td class="num tm">${tm}</td><td class="fyc">${fy}</td><td class="mk"><span class="marks">${btns}${g.own?`<button type="button" class="mn" data-delown="${esc(g.id)}" aria-label="Remove" title="Remove this game I added">⌫<span class="ml"> Remove</span></button>`:""}<button type="button" class="mn" data-note="${esc(g.id)}" aria-pressed="${!!note}" aria-label="Note" title="${note?"Edit my note":"Add a note"}">✎<span class="ml"> Note</span></button></span></td></tr>`;
 }
 const SORTNAME={date:"the date you started or finished",pri:"your priority",m:"Metacritic score",time:"completion time",p:"platform",g:"game style",t:"title",y:"release year"};
-const EMPTY={l:"Nothing is tagged as in your library yet. Use Import from my PlayStation account in Your PS Plus, or tag the monthly games you claimed.",g:"Nothing in progress. Use ▶ Playing on a game when you start it.",browse:"No games match these filters. Loosen one of them or reset.",w:"Nothing on your want-to-play list matches. Use ★ Want in Browse to add games here.",p:"No played games match. Use ✓ Played in Browse to move games here.",b:"No bounced-off games match. Use ↩ Bounced in Browse for games you tried and dropped.",n:"No games here. Monthly games you tag ✕ Not in my library collect in this tab, and you can untag them from here.",x:"No hidden games match. Games you mark ✕ Not interested land here, and you can bring them back from this tab."};
-function counts(){const c={g:0,w:0,p:0,b:0,x:0};for(const id in MARKS)if(IDS.has(id)&&c[MARKS[id]]!=null)c[MARKS[id]]++;return c;}
+const EMPTY={u:"Nothing paused. Use ‖ Paused for a game you've played some of and mean to come back to.",l:"Nothing is tagged as in your library yet. Use Import from my PlayStation account in Your PS Plus, or tag the monthly games you claimed.",g:"Nothing in progress. Use ▶ Playing on a game when you start it.",browse:"No games match these filters. Loosen one of them or reset.",w:"Nothing on your want-to-play list matches. Use ★ Want in Browse to add games here.",p:"No played games match. Use ✓ Played in Browse to move games here.",b:"No bounced-off games match. Use ↩ Bounced in Browse for games you tried and dropped.",n:"No games here. Monthly games you tag ✕ Not in my library collect in this tab, and you can untag them from here.",x:"No hidden games match. Games you mark ✕ Not interested land here, and you can bring them back from this tab."};
+const retry=id=>MARKS[id]==="b"&&DATES[id]&&DATES[id].retry===1;
+function counts(){const c={g:0,u:0,w:0,p:0,b:0,x:0};for(const id in MARKS)if(IDS.has(id)&&c[MARKS[id]]!=null)c[MARKS[id]]++;return c;}
 function renderHero(){
   applyRegion();
   learn();try{sinceHint();tierUI();}catch(e){}
-  const c=counts(),tot=GAMES.filter(inScope).length,done=c.g+c.w+c.p+c.b+c.x;
+  const c=counts(),tot=GAMES.filter(inScope).length,done=c.g+c.u+c.w+c.p+c.b+c.x;
   $("ptext").textContent=`Sorted ${done} of ${tot}`;
   $("pleft").textContent=done?`${tot-done} still to look at`:"Start marking games and this bar fills in";
-  const pb=$("pbar"),bars=pb.children;["g","w","p","b","x"].forEach((k,i)=>bars[i].style.width=(c[k]/tot*100)+"%");
+  const pb=$("pbar"),bars=pb.children;["g","u","w","p","b","x"].forEach((k,i)=>bars[i].style.width=(c[k]/tot*100)+"%");
   pb.setAttribute("aria-valuemax",tot);pb.setAttribute("aria-valuenow",done);
-  pb.setAttribute("aria-valuetext",`${done} of ${tot} games sorted: ${c.g} playing, ${c.w} want to play, ${c.p} played, ${c.b} bounced off, ${c.x} not interested`);
-  $("lg").textContent=c.g;$("ng").textContent=c.g;$("lw").textContent=c.w;$("lp").textContent=c.p;$("lb").textContent=c.b;$("lx").textContent=c.x;
+  pb.setAttribute("aria-valuetext",`${done} of ${tot} games sorted: ${c.g} playing, ${c.u} paused, ${c.w} want to play, ${c.p} played, ${c.b} bounced off, ${c.x} not interested`);
+  $("lg").textContent=c.g;$("ng").textContent=c.g;$("lu").textContent=c.u;$("nu").textContent=c.u;$("lw").textContent=c.w;$("lp").textContent=c.p;$("lb").textContent=c.b;$("lx").textContent=c.x;
   $("nw").textContent=c.w;$("np").textContent=c.p;$("nb").textContent=c.b;$("nx").textContent=c.x;
   const nolib=GAMES.filter(g=>LIB[g.id]===-1).length,untag=GAMES.filter(g=>g.e&&!g.cat&&!LIB[g.id]&&inScope(g)).length;
   $("nn").textContent=nolib;$("nl").textContent=GAMES.filter(g=>LIB[g.id]===1||g.buy).length;
@@ -1592,7 +1644,7 @@ function renderHero(){
   const lv=GAMES.filter(g=>LEAVING[g.id]&&(MARKS[g.id]==="w"||MARKS[g.id]==="g")).sort((a,b)=>LEAVING[a.id]<LEAVING[b.id]?-1:1);
   const la=$("leavealert");la.hidden=!lv.length;
   la.textContent=lv.length?"Leaving soon from your list: "+lv.map(g=>g.t+" ("+fmtD(LEAVING[g.id])+")").join(", "):"";
-  const lc=GAMES.filter(g=>LEAVING[g.id]&&inScope(g)&&!["p","b","x"].includes(MARKS[g.id])).sort((a,b)=>LEAVING[a.id]<LEAVING[b.id]?-1:LEAVING[a.id]>LEAVING[b.id]?1:(b.m??0)-(a.m??0));
+  const lc=GAMES.filter(g=>LEAVING[g.id]&&inScope(g)&&!["p","b","x"].includes(MARKS[g.id])||LEAVING[g.id]&&inScope(g)&&retry(g.id)).sort((a,b)=>LEAVING[a.id]<LEAVING[b.id]?-1:LEAVING[a.id]>LEAVING[b.id]?1:(b.m??0)-(a.m??0));
   $("lastwrap").hidden=!lc.length;
   if(lc.length){const dates=[...new Set(lc.map(g=>LEAVING[g.id]))];
     $("lastnote").textContent=(dates.length===1?`Leaving the Game Catalogue on ${fmtD(dates[0])}`:"Leaving the Game Catalogue soon")+daysLeft(dates[0]).replace(" · ",", ");
@@ -1600,10 +1652,17 @@ function renderHero(){
   renderMonthly();
   renderComing();
   renderTaste();
-  let pick=GAMES.filter(g=>MARKS[g.id]==="w"&&playable(g)).sort(byScore),note="from your want-to-play list, "+how;
+  // Paused games first (pick up where you left off), then the want list, then one or two bounced games you
+  // said you might try again, so they come back round now and then.
+  const paused=GAMES.filter(g=>MARKS[g.id]==="u"&&playable(g)).sort(byScore),again=GAMES.filter(g=>retry(g.id)&&playable(g)).sort(byScore);
+  let pick=[...paused.slice(0,4),...GAMES.filter(g=>MARKS[g.id]==="w"&&playable(g)).sort(byScore)];
+  if(again.length){const n=Math.min(2,again.length),off=new Date().getDate()%again.length;for(let k=0;k<n;k++){const a=again[(off+k)%again.length];if(!pick.includes(a))pick.splice(Math.min(3+k*4,pick.length),0,a);}}
+  let note=(paused.length?"games you've paused, ":"")+"your want-to-play list"+(again.length?" and a game you might give another go":"")+", "+how;
   if(!pick.length){pick=GAMES.filter(g=>!MARKS[g.id]&&playable(g)).sort(byScore);note="games you haven't sorted yet, "+how;}
+  const pickTalk=(g,i)=>MARKS[g.id]==="u"?"Pick it back up":retry(g.id)?"Try it again?":talker(g,i);
   $("decknote").textContent=note;
-  $("deck").innerHTML=pick.slice(0,14).map((g,i)=>{const t=g.h;return `<a class="card" style="--i:${i}" title="${esc(g.d||"")}" href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${tile(g)}<span class="ct">${esc(g.t)}</span><span class="cm">${TASTE.on?"Priority "+pv(g):(g.m!=null?"Metascore "+g.m:"No Metascore")}${t!=null?`<span class="ctm"> · ${fmtT(t)}</span>`:""}</span><span class="talk">${esc(talker(g,i))}</span></a>`;}).join("");
+  $("deck").innerHTML=pick.slice(0,14).map((g,i)=>{const t=g.h;return `<a class="card" style="--i:${i}" title="${esc(g.d||"")}" href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${tile(g)}<span class="ct">${esc(g.t)}</span><span class="cm">${TASTE.on?"Priority "+pv(g):(g.m!=null?"Metascore "+g.m:"No Metascore")}${t!=null?`<span class="ctm"> · ${fmtT(t)}</span>`:""}</span><span class="talk">${esc(pickTalk(g,i))}</span></a>`;}).join("");
+  shelfTabs(true);
 }
 /* Coming soon: games Sony has announced on the PlayStation Blog that haven't arrived yet
    (data/coming.json, from tools/fetch_coming.py). Games the site already knows use its own case and link;
@@ -1703,7 +1762,7 @@ function renderCtx(list){
     el.hidden=false;el.innerHTML=`<b>More like ${esc(a?a.t:"this")}</b><span>The ${list.length} closest matches by style, camera and length. Your filters still apply.</span><span class="sp"></span><button type="button" class="btn" data-ctxclear="1">Back to everything</button>`;}
   else{el.hidden=true;el.innerHTML="";}
 }
-const VIEWNAME={browse:"Browse",g:"Now playing",w:"Want to play",p:"Played",b:"Bounced off",x:"Not interested",l:"My library",n:"Not in library"};
+const VIEWNAME={browse:"Browse",g:"Now playing",u:"Paused",w:"Want to play",p:"Played",b:"Bounced off",x:"Not interested",l:"My library",n:"Not in library"};
 function searchHints(here){
   const el=$("qelse"),q=S.q.trim();
   $("qclear").hidden=!q;
@@ -1742,7 +1801,7 @@ async function drawReceipt(){
     pad(now.toLocaleDateString("en-CA",{day:"2-digit",month:"short",year:"numeric"}).toUpperCase(),now.toLocaleTimeString("en-CA",{hour:"2-digit",minute:"2-digit",hour12:false})),
     pad("MEMBER",S.since?"SINCE "+new Date(S.since+"-01T12:00").toLocaleDateString("en-CA",{month:"short",year:"numeric"}).toUpperCase():"WALK-IN"),
     pad("CARD",(S.tier?(S.tier==="premium"&&!regionStreams()?"DELUXE":S.tier.toUpperCase()):"PS PLUS")),rule);
-  L.push(pad("NOW PLAYING",c.g),pad("ON HOLD (WANT TO PLAY)",c.w),pad("RETURNED (PLAYED)",c.p),pad("RETURNED EARLY (BOUNCED)",c.b),pad("LEFT ON THE SHELF",c.x),rule);
+  L.push(pad("NOW PLAYING",c.g),pad("PAUSED (STILL OUT)",c.u),pad("ON HOLD (WANT TO PLAY)",c.w),pad("RETURNED (PLAYED)",c.p),pad("RETURNED EARLY (BOUNCED)",c.b),pad("LEFT ON THE SHELF",c.x),rule);
   if(best.length){L.push("STAFF PICKS: YOURS","");best.forEach(g=>L.push(pad(g.t.toUpperCase(),"*".repeat(RATE[g.id]))));L.push(rule);}
   else if(!c.p)L.push(ctr("NO RENTALS RETURNED YET"),ctr("MARK GAMES AS PLAYED TO FILL"),ctr("THIS SLIP IN"),rule);
   L.push(pad("HOURS ON THE CLOCK",hrs?(Math.round(hrs*10)/10).toFixed(1):"0.0"));
@@ -1771,7 +1830,7 @@ const rcptBlob=()=>new Promise(r=>$("rcpt").toBlob(r,"image/png"));
 /* Cover wall: the same list as box art on shelves. A case opens the game's details in a dialog,
    which holds the same row the list view shows, so every button works the same way. */
 const WALL=()=>S.layout!=="list";
-const MKICON={g:"▶",w:"★",p:"✓",b:"↩",x:"✕"},MKNAME={g:"Playing",w:"Want to play",p:"Played",b:"Bounced off",x:"Not interested"};
+const MKICON={g:"▶",u:"‖",w:"★",p:"✓",b:"↩",x:"✕"},MKNAME={g:"Playing",u:"Paused",w:"Want to play",p:"Played",b:"Bounced off",x:"Not interested"};
 /* "Show on each game" switches. Each is stored as a hide flag (default false: everything shown) and sets a
    class on <body>; the CSS below does the hiding, so nothing has to re-render. */
 const HIDE_KEYS=["nosc","notime","noage","noplat","nodue","notags"];
@@ -1890,7 +1949,9 @@ function render(animate){
   const press=(sel,v)=>document.querySelectorAll(sel).forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===v));
   press("#plat button",S.plat);press("#players button",S.players);press("#agef button",S.age);press("#sysf button",S.sys);press("#tlen button",S.tlen);press("#src button",S.src);
   document.querySelectorAll("#styles button").forEach(b=>b.setAttribute("aria-pressed",S.styles.includes(b.dataset.v)));
-  document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===S.view));
+  document.querySelectorAll("#tabs button[data-v]").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===S.view));
+  {const inMenu=document.querySelector(`#mylist button[data-v="${S.view}"]`);$("mybtn").classList.toggle("on",!!inMenu);$("mybtn").style.setProperty("--c",inMenu?getComputedStyle(inMenu).getPropertyValue("--c"):"");
+   $("mylabel").textContent=inMenu?inMenu.childNodes[0].textContent.trim():"My games";}
   document.querySelectorAll("thead th[data-k]").forEach(th=>{
     if(th.dataset.k===S.sort){const natural=(S.sort==="p"||S.sort==="g"||S.sort==="t");th.setAttribute("aria-sort",(natural?S.desc:!S.desc)?"ascending":"descending");}
     else th.removeAttribute("aria-sort");
@@ -1906,10 +1967,10 @@ function saveMarks(){saveLocal();queuePush();}
 function stamp(id){const mk=MARKS[id];const t=Object.assign({},DATES[id]);
   if(mk==="g"){if(!t.s)t.s=today();delete t.f;}
   else if(mk==="p"){if(!t.f)t.f=today();}
-  else{delete t.f;if(mk!=="p"&&mk!=="g"&&mk!=="b")delete t.s;}
-  if(mk!=="b")delete t.why;
-  if(mk!=="g")delete t.pg;
-  if(mk!=="g"&&mk!=="p")delete t.hr;
+  else{delete t.f;if(mk!=="p"&&mk!=="g"&&mk!=="b"&&mk!=="u")delete t.s;}
+  if(mk!=="b"){delete t.why;delete t.retry;}
+  if(mk!=="g"&&mk!=="u")delete t.pg;
+  if(mk!=="g"&&mk!=="p"&&mk!=="u")delete t.hr;
   if(t.s||t.f||t.hr||t.pg||(t.why&&t.why.length))DATES[id]=t;else delete DATES[id];}
 function setMeta(id,key,val,cb){const t=Object.assign({},DATES[id]);
   if(val==null||val===""||(Array.isArray(val)&&!val.length))delete t[key];else t[key]=val;
@@ -1952,15 +2013,17 @@ function askPrompt(extra){
   const noted=GAMES.filter(g=>NOTES[g.id]&&!MARKS[g.id]);
   // Leave out add-ons, and other versions (remaster, remake, director's cut…) of games they've already played or dropped.
   const base=t=>normT(String(t).replace(/\((?:PS\d|PSP|\d{4})\)|\b(remastered|remaster|remake|director'?s cut|definitive|complete|enhanced|game of the year|goty|hd|redux|special|ultimate|deluxe|collection|edition|intergrade)\b/gi," "));
-  const seenBase=new Set(GAMES.filter(g=>MARKS[g.id]==="p"||MARKS[g.id]==="b").map(g=>base(g.t)));
+  const seenBase=new Set(GAMES.filter(g=>MARKS[g.id]==="p"||MARKS[g.id]==="b"||MARKS[g.id]==="u").map(g=>base(g.t)));
   const addon=g=>/\((?:expansion|dlc|add-on)\)|\b(expansion pass|season pass|dlc)\b/i.test(g.t);
   const cand=GAMES.filter(g=>(!MARKS[g.id]||MARKS[g.id]==="w")&&(g.cat||g.cl||LIB[g.id]===1)&&!addon(g)&&!seenBase.has(base(g.t))).sort((a,b)=>(priority(b)[0]??0)-(priority(a)[0]??0)).slice(0,60);
   return "You are helping one person choose what to play next from their PlayStation Plus library. Everything you know about them is below.\n"
    +"Each game line reads: title | styles | camera | main-story hours | Metascore | their own note if any.\n"
    +sec("GAMES THEY PLAYED AND RATED (stars out of 5 first):",rated,g=>RATE[g.id]+" stars: "+withNote(g))
    +sec("PLAYED BUT NOT RATED:",unr,withNote)
-   +sec("TRIED AND BOUNCED OFF:",by("b"),g=>withNote(g)+why(g))
+   +sec("TRIED AND BOUNCED OFF (done with it):",by("b").filter(g=>!retry(g.id)),g=>withNote(g)+why(g))
+   +sec("SET ASIDE, BUT MIGHT GIVE IT ANOTHER GO:",by("b").filter(g=>retry(g.id)),g=>withNote(g)+why(g))
    +sec("PLAYING NOW:",by("g"),g=>withNote(g)+prog(g))
+   +sec("PLAYED SOME, PAUSED, MEANING TO COME BACK:",by("u"),g=>withNote(g)+prog(g))
    +sec("ON THEIR WANT-TO-PLAY LIST:",by("w"),withNote)
    +sec("NOT INTERESTED IN:",by("x").slice(0,60),g=>g.t)
    +sec("NOTES ON OTHER GAMES:",noted,withNote)
@@ -2395,7 +2458,35 @@ const chk=(id)=>$(id).addEventListener("change",e=>{S[id]=e.target.checked;soon(
 chk("hideun");chk("hidep");chk("hideb");chk("hidew");chk("hidelib");chk("onlyleave");chk("syn");HIDE_KEYS.forEach(k=>$(k).addEventListener("change",e=>{S[k]=!e.target.checked;soon(()=>{render();renderHero();});}));
 $("pvs").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const v=b.dataset.v;S.pv=S.pv.includes(v)?S.pv.filter(x=>x!==v):S.pv.concat(v);soon(render);});
 const segClick=(id,key)=>$(id).addEventListener("click",e=>{const b=e.target.closest("button");if(b){S[key]=b.dataset.v;soon(render);}});
-segClick("plat","plat");segClick("players","players");segClick("agef","age");segClick("sysf","sys");segClick("tlen","tlen");segClick("src","src");$("tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(b){CTX={ser:null,like:null};S.view=b.dataset.v;soon(render);}});
+/* ---- "My games" menu on the view tabs ---- */
+function myMenu(open){const l=$("mylist"),b=$("mybtn");if(open==null)open=l.hidden;l.hidden=!open;b.setAttribute("aria-expanded",open);
+  if(open){const f=l.querySelector('[aria-selected="true"]')||l.querySelector("button");if(f)f.focus();}}
+$("mybtn").addEventListener("click",e=>{e.stopPropagation();myMenu();});
+document.addEventListener("click",e=>{if(!$("mymenu").contains(e.target))myMenu(false);});
+$("mymenu").addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("mylist").hidden){myMenu(false);$("mybtn").focus();}
+  if((e.key==="ArrowDown"||e.key==="ArrowUp")&&!$("mylist").hidden){e.preventDefault();const bs=[...$("mylist").querySelectorAll("button")],i=bs.indexOf(document.activeElement);bs[(i+(e.key==="ArrowDown"?1:bs.length-1))%bs.length].focus();}});
+
+/* ---- "This month" panel: one tab per shelf, opening on the most urgent one ---- */
+let SHELF=null;try{SHELF=sessionStorage.getItem("psplus-shelf");}catch(e){}
+function shelfTabs(fresh){
+  const tabs=[...document.querySelectorAll("#shelftabs button")];
+  const has=t=>{const p=$(t.dataset.pane);return p.dataset.empty!=="1";};
+  tabs.forEach(t=>{const p=$(t.dataset.pane);
+    // straight after renderHero, a hidden shelf is one with nothing to show; remember that apart from tab switching
+    if(fresh)p.dataset.empty=p.hidden?"1":"";
+    const n=p.querySelectorAll(".deck > *").length;t.hidden=!has(t);t.querySelector("b").textContent=n&&t.dataset.pane!=="pickwrap"?n:"";});
+  let cur=tabs.find(t=>t.dataset.pane===SHELF&&!t.hidden);
+  if(!cur){ // whichever deadline comes first: the last day to claim the monthly games, or the next games leaving
+    const by=id=>tabs.find(t=>t.dataset.pane===id&&!t.hidden),today=todayISO();
+    const M=monthlyNow(),claim=M&&M.until||"9999",leave=Object.values(LEAVING).filter(d=>d>=today).sort()[0]||"9999";
+    cur=(claim<=leave?by("monwrap")||by("lastwrap"):by("lastwrap")||by("monwrap"))||by("pickwrap")||tabs.find(t=>!t.hidden);}
+  tabs.forEach(t=>{const on=t===cur,p=$(t.dataset.pane);t.setAttribute("aria-selected",on);t.tabIndex=on?0:-1;
+    p.hidden=!on||!has(t);});
+  $("shelf").hidden=!cur;}
+$("shelftabs").addEventListener("click",e=>{const t=e.target.closest("button");if(!t)return;SHELF=t.dataset.pane;try{sessionStorage.setItem("psplus-shelf",SHELF);}catch(x){}shelfTabs();});
+$("shelftabs").addEventListener("keydown",e=>{if(e.key!=="ArrowRight"&&e.key!=="ArrowLeft")return;const ts=[...document.querySelectorAll("#shelftabs button:not([hidden])")],i=ts.indexOf(document.activeElement);if(i<0)return;
+  const n=ts[(i+(e.key==="ArrowRight"?1:ts.length-1))%ts.length];n.click();n.focus();});
+segClick("plat","plat");segClick("players","players");segClick("agef","age");segClick("sysf","sys");segClick("tlen","tlen");segClick("src","src");$("tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(b){myMenu(false);CTX={ser:null,like:null};S.view=b.dataset.v;soon(render);}});
 $("styles").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const v=b.dataset.v;S.styles=S.styles.includes(v)?S.styles.filter(s=>s!==v):S.styles.concat(v);soon(render);});
 $("bulkno").addEventListener("click",e=>{const b=e.currentTarget;
   if(!b.dataset.armed){b.dataset.armed="1";b.textContent=`Click again to confirm: ${b.dataset.n} games will be tagged`;setTimeout(()=>{delete b.dataset.armed;renderHero();},5000);return;}
@@ -2494,6 +2585,7 @@ onRows("click",e=>{
   else if(t.dataset.notecancel){OPEN_NOTE=null;render(false);}
   else if(t.dataset.notedel){saveNote(t.dataset.notedel,"");}
   else if(t.dataset.pg){const id=t.dataset.id,n=+t.dataset.pg;setMeta(id,"pg",(DATES[id]&&DATES[id].pg)===n?null:n);}
+  else if(t.dataset.retry){const id=t.dataset.retry;setMeta(id,"retry",retry(id)?null:1,()=>{const b=document.querySelector(`button[data-retry="${CSS.escape(id)}"]`);if(b)b.focus({preventScroll:true});});}
   else if(t.dataset.why){const id=t.dataset.id,k=t.dataset.why;const w=((DATES[id]&&DATES[id].why)||[]).slice();const i=w.indexOf(k);if(i>=0)w.splice(i,1);else w.push(k);setMeta(id,"why",w,()=>{
     const again=document.querySelector(`.why button[data-id="${CSS.escape(id)}"][data-why="${k}"]`);if(again)again.focus({preventScroll:true});});}
   else if(t.dataset.delown){const id=t.dataset.delown;
@@ -2584,22 +2676,20 @@ $("shownotice").addEventListener("click",showNotice);
 /* What's new: a banner shown once to returning visitors after a feature release. Raise NEWS_ID for the next
    one. First-time visitors don't see it (they get the welcome instead) and are marked as up to date. */
 (function whatsNew(){
-  const NEWS_ID="2026-11-22",KEY="psplus-news";
+  const NEWS_ID="2026-11-23",KEY="psplus-news";
   let last=null;try{last=localStorage.getItem(KEY);}catch(e){}
   const returning=seen("psplus-notice")||Object.keys(MARKS).length>0;
   const done=()=>{try{localStorage.setItem(KEY,NEWS_ID);}catch(e){}};
   if(last===NEWS_ID)return;
   if(!returning||document.querySelector(".moved")){done();return;}
   const b=document.createElement("div");b.className="moved news";b.setAttribute("role","region");b.setAttribute("aria-label","What's new");
-  b.innerHTML=`<div class="newsbody"><p><b>New on the Rental Wall:</b> import your PlayStation library, a My library tab, a Coming soon shelf, age ratings and crossplay, and more.</p>
+  b.innerHTML=`<div class="newsbody"><p><b>New on the Rental Wall:</b> a Paused mark for games you mean to finish, a "might try again" option for games you bounced off, and a tidier front page.</p>
     <ul hidden>
+      <li><b>Paused.</b> For a game you've played some of and mean to come back to. It keeps your progress and hours, and shows up first in Staff picks.</li>
+      <li><b>Might try again.</b> On a game you bounced off, so it stays in Browse, counts less against similar games, and now and then comes back round in Staff picks.</li>
+      <li><b>This month.</b> The monthly games, the games leaving, what's coming and Staff picks now share one panel, which opens on whatever is most urgent.</li>
+      <li><b>My games.</b> Played, Bounced off, Not interested, Paused and your library are now in one menu next to Want to play.</li>
       <li><b>Import from your PlayStation account.</b> Tags the games you own and marks the ones you've played. <button type="button" class="newsgo" data-go="psn">Try it</button></li>
-      <li><b>My library.</b> A new tab with every game you own, including the ones that aren't on PS Plus.</li>
-      <li><b>Coming soon.</b> Games Sony has announced, with arrival dates and calendar reminders.</li>
-      <li><b>Age ratings</b> on every game for your country, and an Age rating filter.</li>
-      <li><b>Crossplay.</b> Find games you can play with friends on Xbox or PC, in the Players filter.</li>
-      <li><b>Show on each game.</b> Hide scores, playtimes, ratings and more to keep the wall tidy.</li>
-      <li><b>Ready-made lists</b> like co-op, short games and games for kids. <a href="/lists/">See the lists</a></li>
     </ul></div>
     <button type="button" class="newsmore" aria-expanded="false">What's new</button><button type="button" class="newsx" aria-label="Close">✕</button>`;
   const ul=b.querySelector("ul"),more=b.querySelector(".newsmore");
@@ -2638,7 +2728,6 @@ function ownedIndex(){ // name -> purchases, and wall id -> purchase, rebuilt wh
   for(const k in OWNED){const o=OWNED[k];if(!o)continue;const n=normEd(o.t);if(!byName.has(n))byName.set(n,[]);byName.get(n).push(o);if(o.id)byId.set(o.id,o);}
   return OWNIDX={byName,byId};
 }
-const boughtIds=()=>{const ix=ownedIndex(),out=new Set();ix.byId.forEach((o,id)=>{if(!o.plus)out.add(id);});return out;};
 /* Is this game already yours? {state:"lib"} tagged in your library; {state:"own"} you have it on a matching
    platform; {state:"other", plat} you own it, but for another platform (a PS4 copy isn't always a PS5 one). */
 function alreadyYours(t,plats,g){
