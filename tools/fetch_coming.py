@@ -15,6 +15,8 @@ The script reads the blog's RSS feeds, parses every announcement it finds, and w
 
   {"asOf": "2026-11-22",
    "posts": [{"url", "title", "kind": "monthly"|"catalog", "month": "2026-12", "date": "2026-12-02"}],
+   "monthly": {"url", "month", "from", "until", "games": [{"t", "p", "id", "img"}]} or null: the Monthly
+              Games (Essential) you can claim right now and the last day to claim them, when Sony's post is known,
    "games": [{"t": "Death Stranding 2: On the Beach", "p": ["PS5"], "tier": "Extra"|"Premium"|"Essential",
               "date": "2026-11-17", "id": "death-stranding-2-on-the-beach" or null, "post": <index>,
               "img": Sony's promo image on the blog, or null}]}
@@ -48,6 +50,7 @@ TITLE_RE = re.compile(r"^PlayStation Plus (Monthly Games|Game Catalog)(?: and Ga
 GAME_RE = re.compile(r"<strong>\s*([^<|]{2,120}?)\s*(?:</strong>\s*)?\|\s*((?:PS5|PS4|PS VR2|PS VR|PC)(?:\s*(?:,|&amp;|&|and)\s*(?:PS5|PS4|PS VR2|PS VR|PC))*)", re.I)
 HEAD_RE = re.compile(r"<h[23](?![^>]*screen-reader-text)[^>]*>(.*?)</h[23]>", re.S)   # skips the image pop-ups' hidden headings
 DATE_RE = re.compile(r"\b(?:from|on|starting)\s+(?:\w+day,?\s+)?(" + "|".join(MONTHS) + r")\s+(\d{1,2})")
+UNTIL_RE = re.compile(r"\buntil\s+(?:\w+day,?\s+)?(" + "|".join(MONTHS) + r")\s+(\d{1,2})")
 LATE_RE = re.compile(r"(?:will be|is) available (?:to play )?(?:from |on )?(" + "|".join(MONTHS) + r")\s+(\d{1,2})")
 
 
@@ -88,6 +91,7 @@ def parse_post(url, title, body, posted):
     year = year_for(month, posted)
     intro = text(body[:6000])
     d = DATE_RE.search(intro)
+    u = UNTIL_RE.search(intro) if kind == "monthly" else None
     start = date(year_for(MONTHS[d.group(1)], posted), MONTHS[d.group(1)], int(d.group(2))) if d else None
     games = []
     heads = [(h.start(), text(h.group(1))) for h in HEAD_RE.finditer(body)]
@@ -119,8 +123,12 @@ def parse_post(url, title, body, posted):
                       "img": (imgs[-1] + "?fit=480%2C270") if imgs else None})
     if not games:
         return None
+    until = None
+    if u:
+        um = MONTHS[u.group(1)]
+        until = date(year + 1 if um < month else year, um, int(u.group(2))).isoformat()
     return {"url": url, "title": title, "kind": kind, "month": f"{year}-{month:02d}",
-            "date": start.isoformat() if start else None, "games": games}
+            "date": start.isoformat() if start else None, "until": until, "games": games}
 
 
 def main():
@@ -147,16 +155,34 @@ def main():
                 continue
             seen.add(key)
             games.append({**g, "id": by_title.get(norm(g["t"])), "post": idx})
+    # The monthly games you can claim right now: the latest Monthly Games post that has started and whose
+    # "until" date (the last day to claim) hasn't passed. Kept even though its games have arrived, so the
+    # wall can show this month's games before data/games.json lists them.
+    current = None
+    for p in sorted((p for p in posts if p["kind"] == "monthly" and p["date"] and p["date"] <= today), key=lambda p: p["date"]):
+        if not p["until"] or p["until"] >= today:
+            current = p
+    monthly = None
+    if current:
+        monthly = {"url": current["url"], "month": current["month"], "from": current["date"], "until": current["until"],
+                   "games": [{"t": g["t"], "p": g["p"], "id": by_title.get(norm(g["t"])), "img": g["img"]} for g in current["games"]]}
     manual = ROOT / "data/coming-manual.json"
     if manual.exists():
         for g in json.loads(manual.read_text(encoding="utf-8")):
             if (g.get("date") or "") >= today and (norm(g["t"]), g.get("tier")) not in seen:
                 games.append({"id": by_title.get(norm(g["t"])), "post": None, **g})
+    if not monthly and (ROOT / "data/coming.json").exists():   # keep the last known lineup if the feed no longer has its post
+        try:
+            old = json.loads((ROOT / "data/coming.json").read_text(encoding="utf-8")).get("monthly")
+            if old and (old.get("until") or "") >= today:
+                monthly = old
+        except Exception:
+            pass
     if not posts and (ROOT / "data/coming.json").exists():
         sys.exit("No announcements parsed (has the blog's format changed?); leaving data/coming.json alone.")
     games.sort(key=lambda g: (g.get("date") or "9999", {"Essential": 0, "Extra": 1, "Premium": 2}.get(g["tier"], 3), g["t"].lower()))
     (ROOT / "data/coming.json").write_text(json.dumps(
-        {"asOf": today, "posts": out_posts, "games": games}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+        {"asOf": today, "posts": out_posts, "games": games, "monthly": monthly}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"{len(games)} games coming: " + ", ".join(f"{g['t']} ({g['tier']}, {g['date']})" for g in games[:12]))
 
 
