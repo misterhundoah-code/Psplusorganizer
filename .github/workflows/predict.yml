@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install requests mwparserfromhell
-      - run: python tools/predict/fetch_raw.py
+      - run: python -u tools/predict/fetch_raw.py 2>&1 | tee data/predict-raw/log.txt
       - name: Commit results to the branch
         run: |
           git add -A data/predict-raw

@@ -45,16 +45,23 @@ print("wikidata games", len(ids))
 PROPS = {"P400": "plat", "P123": "pub", "P178": "dev", "P179": "ser", "P136": "gen", "P404": "mode"}
 FAILED = []
 def wbget(batch, **kw):
-    for attempt in range(6):
+    """Entities for up to 50 ids. If Wikidata rejects the batch (one bad id sinks all 50), split it."""
+    for attempt in range(3):
         try:
             r = S.get(WD, params={"action": "wbgetentities", "ids": "|".join(batch), "format": "json", "maxlag": 5, **kw}, timeout=90)
             j = r.json()
             if "entities" in j: return j["entities"]
-            print("wbget", r.status_code, str(j.get("error", j))[:200])
+            err = j.get("error", {})
+            print("wbget", len(batch), err.get("code"), str(err.get("info"))[:150])
+            if err.get("code") != "maxlag": break
         except Exception as e:
-            print("wbget", e)
+            print("wbget", len(batch), e)
         time.sleep(5 * (attempt + 1))
+    if len(batch) > 1:
+        h = len(batch) // 2
+        return {**wbget(batch[:h], **kw), **wbget(batch[h:], **kw)}
     FAILED.append(batch[0]); return {}
+
 games, refs = [], set()
 idl = sorted(ids)
 for k in range(0, len(idl), 50):
