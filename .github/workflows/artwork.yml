@@ -17,8 +17,8 @@ on:
   schedule:
     - cron: "23 9 * * 1"
   push:
-    branches: [main]
-    paths: ["data/games.json", "data/catalogue.json"]
+    branches: [main, listicles]
+    paths: ["data/games.json", "data/catalogue.json", "data/writeups.json", "tools/fetch_wide_art.py"]
 
 permissions:
   contents: write
@@ -44,6 +44,8 @@ jobs:
           PROBE: ${{ inputs.probe }}
       - if: inputs.probe == ''
         run: python tools/fetch_art.py ${{ inputs.refresh && '--refresh' || '' }}
+      - if: inputs.probe == ''
+        run: python -u tools/fetch_wide_art.py ${{ inputs.refresh && '--force' || '' }} | tee art/wide/fetch-log.txt
       - name: Commit any new artwork
         if: inputs.probe == ''
         id: commit
