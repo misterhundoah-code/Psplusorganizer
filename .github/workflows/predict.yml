@@ -1,0 +1,33 @@
+name: Prediction list (branch only)
+
+# Builds the raw data for the "likely to come to PS Plus" list. Runs only on the
+# predict branch while the feature is being tried out; it never touches main.
+on:
+  push:
+    branches: [predict]
+    paths: ["tools/predict/**", ".github/workflows/predict.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests mwparserfromhell
+      - run: python tools/predict/fetch_raw.py
+      - name: Commit results to the branch
+        run: |
+          git add -A data/predict-raw
+          if git diff --cached --quiet; then echo "No changes."; else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Prediction raw data"
+            git pull --rebase
+            git push
+          fi
