@@ -4,7 +4,8 @@
 The covers in art/ are small square crops. For featured games the list pages show a wide banner instead:
 Sony's own key art from the game's PlayStation Store page (the page's background image, or failing that
 its widest promo image), saved as art/wide/<id>.webp at 960x540. Games without one keep the square cover.
-Runs in GitHub Actions (.github/workflows/artwork.yml); logs which images each page offered.
+Runs in GitHub Actions (.github/workflows/artwork.yml) after the square covers; logs which images each page offered
+to art/wide/fetch-log.txt.
 """
 import io, json, re, sys, time
 from pathlib import Path
