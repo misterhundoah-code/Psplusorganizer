@@ -43,13 +43,18 @@ for qid in ("Q63184502", "Q5014725"):
         time.sleep(15)
 print("wikidata games", len(ids))
 PROPS = {"P400": "plat", "P123": "pub", "P178": "dev", "P179": "ser", "P136": "gen", "P404": "mode"}
+FAILED = []
 def wbget(batch, **kw):
-    for attempt in range(4):
+    for attempt in range(6):
         try:
-            return S.get(WD, params={"action": "wbgetentities", "ids": "|".join(batch), "format": "json", **kw}, timeout=90).json().get("entities", {})
+            r = S.get(WD, params={"action": "wbgetentities", "ids": "|".join(batch), "format": "json", "maxlag": 5, **kw}, timeout=90)
+            j = r.json()
+            if "entities" in j: return j["entities"]
+            print("wbget", r.status_code, str(j.get("error", j))[:200])
         except Exception as e:
-            print("wbget", e); time.sleep(10)
-    return {}
+            print("wbget", e)
+        time.sleep(5 * (attempt + 1))
+    FAILED.append(batch[0]); return {}
 games, refs = [], set()
 idl = sorted(ids)
 for k in range(0, len(idl), 50):
@@ -71,17 +76,17 @@ for k in range(0, len(idl), 50):
         for p, name in PROPS.items():
             g[name] = vals(p); refs |= set(g[name])
         if g["t"]: games.append(g)
-    time.sleep(0.3)
+    time.sleep(1)
 names = {}
 rl = sorted(refs)
 for k in range(0, len(rl), 50):
     for q, e in wbget(rl[k:k + 50], props="labels", languages="en").items():
         names[q] = e.get("labels", {}).get("en", {}).get("value", q)
-    time.sleep(0.3)
+    time.sleep(1)
 for g in games:
     for name in PROPS.values(): g[name] = [names.get(x, x) for x in g[name]]
 (OUT / "wikidata.json").write_text(json.dumps(games, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-print("wikidata saved", len(games))
+print("wikidata saved", len(games), "of", len(ids), "; failed batches", len(FAILED))
 
 # Page views: 50 articles per request, following redirects back to the title we asked for.
 pool = json.loads((ROOT / "data" / "predict-pool.json").read_text(encoding="utf-8"))
