@@ -44,7 +44,9 @@ def save(url, out):
 
 def main():
     games = {g["id"]: g for g in json.loads((ROOT / "data" / "games.json").read_text(encoding="utf-8"))}
-    want = json.loads((ROOT / "data" / "writeups.json").read_text(encoding="utf-8"))
+    want = list(json.loads((ROOT / "data" / "writeups.json").read_text(encoding="utf-8")))
+    copy = json.loads((ROOT / "data" / "list-copy.json").read_text(encoding="utf-8"))
+    want += [i for c in copy.values() for i in c.get("picks", []) if i not in want]
     force = "--force" in sys.argv
     for gid in want:
         g = games.get(gid); out = OUT / f"{gid}.webp"

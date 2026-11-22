@@ -6,12 +6,142 @@
   "intro": "PS Plus Extra has over {count_floor} games in its catalogue, and the best of them are some of the finest games ever made. These are the ten with the highest Metascores right now, with a few words on each and how long the main story takes, so you can pick one that fits the time you have. The full ranked list follows, and it updates by itself whenever Sony adds or removes games.",
   "featured": 10,
   "faq": [
-   ["What's the best game on PS Plus Extra?", "By Metascore, it's {top}, at {top_score}. If you'd rather not commit 100 hours, God of War is just behind it at 94 and takes about 21 hours."],
-   ["How many games are in PS Plus Extra?", "There are {count} games in the Game Catalog right now. Sony adds a batch every month and removes a few, so the number moves around."],
-   ["What's the difference between PS Plus Essential and Extra?", "Essential gives you online multiplayer and a few monthly games to claim. Extra adds the Game Catalog: hundreds of PS4 and PS5 games you can download and play for as long as you're subscribed. Premium adds the Classics, game trials and cloud streaming on top."],
-   ["Do I keep PS Plus Extra games if I cancel?", "No. Catalog games stay playable only while you subscribe at the Extra tier or higher. Your saves stay, so you can pick up where you left off if you come back."],
-   ["Do games leave PS Plus Extra?", "Yes, most months. Sony usually confirms which games are leaving a few weeks ahead, and our <a href=\"/lists/leaving-ps-plus\">leaving soon list</a> tracks them."],
-   ["What's a great short game on PS Plus Extra?", "Undertale takes about 7 hours and Celeste about 8, and both are among the best-rated games on the service. Our <a href=\"/lists/short-ps-plus-games\">short games list</a> has more."]
+   [
+    "What's the best game on PS Plus Extra?",
+    "By Metascore, it's {top}, at {top_score}. If you'd rather not commit 100 hours, God of War is just behind it at 94 and takes about 21 hours."
+   ],
+   [
+    "How many games are in PS Plus Extra?",
+    "There are {count} games in the Game Catalog right now. Sony adds a batch every month and removes a few, so the number moves around."
+   ],
+   [
+    "What's the difference between PS Plus Essential and Extra?",
+    "Essential gives you online multiplayer and a few monthly games to claim. Extra adds the Game Catalog: hundreds of PS4 and PS5 games you can download and play for as long as you're subscribed. Premium adds the Classics, game trials and cloud streaming on top."
+   ],
+   [
+    "Do I keep PS Plus Extra games if I cancel?",
+    "No. Catalog games stay playable only while you subscribe at the Extra tier or higher. Your saves stay, so you can pick up where you left off if you come back."
+   ],
+   [
+    "Do games leave PS Plus Extra?",
+    "Yes, most months. Sony usually confirms which games are leaving a few weeks ahead, and our <a href=\"/lists/leaving-ps-plus\">leaving soon list</a> tracks them."
+   ],
+   [
+    "What's a great short game on PS Plus Extra?",
+    "Undertale takes about 7 hours and Celeste about 8, and both are among the best-rated games on the service. Our <a href=\"/lists/short-ps-plus-games\">short games list</a> has more."
+   ]
   ]
+ },
+ "ps-plus-couch-co-op-games": {
+  "title": "The 10 best couch co-op games on PS Plus ({month})",
+  "h1": "The best couch co-op games on PS Plus",
+  "desc": "The best PS Plus games to play together on one console, from Overcooked to Rayman Legends, with how many players each one takes on the same sofa.",
+  "intro": "Sometimes the best way to play is side by side, sharing one screen and one bowl of snacks. These are our ten favourite couch co-op games on PS Plus right now, all playable together on a single console. Each one says how many can join in, so you can find one that fits your sofa. The full list of games with local co-op follows.",
+  "picks": [
+   "overcooked-all-you-can-eat",
+   "rayman-legends",
+   "sackboy-a-big-adventure",
+   "terraria",
+   "untitled-goose-game",
+   "vampire-survivors",
+   "trine-4-the-nightmare-prince",
+   "children-of-morta",
+   "lego-city-undercover",
+   "human-fall-flat"
+  ],
+  "coop": "couch",
+  "featured": 10,
+  "writeups": {
+   "rayman-legends": "The best-reviewed couch co-op game on the service: a bright 2D platformer where up to four of you run, jump and punch through gorgeous hand-drawn worlds. The musical levels, played in time with the soundtrack, are a highlight."
+  },
+  "faq": [
+   [
+    "Do I need PS Plus to play couch co-op?",
+    "No. Playing together on one console doesn't need a subscription. You only need PS Plus Extra to have these games from the catalogue in the first place."
+   ],
+   [
+    "Do I need a second controller?",
+    "Yes, each player needs their own controller. A PS4 controller works for PS4 games, and PS5 controllers work for PS5 games."
+   ],
+   [
+    "What are the best couch co-op games for kids?",
+    "Sackboy: A Big Adventure, Rayman Legends and LEGO City Undercover are bright, forgiving and easy for younger players. Our <a href=\"/lists/ps-plus-games-for-kids\">games for kids list</a> has more."
+   ],
+   [
+    "What's the best couch co-op game for two?",
+    "Untitled Goose Game is a perfect short pair game, and Children of Morta and LEGO City Undercover are built around two players. Any of the four-player games work brilliantly with two as well."
+   ],
+   [
+    "What are the best couch co-op games for four players?",
+    "Overcooked! All You Can Eat, Rayman Legends, Sackboy, Terraria, Vampire Survivors and Trine 4 all take four players on one console."
+   ],
+   [
+    "What about split-screen shooters?",
+    "They're rare on PS Plus Extra. PS Plus Premium's classics include a few, like Resident Evil 5 and TimeSplitters 2. Our <a href=\"/lists/ps-plus-online-co-op-games\">online co-op list</a> has the best shooters to play with friends over the internet."
+   ]
+  ]
+ },
+ "ps-plus-online-co-op-games": {
+  "title": "The 10 best online co-op games on PS Plus ({month})",
+  "h1": "The best online co-op games on PS Plus",
+  "desc": "The best PS Plus games to play with friends online, from Helldivers 2 to Space Marine 2, with how many players each one takes and which ones have crossplay.",
+  "intro": "Your friends don't have to be on the same sofa. These are our ten favourite online co-op games on PS Plus right now, picked for how much fun they are together rather than by score alone. Each one says how many can join, so you can find one that fits your group, whether that's one friend or a full squad. The full list of games with online co-op follows.",
+  "picks": [
+   "helldivers-2",
+   "warhammer-40-000-space-marine-2",
+   "ghost-of-tsushima-director-s-cut",
+   "abiotic-factor",
+   "nioh",
+   "tetris-effect-connected",
+   "warhammer-vermintide-2",
+   "far-cry-5",
+   "tom-clancy-s-the-division-2",
+   "dying-light-2-stay-human"
+  ],
+  "coop": "online",
+  "featured": 10,
+  "faq": [
+   [
+    "Do I need PS Plus to play co-op online?",
+    "Yes, for most games. Online play on PS4 and PS5 needs a PS Plus subscription at any tier, though free-to-play games are the exception."
+   ],
+   [
+    "Does my friend need their own copy?",
+    "Yes, each player needs the game, from their own PS Plus Extra subscription or a purchase. On PS5, Share Play lets a friend join your game remotely without owning it, as long as you both have PS Plus."
+   ],
+   [
+    "Which co-op games let me play with friends on Xbox or PC?",
+    "Helldivers 2 supports crossplay, and so do several others. Our <a href=\"/lists/ps-plus-crossplay-games\">crossplay list</a> has them all."
+   ],
+   [
+    "What's the best online co-op game for two players?",
+    "Far Cry 5 lets two of you play the whole campaign together, and Nioh is great for tackling tough bosses as a pair."
+   ],
+   [
+    "What's the best online co-op game for a group of four?",
+    "Helldivers 2, Ghost of Tsushima's Legends mode, Vermintide 2, The Division 2 and Dying Light 2 all take four players. Abiotic Factor takes up to six."
+   ],
+   [
+    "Can we play on the same sofa instead?",
+    "Most of these are online only. Our <a href=\"/lists/ps-plus-couch-co-op-games\">couch co-op list</a> has the best games to play together on one console."
+   ]
+  ]
+ },
+ "ps-plus-co-op-games": {
+  "title": "PS Plus co-op games",
+  "h1": "PS Plus co-op games",
+  "desc": "Every PS Plus game we've checked for co-op, on the couch or online, with how many players each one takes.",
+  "intro": "Every game on PS Plus we've checked for co-op, ranked by Metascore. For our ten favourites of each kind, see the best couch co-op games and the best online co-op games.",
+  "links": [
+   [
+    "/lists/ps-plus-couch-co-op-games",
+    "The best couch co-op games"
+   ],
+   [
+    "/lists/ps-plus-online-co-op-games",
+    "The best online co-op games"
+   ]
+  ],
+  "featured": 0
  }
 }

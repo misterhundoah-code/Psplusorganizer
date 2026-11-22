@@ -41,7 +41,8 @@ FACTS = FACTS.get("games", FACTS) if isinstance(FACTS, dict) else {}
 XPLAY = (load("crossplay.json", {}) or {}).get("games", {})
 PREDICT = load("predict-page.json")
 WRITEUPS = load("writeups.json", {}) or {}      # id -> a few sentences, written by hand, reused on every list
-COPY = load("list-copy.json", {}) or {}         # slug -> title, intro, how many to feature, FAQ
+COPY = load("list-copy.json", {}) or {}
+COOP = load("coop.json", {}) or {}               # id -> {"couch": players on one console, "online": players online}, checked by hand         # slug -> title, intro, how many to feature, FAQ
 WIDE = {p.stem for p in (ROOT / "art" / "wide").glob("*.webp")} if (ROOT / "art" / "wide").exists() else set()     # from tools/predict/model.py; the page is skipped until it exists
 RATINGS = (load("ratings/en-ca.json", {}) or {}).get("games", {})
 ART = set(load("art.json", []) or [])
@@ -109,7 +110,15 @@ LISTS = [
     ("ps-plus-co-op-games", "PS Plus co-op games",
      "PS Plus Extra and Premium games you can play co-op, ranked by Metascore, with completion times.",
      "Games in PS Plus Extra and Premium that support co-op play, from Wikidata's game modes, ranked by Metascore.",
-     lambda g: available(g) and "c" in modes(g), "src=plus&players=c&sort=m", 80),
+     lambda g: available(g) and g["id"] in COOP, "src=plus&players=c&sort=m", 80),
+    ("ps-plus-couch-co-op-games", "The best couch co-op games on PS Plus",
+     "PS Plus games you can play together on one console, with how many players each takes.",
+     "PS Plus games with couch co-op, ranked by Metascore.",
+     lambda g: available(g) and (COOP.get(g["id"]) or {}).get("couch"), "src=plus&players=c&sort=m", 80),
+    ("ps-plus-online-co-op-games", "The best online co-op games on PS Plus",
+     "PS Plus games you can play with friends online, with how many players each takes.",
+     "PS Plus games with online co-op, ranked by Metascore.",
+     lambda g: available(g) and (COOP.get(g["id"]) or {}).get("online"), "src=plus&players=c&sort=m", 80),
     ("ps-plus-crossplay-games", "PS Plus games with Xbox and PC crossplay",
      "PS Plus games you can play with friends on Xbox or PC, from Wikipedia's crossplay list.",
      "PS Plus games that let you play with friends on Xbox or PC, according to Wikipedia's list of games with "
@@ -241,10 +250,17 @@ def yt_url(g):
     return "https://www.youtube.com/results?search_query=" + urllib.parse.quote_plus(f"{g['t']} {plat} trailer")
 
 
-def picks(gs, n):
-    """The featured cards at the top of a list: art, write-up and links for the first n games."""
+def coop_line(g, kind):
+    n = (COOP.get(g["id"]) or {}).get(kind)
+    if not n: return ""
+    if kind == "couch": return f"{'Up to ' if n > 2 else ''}{n} players on one console"
+    return f"Online, {'up to ' if n > 2 else ''}{n} players"
+
+
+def picks(chosen, cp):
+    """The featured cards at the top of a list: art, write-up and links for each chosen game."""
     out = []
-    for i, g in enumerate(gs[:n], 1):
+    for i, g in enumerate(chosen, 1):
         if g["id"] in WIDE:
             art = f'<img src="/art/wide/{g["id"]}.webp" alt="" width="960" height="540" loading="{"eager" if i < 3 else "lazy"}" decoding="async">'
             cls = "art wide"
@@ -254,10 +270,10 @@ def picks(gs, n):
         else:
             art, cls = "", "art none"
         plat = " / ".join(g.get("p") or [])
-        bits = [b for b in (plat, f"Metascore {g['m']}" if g.get("m") else "", f"about {hours(g.get('h'))} main story" if g.get("h") else "") if b]
+        bits = [b for b in (coop_line(g, cp["coop"]) if cp.get("coop") else "", plat, f"Metascore {g['m']}" if g.get("m") else "", f"about {hours(g.get('h'))} main story" if g.get("h") else "") if b]
         lv = LEAVING.get(g["id"])
         leave = f'<span class="leave">Leaving {esc(short_date(lv))}</span>' if lv else ""
-        text = WRITEUPS.get(g["id"]) or g.get("d") or ""
+        text = (cp.get("writeups") or {}).get(g["id"]) or WRITEUPS.get(g["id"]) or g.get("d") or ""
         links = [f'<a href="{esc(g["u"])}" rel="noopener">PlayStation Store</a>' if g.get("u") else "",
                  f'<a href="{esc(mc_url(g))}" rel="noopener">Metacritic</a>',
                  f'<a href="{esc(yt_url(g))}" rel="noopener">Trailers on YouTube</a>',
@@ -363,11 +379,15 @@ def build():
             vals = {"month": TODAY.strftime("%B %Y"), "count": total, "count_floor": total // 50 * 50,
                     "top": gs[0]["t"] if gs else "", "top_score": gs[0].get("m") if gs else ""}
             n = cp.get("featured", 10)
+            byid = {g["id"]: g for g in gs}
+            chosen = [byid[i] for i in cp["picks"] if i in byid][:n] if cp.get("picks") else gs[:n]
             shown = gs[:limit] if limit else gs
+            hub = "".join(f'<a class="btn" href="{esc(u)}">{esc(t)}</a> ' for u, t in cp.get("links", []))
             q = esc(query)
             body = (f'<h1>{esc(fill(cp.get("h1", title), vals))}</h1><p class="intro">{esc(fill(cp["intro"], vals))}</p>'
-                    + picks(gs, n)
-                    + f'<h2>The full list</h2><p class="intro">The top {len(shown)} of {total}, as of {esc(asof)}. Availability is for Canada and the US;'
+                    + (f'<p class="hub">{hub}</p>' if hub else "")
+                    + (picks(chosen, cp) if chosen else "")
+                    + f'<h2>{"The full list" if chosen else "Every game"}</h2><p class="intro">The top {len(shown)} of {total}, as of {esc(asof)}. Availability is for Canada and the US;'
                     f' <a href="/?{q}">open the wall</a> to pick your own country and hide what you\'ve played.</p>'
                     f'<p><a class="btn" href="/?{q}">Open these on the wall</a></p>'
                     + table(shown) + (faq_html(cp["faq"], vals) if cp.get("faq") else "") + f'<h2>More PS Plus lists</h2>{list_nav(slug)}')

@@ -1,0 +1,233 @@
+{
+ "abiotic-factor": {
+  "online": 6
+ },
+ "back-4-blood": {
+  "online": 4
+ },
+ "bluey-the-videogame": {
+  "couch": 4
+ },
+ "cat-quest-ii": {
+  "couch": 2
+ },
+ "cat-quest-iii": {
+  "couch": 2
+ },
+ "children-of-morta": {
+  "couch": 2,
+  "online": 2
+ },
+ "disney-universe": {
+  "couch": 4
+ },
+ "double-dragon-neon": {
+  "couch": 2
+ },
+ "dying-light": {
+  "online": 4
+ },
+ "dying-light-2-stay-human": {
+  "online": 4
+ },
+ "earth-defense-force-5": {
+  "couch": 2,
+  "online": 4
+ },
+ "fallout-76": {
+  "online": 4
+ },
+ "far-cry-3-classic-edition": {
+  "online": 4
+ },
+ "far-cry-4": {
+  "online": 2
+ },
+ "far-cry-5": {
+  "online": 2
+ },
+ "far-cry-6": {
+  "online": 2
+ },
+ "far-cry-new-dawn": {
+  "online": 2
+ },
+ "fbc-firebreak": {
+  "online": 3
+ },
+ "final-fight-double-impact": {
+  "couch": 2
+ },
+ "ghost-of-tsushima-director-s-cut": {
+  "online": 4
+ },
+ "helldivers-2": {
+  "online": 4
+ },
+ "human-fall-flat": {
+  "couch": 2
+ },
+ "killing-floor-2": {
+  "online": 6
+ },
+ "lego-batman-2-dc-super-heroes": {
+  "couch": 2
+ },
+ "lego-batman-3-beyond-gotham": {
+  "couch": 2
+ },
+ "lego-batman-the-videogame": {
+  "couch": 2
+ },
+ "lego-city-undercover": {
+  "couch": 2
+ },
+ "lego-dc-super-villains": {
+  "couch": 2
+ },
+ "lego-horizon-adventures": {
+  "couch": 2
+ },
+ "lego-indiana-jones-2-the-adventure-continues": {
+  "couch": 2
+ },
+ "lego-indiana-jones-the-original-adventures": {
+  "couch": 2
+ },
+ "lego-jurassic-world": {
+  "couch": 2
+ },
+ "lego-marvel-s-avengers": {
+  "couch": 2
+ },
+ "lego-pirates-of-the-caribbean-the-video-game": {
+  "couch": 2
+ },
+ "lego-star-wars-ii-the-original-trilogy": {
+  "couch": 2
+ },
+ "lego-star-wars-iii-the-clone-wars": {
+  "couch": 2
+ },
+ "lego-star-wars-the-complete-saga": {
+  "couch": 2
+ },
+ "lego-the-hobbit": {
+  "couch": 2
+ },
+ "lego-worlds": {
+  "couch": 2
+ },
+ "magicka-2": {
+  "couch": 4,
+  "online": 4
+ },
+ "mighty-morphin-power-rangers-rita-s-rewind": {
+  "couch": 4
+ },
+ "monster-hunter-stories-2-wings-of-ruin": {
+  "online": 2
+ },
+ "nioh": {
+  "online": 2
+ },
+ "overcooked-all-you-can-eat": {
+  "couch": 4,
+  "online": 4
+ },
+ "ratchet-clank-all-4-one": {
+  "couch": 4
+ },
+ "rayman-legends": {
+  "couch": 4
+ },
+ "resident-evil-5-gold-edition": {
+  "couch": 2,
+  "online": 2
+ },
+ "resident-evil-6": {
+  "couch": 2,
+  "online": 2
+ },
+ "sackboy-a-big-adventure": {
+  "couch": 4,
+  "online": 4
+ },
+ "sniper-elite-4": {
+  "online": 2
+ },
+ "sniper-elite-5": {
+  "online": 2
+ },
+ "sniper-elite-resistance": {
+  "online": 2
+ },
+ "snow-bros-wonderland": {
+  "couch": 2
+ },
+ "space-hulk-deathwing-enhanced-edition": {
+  "online": 4
+ },
+ "terraria": {
+  "couch": 4,
+  "online": 8
+ },
+ "tetris-effect-connected": {
+  "online": 3
+ },
+ "the-lego-movie-videogame": {
+  "couch": 2
+ },
+ "the-lego-ninjago-movie-video-game": {
+  "couch": 2
+ },
+ "the-lord-of-the-rings-return-to-moria": {
+  "online": 8
+ },
+ "timesplitters-2": {
+  "couch": 2
+ },
+ "tom-clancy-s-ghost-recon-breakpoint": {
+  "online": 4
+ },
+ "tom-clancy-s-ghost-recon-wildlands": {
+  "online": 4
+ },
+ "tom-clancy-s-rainbow-six-extraction": {
+  "online": 3
+ },
+ "tom-clancy-s-the-division": {
+  "online": 4
+ },
+ "tom-clancy-s-the-division-2": {
+  "online": 4
+ },
+ "trine-4-the-nightmare-prince": {
+  "couch": 4,
+  "online": 4
+ },
+ "untitled-goose-game": {
+  "couch": 2
+ },
+ "vampire-survivors": {
+  "couch": 4
+ },
+ "warhammer-40-000-space-marine-2": {
+  "online": 3
+ },
+ "warhammer-vermintide-2": {
+  "online": 4
+ },
+ "wo-long-fallen-dynasty": {
+  "online": 3
+ },
+ "wolfenstein-youngblood": {
+  "online": 2
+ },
+ "world-war-z": {
+  "online": 4
+ },
+ "zombie-army-4-dead-war": {
+  "online": 4
+ }
+}
