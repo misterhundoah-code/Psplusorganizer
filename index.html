@@ -555,6 +555,13 @@ tr.band th{border-bottom:6px solid var(--blue);box-shadow:inset 0 -8px 0 -6px rg
 body.notime th[data-k="time"],body.notime td.tm,body.notime .ctm{display:none}
 .moved{display:flex;align-items:center;gap:12px;justify-content:center;padding:10px 16px;background:var(--ink);color:#fff;font-size:14.5px}
 .moved p{margin:0}
+.moved.news{align-items:flex-start}
+.moved.news .newsbody{max-width:860px}
+.moved.news ul{margin:8px 0 2px;padding-left:18px;line-height:1.55}
+.moved.news li{margin:3px 0}
+.moved.news a{color:#FFC925}
+.moved .newsmore,.moved .newsgo{width:auto!important;padding:0 10px;white-space:nowrap}
+.moved .newsgo{height:26px!important;margin-left:6px;font-size:13px}
 .moved button{font:inherit;font-weight:800;background:transparent;border:2px solid rgba(255,255,255,.5);color:#fff;border-radius:3px;width:32px;height:32px;cursor:pointer}
 .lastbtns{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
 .lastbtns .lastall{margin-left:0}
@@ -2467,6 +2474,33 @@ const markSeen=k=>{try{localStorage.setItem(k,"1");}catch(e){}};
 function showNotice(){$("notice").hidden=false;}
 $("noticeok").addEventListener("click",()=>{markSeen("psplus-notice");$("notice").hidden=true;});
 $("shownotice").addEventListener("click",showNotice);
+/* What's new: a banner shown once to returning visitors after a feature release. Raise NEWS_ID for the next
+   one. First-time visitors don't see it (they get the welcome instead) and are marked as up to date. */
+(function whatsNew(){
+  const NEWS_ID="2026-11-22",KEY="psplus-news";
+  let last=null;try{last=localStorage.getItem(KEY);}catch(e){}
+  const returning=seen("psplus-notice")||Object.keys(MARKS).length>0;
+  const done=()=>{try{localStorage.setItem(KEY,NEWS_ID);}catch(e){}};
+  if(last===NEWS_ID)return;
+  if(!returning||document.querySelector(".moved")){done();return;}
+  const b=document.createElement("div");b.className="moved news";b.setAttribute("role","region");b.setAttribute("aria-label","What's new");
+  b.innerHTML=`<div class="newsbody"><p><b>New on the Rental Wall:</b> import your PlayStation library, a My library tab, a Coming soon shelf, age ratings and crossplay, and more.</p>
+    <ul hidden>
+      <li><b>Import from your PlayStation account.</b> Tags the games you own and marks the ones you've played. <button type="button" class="newsgo" data-go="psn">Try it</button></li>
+      <li><b>My library.</b> A new tab with every game you own, including the ones that aren't on PS Plus.</li>
+      <li><b>Coming soon.</b> Games Sony has announced, with arrival dates and calendar reminders.</li>
+      <li><b>Age ratings</b> on every game for your country, and an Age rating filter.</li>
+      <li><b>Crossplay.</b> Find games you can play with friends on Xbox or PC, in the Players filter.</li>
+      <li><b>Show on each game.</b> Hide scores, playtimes, ratings and more to keep the wall tidy.</li>
+      <li><b>Ready-made lists</b> like co-op, short games and games for kids. <a href="/lists/">See the lists</a></li>
+    </ul></div>
+    <button type="button" class="newsmore" aria-expanded="false">What's new</button><button type="button" class="newsx" aria-label="Close">✕</button>`;
+  const ul=b.querySelector("ul"),more=b.querySelector(".newsmore");
+  more.addEventListener("click",()=>{ul.hidden=!ul.hidden;more.setAttribute("aria-expanded",String(!ul.hidden));more.textContent=ul.hidden?"What's new":"Show less";});
+  b.querySelector(".newsx").addEventListener("click",()=>{done();b.remove();});
+  b.querySelector("[data-go=psn]").addEventListener("click",()=>{done();b.remove();$("psnbtn").click();});
+  document.body.prepend(b);
+})();
 if(!seen("psplus-notice"))showNotice();
 $("madebtn").addEventListener("click",()=>$("madedlg").showModal());
 /* ---- Import from PlayStation (see psn-import.js, the bookmark's code) ----
