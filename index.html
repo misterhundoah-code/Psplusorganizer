@@ -634,6 +634,14 @@ dialog.dlgbox#psndlg{width:min(640px,calc(100vw - 24px))}
 .dlg.psn .err{color:var(--red)}.dlg.psn .ok{font-weight:700}
 #psnresult{border-top:2px solid var(--line);padding-top:10px}
 @media (max-width:700px){.onlywide{display:none}}
+
+/* My library: the imported games that aren't on PS Plus, under the wall */
+.libextra{margin:18px 0 0;padding:16px 18px;background:var(--case);border:3px solid var(--ink)}
+.libextra h2{font-family:var(--display);font-weight:400;font-size:20px;margin:0 0 6px}
+.libextra p{margin:0 0 10px;max-width:75ch}
+.libothers{columns:3 240px;column-gap:28px;margin:0 0 14px;padding:0;list-style:none}
+.libothers li{break-inside:avoid;padding:3px 0;border-bottom:1px solid var(--line)}
+.libothers .ln{display:block;font-weight:600}.libothers .lm{display:block;color:var(--muted);font-size:12.5px}
 </style>
 </head>
 <body>
@@ -890,6 +898,7 @@ dialog.dlgbox#psndlg{width:min(640px,calc(100vw - 24px))}
         <button type="button" role="tab" data-v="p">✓ Played<b id="np">0</b></button>
         <button type="button" role="tab" data-v="b">↩ Bounced off<b id="nb">0</b></button>
         <button type="button" role="tab" data-v="x">✕ Not interested<b id="nx">0</b></button>
+        <button type="button" role="tab" data-v="l">My library<b id="nl">0</b></button>
         <button type="button" role="tab" data-v="n">Not in library<b id="nn">0</b></button>
       </div>
       <div class="countrow"><div class="count" id="count" aria-live="polite"></div>
@@ -913,6 +922,7 @@ dialog.dlgbox#psndlg{width:min(640px,calc(100vw - 24px))}
         <div id="rowmore" aria-hidden="true" style="height:1px"></div>
         <div class="empty" id="empty" hidden></div>
       </div>
+      <section class="libextra" id="libextra" hidden aria-labelledby="libextrattl"></section>
       <p class="sync" id="sync">Your marks are saved in this browser.</p>
     </main>
   </div>
@@ -1096,6 +1106,9 @@ try{const m=JSON.parse(localStorage.getItem("psplus-lib")||"null");if(m&&typeof 
 try{const m=JSON.parse(localStorage.getItem("psplus-notes")||"null");if(m&&typeof m==="object")NOTES=m;}catch(e){}
 try{const m=JSON.parse(localStorage.getItem("psplus-dates")||"null");if(m&&typeof m==="object")DATES=m;}catch(e){}
 try{const m=JSON.parse(localStorage.getItem("psplus-custom")||"null");if(m&&typeof m==="object")CUSTOM=m;}catch(e){}
+/* The last PlayStation import, for My library (see savePsnLib). Local only. */
+let PSNLIB=null;
+try{const v=JSON.parse(localStorage.getItem("psplus-psnlib")||"null");if(v&&Array.isArray(v.games)&&typeof v.at==="string")PSNLIB={at:v.at.slice(0,30),games:v.games.filter(g=>g&&typeof g.n==="string"&&g.n.length<=150&&(g.id==null||typeof g.id==="string")).slice(0,5000)};}catch(e){}
 /* Every saved map passes through cleanSnap, whatever it came from (this browser's storage, a backup file or
    the account), so a hand-edited or damaged file can't put bad values into the app. Anything that doesn't
    match the expected shape is dropped. Stored keys stay short (m, r, d.f and so on) because they are the
@@ -1428,6 +1441,7 @@ function pass(g){
   else if(S.players!=="all"){const m=(FACTS[g.id]||{}).modes||"";if(S.players==="s1"?!(m.includes("s")&&!m.includes("m")):!m.includes(S.players))return false;}
   if(CTX.ser){/* a series view shows every entry, whatever its mark */}
   else if(S.view==="n"){if(LIB[g.id]!==-1)return false;}
+  else if(S.view==="l"){if(LIB[g.id]!==1)return false;}
   else if(S.view==="browse"){
     if(LIB[g.id]===-1&&!g.cat)return false;
     if(mk==="x")return false;
@@ -1493,7 +1507,7 @@ function row(g,i){
   return `<tr class="game${mk?" is-"+mk:""}${lv===-1&&!g.cat?" nolib":""}" style="--i:${Math.min(i,28)}"><td class="title"><div class="g">${tile(g)}<div class="gt"><a href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${hl(g.t)}</a>${leave}${flags}${tags}${S.syn&&g.d?`<div class="syn">${esc(g.d)}</div>`:""}${extra}${noteHTML}</div></div></td><td class="pl"><span class="plat">${pl}</span></td><td class="num sc">${scoreLink(g)}</td><td class="num tm">${tm}</td><td class="fyc">${fy}</td><td class="mk"><span class="marks">${btns}${g.own?`<button type="button" class="mn" data-delown="${esc(g.id)}" aria-label="Remove" title="Remove this game I added">⌫<span class="ml"> Remove</span></button>`:""}<button type="button" class="mn" data-note="${esc(g.id)}" aria-pressed="${!!note}" aria-label="Note" title="${note?"Edit my note":"Add a note"}">✎<span class="ml"> Note</span></button></span></td></tr>`;
 }
 const SORTNAME={date:"the date you started or finished",pri:"your priority",m:"Metacritic score",time:"completion time",p:"platform",g:"game style",t:"title",y:"release year"};
-const EMPTY={g:"Nothing in progress. Use ▶ Playing on a game when you start it.",browse:"No games match these filters. Loosen one of them or reset.",w:"Nothing on your want-to-play list matches. Use ★ Want in Browse to add games here.",p:"No played games match. Use ✓ Played in Browse to move games here.",b:"No bounced-off games match. Use ↩ Bounced in Browse for games you tried and dropped.",n:"No games here. Monthly games you tag ✕ Not in my library collect in this tab, and you can untag them from here.",x:"No hidden games match. Games you mark ✕ Not interested land here, and you can bring them back from this tab."};
+const EMPTY={l:"Nothing is tagged as in your library yet. Use Import from my PlayStation account in Your PS Plus, or tag the monthly games you claimed.",g:"Nothing in progress. Use ▶ Playing on a game when you start it.",browse:"No games match these filters. Loosen one of them or reset.",w:"Nothing on your want-to-play list matches. Use ★ Want in Browse to add games here.",p:"No played games match. Use ✓ Played in Browse to move games here.",b:"No bounced-off games match. Use ↩ Bounced in Browse for games you tried and dropped.",n:"No games here. Monthly games you tag ✕ Not in my library collect in this tab, and you can untag them from here.",x:"No hidden games match. Games you mark ✕ Not interested land here, and you can bring them back from this tab."};
 function counts(){const c={g:0,w:0,p:0,b:0,x:0};for(const id in MARKS)if(IDS.has(id)&&c[MARKS[id]]!=null)c[MARKS[id]]++;return c;}
 function renderHero(){
   applyRegion();
@@ -1507,7 +1521,7 @@ function renderHero(){
   $("lg").textContent=c.g;$("ng").textContent=c.g;$("lw").textContent=c.w;$("lp").textContent=c.p;$("lb").textContent=c.b;$("lx").textContent=c.x;
   $("nw").textContent=c.w;$("np").textContent=c.p;$("nb").textContent=c.b;$("nx").textContent=c.x;
   const nolib=GAMES.filter(g=>LIB[g.id]===-1).length,untag=GAMES.filter(g=>g.e&&!g.cat&&!LIB[g.id]&&inScope(g)).length;
-  $("nn").textContent=nolib;
+  $("nn").textContent=nolib;$("nl").textContent=GAMES.filter(g=>LIB[g.id]===1).length;
   const bb=$("bulkno");bb.dataset.n=untag;bb.disabled=!untag;if(!bb.dataset.armed)bb.textContent=untag?`Tag all ${untag} untagged monthly games as not in my library`:"Every monthly game is tagged";
   const pv=g=>priority(g)[0]??-1;
   const byScore=(a,b)=>pv(b)-pv(a)||a.st.localeCompare(b.st);
@@ -1597,7 +1611,7 @@ function renderCtx(list){
     el.hidden=false;el.innerHTML=`<b>More like ${esc(a?a.t:"this")}</b><span>The ${list.length} closest matches by style, camera and length. Your filters still apply.</span><span class="sp"></span><button type="button" class="btn" data-ctxclear="1">Back to everything</button>`;}
   else{el.hidden=true;el.innerHTML="";}
 }
-const VIEWNAME={browse:"Browse",g:"Now playing",w:"Want to play",p:"Played",b:"Bounced off",x:"Not interested",n:"Not in library"};
+const VIEWNAME={browse:"Browse",g:"Now playing",w:"Want to play",p:"Played",b:"Bounced off",x:"Not interested",l:"My library",n:"Not in library"};
 function searchHints(here){
   const el=$("qelse"),q=S.q.trim();
   $("qclear").hidden=!q;
@@ -1769,7 +1783,8 @@ function render(animate){
   if($("gamedlg").open)fillDlg();
   $("empty").hidden=list.length>0;$("empty").textContent=S.q&&!list.length?`No games here match "${S.q.trim()}".`:EMPTY[S.view];
   searchHints(list.length);
-  const c=counts();const pool=CTX.ser?serCount[CTX.ser]:S.view==="browse"?GAMES.filter(inScope).length:S.view==="n"?GAMES.filter(g=>LIB[g.id]===-1).length:c[S.view];
+  const c=counts();const pool=CTX.ser?serCount[CTX.ser]:S.view==="browse"?GAMES.filter(inScope).length:S.view==="n"?GAMES.filter(g=>LIB[g.id]===-1).length:S.view==="l"?GAMES.filter(g=>LIB[g.id]===1).length:c[S.view];
+  renderLibExtra();
   $("count").innerHTML=`<b>${list.length}</b> of ${pool} games`;
   const scored=list.filter(g=>g.m!=null);
   const avg=scored.length?Math.round(scored.reduce((a,g)=>a+g.m,0)/scored.length):null;
@@ -2066,7 +2081,7 @@ function communityLine(g){
 function signOut(clear){
   ACCT=null;clearTimeout(pushTimer);clearTimeout(retryTimer);clearTimeout(votesTimer);dirty=false;
   try{localStorage.removeItem("psplus-acct");}catch(e){}
-  if(clear){applySnap({});try{["psplus-marks","psplus-rate","psplus-lib","psplus-notes","psplus-dates","psplus-custom","psplus-sorter"].forEach(k=>localStorage.removeItem(k));}catch(e){}}
+  if(clear){applySnap({});try{["psplus-marks","psplus-rate","psplus-lib","psplus-notes","psplus-dates","psplus-custom","psplus-sorter","psplus-psnlib"].forEach(k=>localStorage.removeItem(k));}catch(e){}}
   setSync(clear?"Signed out, and your marks were cleared from this browser.":"Signed out. Your marks are still saved in this browser.");
   acctUI();
 }
@@ -2479,6 +2494,29 @@ function psnMatch(x){
   return id&&BYID.has(id)?id:null;
 }
 let NAMEIDX=null;
+/* The whole imported library, kept in this browser only (psplus-psnlib) so My library can also list the
+   games you own that aren't on PS Plus. It isn't synced or backed up: run the import again on another
+   device. Only names, platforms and whether each was a PS Plus claim are kept. */
+function savePsnLib(j){
+  const seen=new Map(),add=(x,played)=>{if(!x||typeof x.n!=="string"||!x.n.trim())return;const id=psnMatch(x),k=id||normT(x.n);
+    const cur=seen.get(k)||{n:x.n.slice(0,150),pf:"",plus:0,played:0,id:id||null};
+    if(typeof x.pf==="string"&&/^(PS4|PS5|PS3|PSVITA|Vita|UNKNOWN)$/i.test(x.pf)&&!cur.pf.includes(x.pf))cur.pf=(cur.pf?cur.pf+", ":"")+x.pf;
+    if(x.plus)cur.plus=1;if(played)cur.played=1;seen.set(k,cur);};
+  j.owned.slice(0,5000).forEach(x=>add(x,false));j.played.slice(0,5000).forEach(x=>add(x,true));
+  PSNLIB={at:typeof j.at==="string"?j.at.slice(0,30):new Date().toISOString(),games:[...seen.values()]};
+  try{localStorage.setItem("psplus-psnlib",JSON.stringify(PSNLIB));}catch(e){}
+}
+function renderLibExtra(){
+  const box=$("libextra");if(S.view!=="l"||CTX.ser||!PSNLIB){box.hidden=true;return;}
+  const others=PSNLIB.games.filter(g=>!g.id||!BYID.has(g.id)).sort((a,b)=>a.n.localeCompare(b.n));
+  const onWall=GAMES.filter(g=>LIB[g.id]===1).length,when=new Date(PSNLIB.at);
+  box.hidden=false;
+  box.innerHTML=`<h2 id="libextrattl">Everything in your PlayStation library</h2>
+    <p><b>${onWall+others.length}</b> games in total: <b>${onWall}</b> on the wall above, and <b>${others.length}</b> ${others.length===1?"that isn't":"that aren't"} part of PS Plus${others.length?", listed below":""}. From your import on ${isNaN(when)?"":when.toLocaleDateString(undefined,{day:"numeric",month:"long",year:"numeric"})}; run it again to refresh. This list is kept in this browser only.</p>
+    ${others.length?`<ul class="libothers">${others.map(g=>`<li><span class="ln">${esc(g.n)}</span><span class="lm">${esc([g.pf,g.plus?"PS Plus claim":"",g.played?"played":""].filter(Boolean).join(" · "))}</span></li>`).join("")}</ul>`:""}
+    <button type="button" class="btn" id="libforget">Forget this list</button>`;
+  $("libforget").addEventListener("click",()=>{PSNLIB=null;try{localStorage.removeItem("psplus-psnlib");}catch(e){}renderLibExtra();});
+}
 $("psncheck").addEventListener("click",async()=>{
   await psnPrep();
   if(!NAMEIDX){NAMEIDX=new Map();GAMES.forEach(g=>{const k=normT(g.t);if(!NAMEIDX.has(k))NAMEIDX.set(k,g.id);});}
@@ -2496,15 +2534,15 @@ $("psncheck").addEventListener("click",async()=>{
     <label class="check"><input type="checkbox" id="psnlib" ${toLib.length?"checked":"disabled"}> Tag ${toLib.length} ${toLib.length===1?"game":"games"} you own or claimed as in your library</label>
     <label class="check"><input type="checkbox" id="psnplay" ${toMark.length?"checked":"disabled"}> Mark ${toMark.length} played ${toMark.length===1?"game":"games"}: ${recent} as Playing (played in the last 30 days), ${toMark.length-recent} as Played</label>
     <p class="hint">Games you've already marked aren't changed. PS3 and Vita games aren't in Sony's lists.</p>
-    <button type="button" class="btn primary" id="psngo" ${toLib.length||toMark.length?"":"disabled"}>Import</button>`;
+    <button type="button" class="btn primary" id="psngo">Import</button>`;
   $("psngo").addEventListener("click",()=>{
     const lib=$("psnlib").checked,pl=$("psnplay").checked;if(!PSNPLAN)return;
     PSNUNDO={MARKS:Object.assign({},MARKS),LIB:Object.assign({},LIB)};
     let a=0,b=0;
     if(lib)PSNPLAN.toLib.forEach(id=>{LIB[id]=1;a++;});
     if(pl)PSNPLAN.toMark.forEach(([id,ts])=>{if(MARKS[id])return;MARKS[id]=now-ts<30*864e5?"g":"p";b++;});
-    PSNPLAN=null;saveMarks();renderHero();render(false);
-    out.innerHTML=`<p class="ok">Imported: ${a} tagged as in your library, ${b} marked as played or playing.</p><button type="button" class="btn" id="psnundo">Undo the import</button>`;
+    PSNPLAN=null;savePsnLib(j);saveMarks();renderHero();render(false);
+    out.innerHTML=`<p class="ok">Imported: ${a} tagged as in your library, ${b} marked as played or playing. Your full list is under My library.</p><button type="button" class="btn" id="psnundo">Undo the import</button>`;
     $("psnundo").addEventListener("click",()=>{if(!PSNUNDO)return;MARKS=PSNUNDO.MARKS;LIB=PSNUNDO.LIB;PSNUNDO=null;saveMarks();renderHero();render(false);out.innerHTML=`<p>Import undone.</p>`;});
   });
 });
