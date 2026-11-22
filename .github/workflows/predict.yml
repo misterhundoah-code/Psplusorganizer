@@ -1,33 +1,44 @@
-name: Prediction list (branch only)
+name: Update PS Plus predictions
 
-# Builds the raw data for the "likely to come to PS Plus" list. Runs only on the
-# predict branch while the feature is being tried out; it never touches main.
+# Which games are likely to join PS Plus next (lists/coming-to-ps-plus). Weekly, on Thursdays, so each
+# Wednesday announcement is in: refetches Wikipedia's and Wikidata's PS4/PS5 games and the PlayStation
+# Blog, retrains the model (tools/predict/model.py) and commits data/predict-page.json. The page itself
+# is rebuilt by the Build list pages workflow when this finishes.
 on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 15 * * 4"
   push:
-    branches: [predict]
+    branches: [main, predict]
     paths: ["tools/predict/**", ".github/workflows/predict.yml"]
 
 permissions:
   contents: write
 
+concurrency:
+  group: predict
+  cancel-in-progress: false
+
 jobs:
-  fetch:
+  predict:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install requests mwparserfromhell
-      - run: python -u tools/predict/fetch_raw.py 2>&1 | tee data/predict-raw/log.txt
-      - name: Commit results to the branch
+      - run: pip install requests mwparserfromhell numpy scikit-learn
+      - run: python -u tools/predict/fetch_raw.py
+      - run: python -u tools/predict/history.py
+      - run: python -u tools/predict/model.py
+      - name: Commit any changes
         run: |
-          git add -A data/predict-raw
+          git add data/predict-page.json data/predict-history.json data/predict-snapshot.json
           if git diff --cached --quiet; then echo "No changes."; else
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git commit -m "Prediction raw data"
+            git commit -m "Update PS Plus predictions"
             git pull --rebase
             git push
           fi

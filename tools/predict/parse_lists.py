@@ -111,7 +111,7 @@ def parse(path, plat):
                       "p": [plat]})
     return games
 
-if __name__ == "__main__":
+def build_pool():
     pool = {}
     for f in sorted(RAW.glob("wiki-*.txt")):
         plat = "PS5" if "PlayStation 5" in f.read_text(encoding="utf-8").split("\n", 1)[0] else "PS4"
@@ -125,3 +125,7 @@ if __name__ == "__main__":
     out = sorted(pool.values(), key=lambda g: g["t"].lower())
     (ROOT / "data" / "predict-pool.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print("pool", len(out), "linked", sum(1 for g in out if g["w"]))
+
+
+if __name__ == "__main__":
+    build_pool()

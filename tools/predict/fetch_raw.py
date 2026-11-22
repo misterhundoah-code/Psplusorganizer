@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
-"""Raw material for the PS Plus prediction list (branch `predict`, not live yet).
+"""Raw material for the PS Plus prediction list (lists/coming-to-ps-plus). Run weekly by
+.github/workflows/predict.yml; nothing here is committed except what tools/predict/history.py and
+tools/predict/model.py make from it.
 
 Saves, under data/predict-raw/:
-  wiki-<n>.txt     wikitext of Wikipedia's lists of PS4 and PS5 games (skipped if already there)
+  wiki-<n>.txt     wikitext of Wikipedia's lists of PS4 and PS5 games
+  wikidata.json    every PS4 and PS5 game on Wikidata, with platforms, publishers, developers, series
   views.json       {article: page views over the last 60 days}, for every article in
                    data/predict-pool.json: a rough measure of how much people care about a game
   blog-<n>.xml     older pages of the PlayStation Blog's PlayStation Plus RSS feed, for the
@@ -21,7 +24,6 @@ API = "https://en.wikipedia.org/w/api.php"
 
 PAGES = ["List of PlayStation 5 games", "List of PlayStation 4 games (A–L)", "List of PlayStation 4 games (M–Z)"]
 for i, p in enumerate(PAGES):
-    if (OUT / f"wiki-{i}.txt").exists(): continue
     j = S.get(API, params={"action": "parse", "page": p, "prop": "wikitext", "format": "json", "formatversion": 2, "redirects": 1}, timeout=60).json()
     (OUT / f"wiki-{i}.txt").write_text(f"{p}\n{j['parse']['wikitext']}", encoding="utf-8"); time.sleep(1)
 
@@ -70,6 +72,12 @@ games = [g for g in games.values() if g["t"]]
 (OUT / "wikidata.json").write_text(json.dumps(games, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 print("wikidata saved", len(games))
 
+# Wikipedia's lists, parsed into data/predict-pool.json (needed for the page views below).
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from parse_lists import build_pool
+build_pool()
+
 # Page views: 50 articles per request, following redirects back to the title we asked for.
 pool = json.loads((ROOT / "data" / "predict-pool.json").read_text(encoding="utf-8"))
 pool += [{"w": g["w"]} for g in games if g.get("w")]
@@ -101,8 +109,10 @@ print("views", len(views))
 
 # Blog archive: WordPress feeds page back with ?paged=N.
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
-for n in range(1, 80):
-    if (OUT / f"blog-{n:02d}.xml").exists(): continue
+# The first run reads the whole archive; after that the history is kept in data/predict-history.json
+# and only the newest few pages are needed.
+pages = 4 if (ROOT / "data" / "predict-history.json").exists() else 80
+for n in range(1, pages + 1):
     try:
         r = requests.get("https://blog.playstation.com/tag/playstation-plus/feed/", params={"paged": n}, headers={"User-Agent": UA}, timeout=60)
     except Exception as e:

@@ -18,8 +18,7 @@ from common import load, norm, norm_ed, dupe_key, series, pub as normpub, Linker
 
 RAW = ROOT / "data" / "predict-raw"
 WDFILE = Path(sys.argv[1]) if len(sys.argv) > 1 else RAW / "wikidata.json"
-TODAY = datetime.date(2026, 11, 22)
-NOW_M = "2026-12"      # next month to predict
+TODAY = datetime.date.today()
 
 def mi(m): y, mo = map(int, m.split("-")); return y * 12 + mo - 1
 def ms(i): return f"{i // 12}-{i % 12 + 1:02d}"
@@ -34,7 +33,7 @@ NEVER = {norm(t) for t in ["Fortnite", "Roblox", "Apex Legends", "Genshin Impact
          "Fall Guys", "Marvel Rivals", "Overwatch 2", "Honkai: Star Rail", "Zenless Zone Zero", "eFootball", "Destiny 2", "Paladins",
          "Smite", "Smite 2", "Brawlhalla", "War Thunder", "World of Tanks", "Dauntless", "Neverwinter", "Path of Exile", "Path of Exile 2",
          "The Finals", "XDefiant", "Multiversus", "Spectre Divide", "Wuthering Waves", "The First Descendant", "Delta Force", "Once Human",
-         "Infinity Nikki", "Marvel Snap", "Splitgate", "Splitgate 2", "Concord", "Call of Duty: Warzone 2.0",
+         "Infinity Nikki", "Marvel Snap", "Splitgate", "Splitgate 2", "Concord", "Call of Duty: Warzone 2.0", "Grand Theft Auto Online",
          "Where Winds Meet", "99 Nights in the Forest", "Blue Protocol: Star Resonance", "Arena Breakout: Infinite", "Minecraft", "Grand Theft Auto V", "Red Dead Redemption 2"]}
 # Minecraft, GTA V and RDR2: always among the best sellers and kept off subscriptions by their makers; listed so they don't swamp the top.
 
@@ -85,7 +84,7 @@ print("pool", len(pool), "with views", sum(1 for g in pool if g["views"]))
 
 # ---------- history: what joined, and when ----------
 L = Linker(pool)
-H = load("predict-history.json"); G = load("games.json"); A = load("about.json")
+H = load("predict-history.json"); G = load("games.json"); A = load("about.json"); CAT = load("catalogue.json")
 extra_add = {}      # pool idx -> month index added to the Game Catalog
 ess_add = {}        # pool idx -> month index given as a monthly game
 for p in H:
@@ -244,7 +243,17 @@ def reasons(g, i, d, c, kind, m):
 
 def months(a, b): return list(range(mi(a), mi(b) + 1))
 
-out = {"asof": TODAY.isoformat(), "month": NOW_M, "feats": FEATS}
+def first_open(kind):
+    done = {mi(p["month"]) for p in H if p["kind"] == ("catalog" if kind == "extra" else "monthly")}
+    if kind == "essential": done |= {mi(g["e"]) for g in G if g.get("e")}
+    else: done |= {mi(m) for m in (CAT.get("addedMonths") or [])}
+    m = mi(TODAY.isoformat()[:7])
+    while m in done: m += 1
+    return m
+
+SNAPF = ROOT / "data" / "predict-snapshot.json"
+SNAP = json.loads(SNAPF.read_text(encoding="utf-8")) if SNAPF.exists() else {}
+out = {"asof": TODAY.isoformat(), "feats": FEATS}
 for kind, start in (("extra", "2022-07"), ("essential", "2019-01")):
     adds = extra_add if kind == "extra" else ess_add
     allm = [m for m in months(start, "2026-11") if any(v == m for v in adds.values())]
@@ -260,31 +269,56 @@ for kind, start in (("extra", "2022-07"), ("essential", "2019-01")):
     clf = LogisticRegression(C=0.5, max_iter=3000).fit(*build(kind, allm)[:2])
     coef = dict(zip(FEATS, clf.coef_[0].round(3)))
     print("   weights:", {k: v for k, v in coef.items()})
-    m0 = mi(NOW_M); tr = trk(m0, kind)
-    rows = []
-    for i in cands(m0, kind):
-        p3 = 1.0; detail = None
-        for k in range(3):
-            x, d = row(i, m0 + k, tr, kind)
-            if k == 0: detail, x0 = d, x
-            p3 *= 1 - clf.predict_proba([x])[0, 1]
-        g = pool[i]
-        contrib = {f: float(c * v) for f, c, v in zip(FEATS, clf.coef_[0], x0)}
-        rows.append({"why": reasons(g, i, detail, contrib, kind, m0), "t": g["t"], "w": g["w"], "rel": g["rel"], "pub": g["pub"], "dev": g["dev"][:3], "p": round(1 - p3, 4),
-                     "excl": g["excl"], "sony": g["sony"], "views": g["views"], "ps5": g["ps5"],
-                     "was": ("extra" if i in extra_add else None), "monthly": ms(ess_add[i]) if i in ess_add else None,
-                     "c": {k: round(v, 3) for k, v in contrib.items() if abs(v) > 0.05},
-                     "pubtr": detail["pub"][1:] if detail["pub"][1] else None, "devtr": detail["dev"][1:] if detail["dev"][1] else None,
-                     "seq": {"t": detail["seq"]["t"], "rel": detail["seq"]["rel"]} if detail["seq"] else None})
-    # Nothing anywhere near this big has ever joined within a year of launch, and the page-view signal
-    # can't learn that (old launches' views have long since faded), so it's a rule: wait out the first year.
+    m0 = first_open(kind); tr = trk(m0, kind)
     cap = 2 * max((pool[i]["views"] for i, mm in adds.items() if pool[i]["rm"] is not None and 0 <= mm - pool[i]["rm"] < 12), default=10**9)
-    for r in rows:
-        age = m0 - rel_m(r["rel"])
-        if age < 12 and r["views"] > cap:
-            r["p"] = round(r["p"] * 0.1, 4); r["why"].insert(0, [-1, f"A huge new release: nothing this big has joined {'the Game Catalog' if kind == 'extra' else 'the monthly games'} in its first year"])
+    where = "the Game Catalog" if kind == "extra" else "the monthly games"
+    cl = list(cands(m0, kind)); rows = []
+    # Age moves in steps (1 to 2 years, 2 to 4 years...), so each month's chance is averaged over the
+    # months either side; the chart then changes gradually instead of jumping at a birthday.
+    X = [[row(i, m0 + k, tr, kind) for k in range(-2, 14)] for i in cl]
+    PP = clf.predict_proba(np.array([x for xs in X for x, _ in xs])).reshape(len(cl), 16, 2)[:, :, 1]
+    P = np.stack([PP[:, k:k + 5].mean(axis=1) for k in range(12)], axis=1)
+    X = [xs[2:] for xs in X]
+    for n, i in enumerate(cl):
+        g = pool[i]; curve = []
+        for k in range(12):
+            pk = float(P[n, k])
+            # Nothing anywhere near this big has ever joined in its first year, and the page-view signal can't
+            # learn that (old launches' views have faded), so it's a rule: wait out the first year.
+            if m0 + k - g["rm"] < 12 and g["views"] > cap: pk *= 0.1
+            curve.append(pk)
+        p3 = 1 - (1 - curve[0]) * (1 - curve[1]) * (1 - curve[2])
+        x0, detail = X[n][0]
+        contrib = {f: float(c * v) for f, c, v in zip(FEATS, clf.coef_[0], x0)}
+        why = reasons(g, i, detail, contrib, kind, m0)
+        if m0 - g["rm"] < 12 and g["views"] > cap:
+            why.insert(0, [-1, f"A huge new release: nothing this big has joined {where} in its first year"])
+        rows.append({"why": why, "t": g["t"], "w": g["w"], "rel": g["rel"], "pub": g["pub"], "p": round(p3, 4),
+                     "curve": [round(v * 10000) for v in curve], "views": g["views"]})
     rows.sort(key=lambda r: -r["p"])
     for n, r in enumerate(rows): r["rank"] = n + 1
-    out[kind] = {"backtest": res, "weights": coef, "top": rows, "n": len(rows), "cap": cap}
-    print("   top 15 for", NOW_M, ":", [(r["t"], r["p"]) for r in rows[:15]])
+    print("   top 15 for", ms(m0), ":", [(r["t"], r["p"]) for r in rows[:15]])
+    # The month's top 50 is kept so the page can show, once Sony announces it, how many we had.
+    SNAP.setdefault(kind, {})[ms(m0)] = [r["t"] for r in rows[:50]]
+    live = []
+    for mon, tops in sorted(SNAP.get(kind, {}).items()):
+        if mi(mon) >= m0: continue
+        added = [x["t"] for p in H if p["month"] == mon and p["kind"] == ("catalog" if kind == "extra" else "monthly") for x in p["games"]
+                 if kind == "essential" or x["tier"] == "Extra"]
+        if not added: continue
+        topk = {dupe_key(t) for t in tops}
+        live.append({"month": mon, "added": len(added), "found": [t for t in added if dupe_key(t) in topk]})
+    out[kind] = {"backtest": res, "weights": coef, "top": rows, "n": len(rows), "cap": cap, "start": ms(m0), "live": live}
+if "--eval" not in sys.argv:
+    for k in SNAP: SNAP[k] = dict(sorted(SNAP[k].items())[-24:])
+    SNAPF.write_text(json.dumps(SNAP, ensure_ascii=False, indent=1), encoding="utf-8")
+    # The compact file the site's page reads: [title, 3-month chance, year, publisher, reasons, monthly curve in basis points]
+    page = {"asof": out["asof"]}
+    for k in ("extra", "essential"):
+        o = out[k]
+        page[k] = {"n": o["n"], "start": o["start"], "weights": o["weights"], "live": o["live"],
+                   "backtest": [{x: r[x] for x in ("month", "added", "top50", "found", "cands")} for r in o["backtest"]],
+                   "rows": [[r["t"], r["p"], (r["rel"] or "")[:4], ", ".join(r["pub"][:2]), r["why"][:5], r["curve"]]
+                            for r in o["top"] if r["p"] >= 0.0005 or r["rank"] <= 3000]}
+    (ROOT / "data" / "predict-page.json").write_text(json.dumps(page, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 if "--eval" not in sys.argv: (ROOT / "data" / "predict.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
