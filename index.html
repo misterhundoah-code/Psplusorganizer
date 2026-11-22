@@ -654,6 +654,13 @@ dialog.dlgbox#psndlg{width:min(640px,calc(100vw - 24px))}
 .eyebrow.mon{color:#62D995}
 #mondeck .talk.claim,#mondeck .card:nth-child(n) .talk.claim{background:#1F8A4C;color:#fff;transform:rotate(-3deg);white-space:nowrap;font-size:13px}
 #comedeck .talk.got,#comedeck .card:nth-child(n) .talk.got,#mondeck .talk.got,#mondeck .card:nth-child(n) .talk.got{background:var(--case);color:var(--ink);border:2px solid var(--ink);transform:rotate(-3deg);white-space:nowrap;font-size:13px}
+
+/* Imported purchases: pop-up actions and the list's Hide button */
+.dlgbuy{margin-top:12px;border-top:2px solid var(--line);padding-top:10px}
+.dlgbuy .row,.libextra .row{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
+.buyhide{font:inherit;font-size:12px;font-weight:700;padding:1px 8px;margin-right:6px;border:1.5px solid var(--muted);background:transparent;color:var(--muted);border-radius:3px;cursor:pointer}
+.buyhide:hover{border-color:var(--ink);color:var(--ink)}
+#dlgrows .buyhide{display:none}
 </style>
 </head>
 <body>
@@ -993,6 +1000,7 @@ dialog.dlgbox#psndlg{width:min(640px,calc(100vw - 24px))}
       <p class="comm" id="dlgcomm"></p>
       <dl class="facts" id="dlgfacts"></dl>
       <p class="dlglinks"><a id="dlgtrailer" class="btn" target="_blank" rel="noopener">▶ Watch trailers on YouTube</a></p>
+      <div class="dlgbuy" id="dlgbuy" hidden></div>
       <div class="about" id="dlgabout"></div></div>
   </dialog>
   <dialog class="dlgbox" id="psndlg" aria-labelledby="psnttl">
@@ -1179,7 +1187,9 @@ function cleanSnap(x){
   // o: PlayStation purchases (only with consent to sync, or from a backup). s: settings, so far only ownsync.
   out.o=map(x.o,v=>{if(!v||typeof v!=="object"||!isStr(v.t,150)||!v.t.trim())return undefined;
     return {t:v.t,p:Array.isArray(v.p)?v.p.filter(k=>k==="PS4"||k==="PS5").slice(0,2):[],c:typeof v.c==="string"&&/^\d{1,12}$/.test(v.c)?v.c:null,
-      img:isStr(v.img,400)&&/^https:\/\/image\.api\.playstation\.com\//.test(v.img)?v.img:null,plus:v.plus?1:0,id:typeof v.id==="string"&&ID_RE.test(v.id)?v.id:null};});
+      img:isStr(v.img,400)&&/^https:\/\/image\.api\.playstation\.com\//.test(v.img)?v.img:null,plus:v.plus?1:0,id:typeof v.id==="string"&&ID_RE.test(v.id)?v.id:null,
+      pid:typeof v.pid==="string"&&/^[A-Z]{2}\d{4}-[A-Z]{4}\d{5}_\d{2}-[A-Z0-9]{16}$/.test(v.pid)?v.pid:null,hide:v.hide?1:0,
+      g:Array.isArray(v.g)?v.g.filter(k=>typeof k==="string"&&k.length<=40).slice(0,3):[],y:Number.isInteger(v.y)&&v.y>=1970&&v.y<=2100?v.y:null};});
   out.s={};if(x.s&&typeof x.s==="object"&&typeof x.s.ownsync==="string"&&/^\d{4}-\d{2}-\d{2}T[\d:.]+Z$/.test(x.s.ownsync))out.s.ownsync=x.s.ownsync;
   return [out,dropped];
 }
@@ -1250,10 +1260,10 @@ syncCustom();
    and the My purchases source, never in Browse. Built from OWNED; nothing here leaves the browser. */
 function syncPurchases(){
   for(let i=GAMES.length-1;i>=0;i--)if(GAMES[i].buy){IDS.delete(GAMES[i].id);BYID.delete(GAMES[i].id);GAMES.splice(i,1);}
-  for(const k in OWNED){const o=OWNED[k];if(!o||typeof o.t!=="string"||(o.id&&BYID.has(o.id)))continue;
+  for(const k in OWNED){const o=OWNED[k];if(!o||typeof o.t!=="string"||o.hide||(o.id&&BYID.has(o.id)))continue;
     const id="buy-"+k;if(IDS.has(id))continue;
-    const g={id,t:o.t.slice(0,150),p:o.p&&o.p.length?o.p.slice():["PS4"],m:null,y:null,g:[],pv:"",d:"",cat:0,buy:1,img:o.img||null,
-      u:o.c?"https://store.playstation.com/en-ca/concept/"+o.c:"https://store.playstation.com/en-ca/search/"+encodeURIComponent(o.t)};
+    const g={id,t:o.t.slice(0,150),p:o.p&&o.p.length?o.p.slice():["PS4"],m:null,y:o.y||null,g:(o.g||[]).slice(),pv:"",d:"",cat:0,buy:1,img:o.img||null,okey:k,
+      u:o.pid?"https://store.playstation.com/en-ca/product/"+o.pid:o.c?"https://store.playstation.com/en-ca/concept/"+o.c:"https://store.playstation.com/en-ca/search/"+encodeURIComponent(o.t)};
     prep(g);g.ser=null;GAMES.push(g);IDS.add(id);BYID.set(id,g);}
 }
 syncPurchases();
@@ -1303,7 +1313,7 @@ const fmtD=iso=>{const [y,m,d]=iso.split("-").map(Number);return d+" "+MONTHS[m-
 const ART=new Set(Array.isArray(ARTLIST)?ARTLIST:[]);
 /* Cover art, or for games without any a blank VHS tape with the title written on its label */
 const tapeName=t=>t.length>34?t.slice(0,32).replace(/\s+\S*$/,"")+"…":t;
-const tile=g=>`<span class="tile${ART.has(g.id)||g.img?" art":""}" aria-hidden="true"><span class="tape"><span class="lab" style="--tilt:${((g.hue||0)%5)-2}deg">${esc(tapeName(g.t))}</span><span class="vhs">VHS</span></span>${ART.has(g.id)?`<img src="art/${encodeURIComponent(g.id)}.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()">`:g.img?`<img src="${esc(g.img)}?w=440" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()">`:""}</span>`;
+const tile=g=>`<span class="tile${ART.has(g.id)||g.img?" art":""}" aria-hidden="true"><span class="tape"><span class="lab" style="--tilt:${((g.hue||0)%5)-2}deg">${esc(tapeName(g.t))}</span><span class="vhs">VHS</span></span>${ART.has(g.id)?`<img src="art/${encodeURIComponent(g.id)}.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()">`:g.img?`<img src="${esc(g.img)}?w=440" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.parentNode.classList.remove('art');this.remove()">`:""}</span>`;
 
 /* HowLongToBeat time for the chosen play style. No stand-in when a style has no figure: HLTB's "all styles"
    average is not comparable (it can be shorter than the story), so those games show "no data" and are left
@@ -1519,8 +1529,9 @@ function pass(g){
 function fmtT(h){return h>=100?Math.round(h)+" h":(Math.round(h*10)/10).toString().replace(/\.0$/,"")+" h";}
 /* The score sticker opens Metacritic. There's no reliable way to build a game's own Metacritic
    address from its title (editions and remasters vary), so it opens a Metacritic game search. */
-const mcUrl=g=>"https://www.metacritic.com/search/"+encodeURIComponent(g.t.replace(/[®™]/g,"").replace(/\s*\((?:PS\d|PSP|Classic|\d{4})\)\s*$/,""))+"/?category=13";
-const scoreLink=g=>g.m==null?scoreHTML(g.m):`<a class="mclink" href="${esc(mcUrl(g))}" target="_blank" rel="noopener" title="Metascore ${g.m}: see the reviews on Metacritic" aria-label="Metascore ${g.m}, opens Metacritic">${scoreHTML(g.m)}</a>`;
+const mcUrl=g=>"https://www.metacritic.com/search/"+encodeURIComponent(g.t.replace(/[®™]/g,"").replace(/\s*\((?:PS\d|PSP|Classic|\d{4})\)\s*$/,"")
+  .replace(/\s*[-–:]?\s*\b(digital )?(deluxe|standard|gold|ultimate|complete|premium|collector'?s|game of the year|goty|cross-gen)( edition| bundle)?\s*$/i,"").trim())+"/?category=13";
+const scoreLink=g=>g.m==null?(g.buy?`<a class="mclink" href="${esc(mcUrl(g))}" target="_blank" rel="noopener" title="Look it up on Metacritic">${scoreHTML(g.m)}</a>`:scoreHTML(g.m)):`<a class="mclink" href="${esc(mcUrl(g))}" target="_blank" rel="noopener" title="Metascore ${g.m}: see the reviews on Metacritic" aria-label="Metascore ${g.m}, opens Metacritic">${scoreHTML(g.m)}</a>`;
 const scoreHTML=m=>m==null?'<span class="score n" title="No Metascore">tbd</span>':`<span class="score ${m>=90?"s":m>=75?"g":m>=50?"m":"b"}">${m}</span>`;
 const MK=[["g","mg","▶","Playing","I'm playing this now"],["w","mw","★","Want","Add to my want-to-play list"],["p","mp","✓","Played","I have played this"],["b","mb","↩","Bounced","I tried it and bounced off"],["x","mx","✕","Not interested","Hide this game"]];
 const TMNAME={h:"main story",x:"main story + extras",c:"completionist"};
@@ -1530,7 +1541,8 @@ function row(g,i){
   const tm=t==null?`<span class="time est" title="HowLongToBeat has no ${TMNAME[S.tmode]} time for this game">no data</span>`:`<span class="time${low?" est":""}" title="${low?"Based on fewer than 10 player reports. ":""}">${fmtT(t)}</span>`;
   const pl=g.pk==="Elsewhere"?"":g.p.map(p=>`<span class="${p==="PS5"?"p5":""}">${p}</span>`).join("");
   const lv=LIB[g.id]||0;
-  const flags=(g.own?`<span class="flag own">Added by me</span>`:"")+(g.buy?`<span class="flag own">My purchase</span>`:boughtIds().has(g.id)?`<span class="flag own" title="You bought this game, so it stays yours without PS Plus">Bought</span>`:"")+(g.cl?`<span class="flag cl" title="PS Plus Premium Classic, originally ${esc(g.sys==="PS4 remaster"?"a PS4 remaster or port":g.sys==="Arcade"?"an arcade game":"a "+g.sys+" game")}">Classic · ${esc(g.sys==="PS4 remaster"?"PS4":g.sys)}</span>`:"")+(g.s3&&g.cl?`<span class="flag stream" title="Streamed from the cloud with PS Plus Premium; it can't be downloaded${g.rg==="na"?". Offered in the US and Canada only":""}">Streaming only</span>`:"")+(g.new?`<span class="flag new">New ${esc(g.new.split(" ")[0])}</span>`:"")+(g.e?`<span class="flag mon" title="PS Plus Essential monthly game, ${esc(g.el)}${g.cat?". Also in the Game Catalogue, so you can play it either way.":""}">Monthly ${esc(g.el)}</span><span class="libset" role="group" aria-label="Is it in my library?"><button type="button" class="yes" data-lib="${esc(g.id)}" data-lv="1" aria-pressed="${lv===1}" title="I claimed this one">✓ In my library</button><button type="button" class="no" data-lib="${esc(g.id)}" data-lv="-1" aria-pressed="${lv===-1}" title="I never claimed this one">✕ Not in my library</button></span>`:"");
+  const hideBtn=g.buy?`<button type="button" class="buyhide" data-buyhide="${esc(g.okey)}" title="Hide this from my library">Hide</button>`:"";
+  const flags=hideBtn+(g.own?`<span class="flag own">Added by me</span>`:"")+(g.buy?`<span class="flag own">My purchase</span>`:boughtIds().has(g.id)?`<span class="flag own" title="You bought this game, so it stays yours without PS Plus">Bought</span>`:"")+(g.cl?`<span class="flag cl" title="PS Plus Premium Classic, originally ${esc(g.sys==="PS4 remaster"?"a PS4 remaster or port":g.sys==="Arcade"?"an arcade game":"a "+g.sys+" game")}">Classic · ${esc(g.sys==="PS4 remaster"?"PS4":g.sys)}</span>`:"")+(g.s3&&g.cl?`<span class="flag stream" title="Streamed from the cloud with PS Plus Premium; it can't be downloaded${g.rg==="na"?". Offered in the US and Canada only":""}">Streaming only</span>`:"")+(g.new?`<span class="flag new">New ${esc(g.new.split(" ")[0])}</span>`:"")+(g.e?`<span class="flag mon" title="PS Plus Essential monthly game, ${esc(g.el)}${g.cat?". Also in the Game Catalogue, so you can play it either way.":""}">Monthly ${esc(g.el)}</span><span class="libset" role="group" aria-label="Is it in my library?"><button type="button" class="yes" data-lib="${esc(g.id)}" data-lv="1" aria-pressed="${lv===1}" title="I claimed this one">✓ In my library</button><button type="button" class="no" data-lib="${esc(g.id)}" data-lv="-1" aria-pressed="${lv===-1}" title="I never claimed this one">✕ Not in my library</button></span>`:"");
   let fy;
   if(mk==="p"){const r=RATE[g.id]||0;fy=`<span class="stars" role="group" aria-label="My rating">${[1,2,3,4,5].map(n=>`<button type="button" class="${n<=r?"on":""}" data-rate="${n}" data-id="${esc(g.id)}" aria-label="${n} ${n===1?"star":"stars"}" aria-pressed="${n===r}" title="${n===r?"Click to clear":"Rate "+n+" out of 5"}">★</button>`).join("")}</span>`;}
   else if(mk==="b"||mk==="x"){fy='<span class="time est">–</span>';}
@@ -1782,6 +1794,7 @@ function fillDlg(){if(!DLG_ID)return;const g=BYID.get(DLG_ID);if(!g)return;const
   const w=whyFor(g);$("dlgwhy").innerHTML=w;$("dlgwhy").hidden=!w;fillAbout(g);
   loadCommunity();const cl=communityLine(g);$("dlgcomm").innerHTML=cl?`<span class="lab">Rental Wall members</span> ${cl}`:"";$("dlgcomm").hidden=!cl;
   fillFacts(g);
+  fillBuy(g);
   $("dlgtrailer").href="https://www.youtube.com/results?search_query="+encodeURIComponent(`${g.t} ${g.p.includes("PS5")?"PS5":g.p[0]||"PlayStation"} trailer`);}
 /* Longer description from Wikipedia (data/about.json, made by tools/fetch_wiki.py), loaded the first
    time a pop-up opens. Wikipedia text is CC BY-SA 4.0, so it's credited with a link to the article. */
@@ -2464,6 +2477,7 @@ $("aadd").addEventListener("click",()=>{
 $("reset").addEventListener("click",()=>{const view=S.view,region=S.region,since=S.since,tier=S.tier;S=Object.assign({},DEF,{styles:[],pv:[],view,region,since,tier});render();});
 onRows("click",e=>{
   if(e.currentTarget.id==="dlgrows"&&e.target.closest("[data-ser],[data-like]"))$("gamedlg").close();
+  const bh=e.target.closest("button[data-buyhide]");if(bh){const o=OWNED[bh.dataset.buyhide];if(o){o.hide=1;ownedChanged();saveMarks();renderHero();render(false);}return;}
   const rb=e.target.closest("button[data-remind]");if(rb){const g=GAMES.find(x=>x.id===rb.dataset.remind);if(g)downloadIcs([g],"ps-plus-"+g.t);return;}
   const b=e.target.closest(".marks button[data-m]");if(b)return setMark(b.dataset.id,b.dataset.m);
   const st=e.target.closest(".stars button");if(st)return setRating(st.dataset.id,+st.dataset.rate);
@@ -2640,10 +2654,35 @@ function purchasesFrom(j){ // the import's bought/claimed list as OWNED entries
     const pf=String(x.pf||"").toUpperCase();if((pf==="PS4"||pf==="PS5")&&!cur.p.includes(pf))cur.p.push(pf);
     if(!x.plus)cur.plus=0;   // bought on any platform counts as bought
     if(!cur.img&&typeof x.img==="string"&&/^https:\/\/image\.api\.playstation\.com\//.test(x.img)&&x.img.length<=400)cur.img=x.img;
+    if(!cur.pid&&typeof x.pid==="string"&&/^[A-Z]{2}\d{4}-[A-Z]{4}\d{5}_\d{2}-[A-Z0-9]{16}$/.test(x.pid))cur.pid=x.pid;
     if(!cur.id)cur.id=psnMatch(x);out[k]=cur;});
+  for(const k in out){const old=OWNED[k];if(old){if(old.hide)out[k].hide=1;if(old.g&&old.g.length)out[k].g=old.g;if(old.y)out[k].y=old.y;}}  // keep what you hid or looked up
   return out;
 }
 function ownedChanged(){OWNIDX=null;syncPurchases();}
+/* Imported purchases in the game pop-up: look the game up on the PlayStation Store (the same lookup as
+   adding a game by hand) to fill in its styles and year, open Metacritic, or hide it from your library. */
+function fillBuy(g){
+  const box=$("dlgbuy");if(!g.buy){box.hidden=true;return;}
+  const o=OWNED[g.okey];box.hidden=false;
+  box.innerHTML=`<p class="hint">${o&&o.plus?"Claimed with PS Plus":"Bought"} on your PlayStation account. Private to you.</p>
+    <div class="row">${API&&o&&o.pid?`<button type="button" class="btn" id="buylook">${o.g&&o.g.length?"Look it up again":"Fill in details from the PlayStation Store"}</button>`:""}
+    <a class="btn" href="${esc(mcUrl(g))}" target="_blank" rel="noopener">Find it on Metacritic</a>
+    <button type="button" class="btn" id="buyhide">Hide from my library</button></div><p class="hint" id="buymsg"></p>`;
+  const look=$("buylook");if(look)look.addEventListener("click",async()=>{look.disabled=true;$("buymsg").textContent="Looking it up…";
+    const ok=await lookupBuy(g.okey);const ng=BYID.get(g.id);if(ng){DLG_ID=ng.id;fillDlg();}
+    const m=$("buymsg");if(m)m.textContent=ok?"Updated from the PlayStation Store.":"Couldn't look it up just now. Try again later.";});
+  $("buyhide").addEventListener("click",()=>{if(!OWNED[g.okey])return;OWNED[g.okey].hide=1;ownedChanged();saveMarks();renderHero();render(false);$("gamedlg").close();});
+}
+async function lookupBuy(k){
+  const o=OWNED[k];if(!o||!o.pid||!API)return false;
+  try{const r=await fetch(API+"/api/store?url="+encodeURIComponent("https://store.playstation.com/en-ca/product/"+o.pid));
+    const j=await r.json().catch(()=>null);if(!r.ok||!j||!j.title)return false;
+    const st=mapGenres(j.genres);if(st.length)o.g=st;
+    if(Number.isInteger(Number(j.year))&&j.year>1970&&j.year<2100)o.y=Number(j.year);
+    if(Array.isArray(j.platforms)){const pl=["PS4","PS5"].filter(x=>j.platforms.includes(x));if(pl.length)o.p=pl;}
+    ownedChanged();saveMarks();renderHero();render(false);return true;}catch(e){return false;}
+}
 function renderLibExtra(){
   const box=$("libextra");if(S.view!=="l"||CTX.ser){box.hidden=true;return;}
   const n=Object.keys(OWNED).length;if(!n){box.hidden=true;return;}
@@ -2654,7 +2693,14 @@ function renderLibExtra(){
     ${ACCT?`<label class="check"><input type="checkbox" id="ownsync" ${OWNSYNC?"checked":""}> Keep my purchases in my account, so they sync to my other devices</label>
       <p class="hint">${OWNSYNC?`You agreed on ${new Date(OWNSYNC).toLocaleDateString(undefined,{day:"numeric",month:"long",year:"numeric"})}. `:""}They're encrypted with your password like the rest of your data, so nobody else can read them. Untick this to remove them from your account; they stay on this device. <a href="privacy.html#psn-import" target="_blank">Privacy policy</a></p>`
       :`<p class="hint">Saved in this browser only. Sign in to an account if you'd like the option to sync them to your other devices.</p>`}
-    <button type="button" class="btn" id="ownforget">Remove my purchases</button>`;
+    <div class="row">${API&&Object.values(OWNED).some(o=>o&&o.pid&&!o.hide&&!(o.g&&o.g.length)&&!(o.id&&BYID.has(o.id)))?`<button type="button" class="btn" id="ownlook">Fill in details from the PlayStation Store</button>`:""}
+      ${Object.values(OWNED).some(o=>o&&o.hide)?`<button type="button" class="btn" id="ownunhide">Show ${Object.values(OWNED).filter(o=>o&&o.hide).length} hidden ${Object.values(OWNED).filter(o=>o&&o.hide).length===1?"game":"games"} again</button>`:""}
+      <button type="button" class="btn" id="ownforget">Remove my purchases</button></div><p class="hint" id="ownmsg"></p>`;
+  const un=$("ownunhide");if(un)un.addEventListener("click",()=>{for(const k in OWNED)if(OWNED[k])OWNED[k].hide=0;ownedChanged();saveMarks();renderHero();render(false);});
+  const lk=$("ownlook");if(lk)lk.addEventListener("click",async()=>{lk.disabled=true;
+    const todo=Object.keys(OWNED).filter(k=>{const o=OWNED[k];return o&&o.pid&&!o.hide&&!(o.g&&o.g.length)&&!(o.id&&BYID.has(o.id));});
+    let done=0,ok=0;for(const k of todo){$("ownmsg").textContent=`Looking up ${++done} of ${todo.length}…`;if(await lookupBuy(k))ok++;await new Promise(r=>setTimeout(r,250));}
+    $("ownmsg").textContent=`Filled in ${ok} of ${todo.length}.`;});
   const cb=$("ownsync");
   if(cb)cb.addEventListener("change",()=>{OWNSYNC=cb.checked?new Date().toISOString():null;saveMarks();renderLibExtra();});
   $("ownforget").addEventListener("click",()=>{if(!confirm("Remove your imported purchases from the wall"+(OWNSYNC?" and from your account":"")+"? Your marks and PS Plus library tags stay."))return;
