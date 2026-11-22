@@ -612,6 +612,13 @@ body:not(.noplat) #wall .cm .ckind+.ctm::before{content:" · "}
 .guides details{border-top:1px solid var(--line);padding:10px 0}
 .guides summary{cursor:pointer;font-weight:600}
 .guides details p{margin:8px 0 0;max-width:72ch;line-height:1.55}
+
+/* Coming soon shelf: Sony's promo art is wide, so it's cropped into the square case like a poster. */
+.eyebrow.come{color:var(--blue)}
+:root[data-theme="dark"] .eyebrow.come{color:#8FB0FF}
+.tile.ext{overflow:hidden;background:#0E1636}
+.tile.ext{position:relative}.tile.ext img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+#comedeck .talk.arr,#comedeck .card:nth-child(n) .talk.arr{background:var(--blue);color:#fff;transform:rotate(-3deg);white-space:nowrap;font-size:13px}
 </style>
 </head>
 <body>
@@ -645,6 +652,10 @@ body:not(.noplat) #wall .cm .ckind+.ctm::before{content:" · "}
     <div id="lastwrap" hidden>
       <div class="deckhead"><h2 class="eyebrow last">Last chance</h2><span id="lastnote"></span><span class="lastbtns"><button type="button" class="lastall" id="lastcal" title="Download calendar reminders: your want-to-play games if any are leaving, otherwise all of these">Add these to my calendar</button><button type="button" class="lastall" id="lastall">Show them all on the shelf</button></span></div>
       <div class="deck" id="lastdeck"></div>
+    </div>
+    <div id="comewrap" hidden>
+      <div class="deckhead"><h2 class="eyebrow come">Coming soon</h2><span id="comenote"></span><span class="lastbtns"><button type="button" class="lastall" id="comecal" title="Download calendar reminders for the day each game arrives">Add arrivals to my calendar</button><a class="lastall" id="comesrc" target="_blank" rel="noopener">Sony's announcement</a></span></div>
+      <div class="deck" id="comedeck"></div>
     </div>
     <div class="deckhead"><h2 class="eyebrow">Staff picks</h2><span id="decknote"></span></div>
     <div class="deck" id="deck"></div>
@@ -894,7 +905,7 @@ body:not(.noplat) #wall .cm .ckind+.ctm::before{content:" · "}
       <p>PS Plus Rental Wall puts every game in PS Plus Extra and Premium on one wall: the Game Catalogue, the Classics, PS3 streaming and every monthly game since 2013. Sort by Metascore or completion time, filter by length, genre, co-op, crossplay and age rating, and mark what you've played so the wall learns what to put out front. Free, no PSN login, nothing to install.</p>
       <div class="gcols">
         <div><h3>Leaving PS Plus soon</h3><ul class="gleave"><li><a href="/lists/leaving-ps-plus">Dark Rose Valkyrie</a> <span>15 December 2026 · 34 h</span></li><li><a href="/lists/leaving-ps-plus">Fade to Silence</a> <span>15 December 2026 · 36 h</span></li><li><a href="/lists/leaving-ps-plus">Granblue Fantasy: Relink</a> <span>15 December 2026 · 16 h</span></li><li><a href="/lists/leaving-ps-plus">Somerville</a> <span>15 December 2026 · 3.7 h</span></li></ul></div>
-        <div><h3>Ready-made lists</h3><ul class="lists"><li><a href="/lists/leaving-ps-plus">Games leaving PS Plus soon</a></li><li><a href="/lists/best-ps-plus-extra-games">The best PS Plus Extra games, by Metascore</a></li><li><a href="/lists/best-ps-plus-premium-classics">The best PS Plus Premium Classics</a></li><li><a href="/lists/ps-plus-co-op-games">PS Plus co-op games</a></li><li><a href="/lists/ps-plus-crossplay-games">PS Plus games with Xbox and PC crossplay</a></li><li><a href="/lists/short-ps-plus-games">Short PS Plus games you can finish in under 10 hours</a></li><li><a href="/lists/long-ps-plus-games">Long PS Plus games: 40 hours and up</a></li><li><a href="/lists/ps-plus-ps5-games">The best PS5 games on PS Plus</a></li><li><a href="/lists/ps-plus-rpgs">The best RPGs on PS Plus</a></li><li><a href="/lists/ps-plus-horror-games">The best horror games on PS Plus</a></li><li><a href="/lists/ps-plus-shooters">The best shooters on PS Plus</a></li><li><a href="/lists/ps-plus-open-world-games">The best open-world games on PS Plus</a></li><li><a href="/lists/ps-plus-games-for-kids">PS Plus games for kids and families</a></li></ul></div>
+        <div><h3>Ready-made lists</h3><ul class="lists"><li><a href="/lists/new-on-ps-plus">New on PS Plus: coming soon</a></li><li><a href="/lists/leaving-ps-plus">Games leaving PS Plus soon</a></li><li><a href="/lists/best-ps-plus-extra-games">The best PS Plus Extra games, by Metascore</a></li><li><a href="/lists/best-ps-plus-premium-classics">The best PS Plus Premium Classics</a></li><li><a href="/lists/ps-plus-co-op-games">PS Plus co-op games</a></li><li><a href="/lists/ps-plus-crossplay-games">PS Plus games with Xbox and PC crossplay</a></li><li><a href="/lists/short-ps-plus-games">Short PS Plus games you can finish in under 10 hours</a></li><li><a href="/lists/long-ps-plus-games">Long PS Plus games: 40 hours and up</a></li><li><a href="/lists/ps-plus-ps5-games">The best PS5 games on PS Plus</a></li><li><a href="/lists/ps-plus-rpgs">The best RPGs on PS Plus</a></li><li><a href="/lists/ps-plus-horror-games">The best horror games on PS Plus</a></li><li><a href="/lists/ps-plus-shooters">The best shooters on PS Plus</a></li><li><a href="/lists/ps-plus-open-world-games">The best open-world games on PS Plus</a></li><li><a href="/lists/ps-plus-games-for-kids">PS Plus games for kids and families</a></li></ul></div>
       </div>
       <h3>Questions</h3>
       <details><summary>How do I sort PS Plus Extra games by Metacritic score or length?</summary><p>Choose Metacritic score or Completion time under Sort, and narrow it down with the Length, Platform, Players and style filters. Your choices are remembered next time.</p></details><details><summary>Which games are leaving PS Plus this month?</summary><p>Sony has confirmed 4 games leaving the Game Catalogue on 15 December 2026: Dark Rose Valkyrie, Fade to Silence, Granblue Fantasy: Relink, Somerville.</p></details><details><summary>Do I need to sign in with my PSN account?</summary><p>No. The site never asks for your PlayStation account. Your marks and ratings are saved in your browser. A free, optional account (a made-up username and a password, no email) syncs them between devices, encrypted so only your password unlocks them.</p></details><details><summary>Does it show the catalogue for my country?</summary><p>Yes. Pick your country at the top of the filters and the wall shows that country&#x27;s Game Catalogue, Classics and age ratings, from Sony&#x27;s own lists.</p></details><details><summary>Is this site made by Sony or does it use AI?</summary><p>It&#x27;s an independent fan-made tool, not affiliated with Sony. It was built with the help of Claude, Anthropic&#x27;s AI model; no AI runs while you use it, and your data is never sent to an AI service. The AI disclosure link at the top has the details.</p></details>
@@ -988,10 +999,11 @@ body:not(.noplat) #wall .cm .ckind+.ctm::before{content:" · "}
 (()=>{const f=()=>document.documentElement.style.setProperty("--sbw",(innerWidth-document.documentElement.clientWidth)+"px");addEventListener("resize",f);addEventListener("load",f);new ResizeObserver(f).observe(document.documentElement);})();
 (async function main(){
 "use strict";
-let GAMES,META,ARTLIST,LINKS,REGDATA,FACTS={},XPLAY={};
+let GAMES,META,ARTLIST,LINKS,REGDATA,FACTS={},XPLAY={},COMING={games:[],posts:[]};
 try{
   const get=u=>fetch(u,{cache:"no-cache"}).then(r=>{if(!r.ok)throw new Error(u+" "+r.status);return r.json();});
-  [GAMES,META,ARTLIST,LINKS,REGDATA,FACTS,XPLAY]=await Promise.all([get("data/games.json"),get("data/catalogue.json"),get("data/art.json").catch(()=>[]),get("data/links.json").catch(()=>({})),get("data/regions.json").catch(()=>({})),get("data/facts.json").catch(()=>({})),get("data/crossplay.json").then(j=>j&&j.games&&typeof j.games==="object"?j.games:{}).catch(()=>({}))]);
+  [GAMES,META,ARTLIST,LINKS,REGDATA,FACTS,XPLAY,COMING]=await Promise.all([get("data/games.json"),get("data/catalogue.json"),get("data/art.json").catch(()=>[]),get("data/links.json").catch(()=>({})),get("data/regions.json").catch(()=>({})),get("data/facts.json").catch(()=>({})),get("data/crossplay.json").then(j=>j&&j.games&&typeof j.games==="object"?j.games:{}).catch(()=>({})),
+  get("data/coming.json").then(j=>({games:Array.isArray(j&&j.games)?j.games:[],posts:Array.isArray(j&&j.posts)?j.posts:[]})).catch(()=>({games:[],posts:[]}))]);
 }catch(e){
   document.getElementById("count").textContent="Couldn't load the game list. Check your connection and reload the page.";
   return;
@@ -1474,11 +1486,41 @@ function renderHero(){
   if(lc.length){const dates=[...new Set(lc.map(g=>LEAVING[g.id]))];
     $("lastnote").textContent=(dates.length===1?`Leaving the Game Catalogue on ${fmtD(dates[0])}`:"Leaving the Game Catalogue soon")+daysLeft(dates[0]).replace(" · ",", ");
     $("lastdeck").innerHTML=lc.map(g=>{const t=g.h;return `<a class="card" title="${esc(g.d||"")}" href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${tile(g)}<span class="ct">${esc(g.t)}</span><span class="cm">${g.m!=null?"Metascore "+g.m:"No Metascore"}${t!=null?`<span class="ctm"> · ${fmtT(t)}</span>`:""}</span><span class="talk due">Due back ${esc(fmtD(LEAVING[g.id]).replace(/ \d{4}$/,""))}</span></a>`;}).join("");}
+  renderComing();
   renderTaste();
   let pick=GAMES.filter(g=>MARKS[g.id]==="w"&&playable(g)).sort(byScore),note="from your want-to-play list, "+how;
   if(!pick.length){pick=GAMES.filter(g=>!MARKS[g.id]&&playable(g)).sort(byScore);note="games you haven't sorted yet, "+how;}
   $("decknote").textContent=note;
   $("deck").innerHTML=pick.slice(0,14).map((g,i)=>{const t=g.h;return `<a class="card" style="--i:${i}" title="${esc(g.d||"")}" href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${tile(g)}<span class="ct">${esc(g.t)}</span><span class="cm">${TASTE.on?"Priority "+pv(g):(g.m!=null?"Metascore "+g.m:"No Metascore")}${t!=null?`<span class="ctm"> · ${fmtT(t)}</span>`:""}</span><span class="talk">${esc(talker(g,i))}</span></a>`;}).join("");
+}
+/* Coming soon: games Sony has announced on the PlayStation Blog that haven't arrived yet
+   (data/coming.json, from tools/fetch_coming.py). Games the site already knows use its own case and link;
+   new ones use Sony's promo image and link to the announcement. */
+const todayISO=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
+const comingNow=()=>COMING.games.filter(x=>x&&typeof x.t==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(x.date||"")&&x.date>=todayISO());
+function renderComing(){
+  const cg=comingNow(),wrap=$("comewrap");wrap.hidden=!cg.length;if(!cg.length)return;
+  const dates=[...new Set(cg.map(x=>x.date))].sort(),short=d=>fmtD(d).replace(/ \d{4}$/,"");
+  $("comenote").textContent=(dates.length===1?`Arriving ${short(dates[0])}`:`Arriving ${short(dates[0])} to ${short(dates[dates.length-1])}`)+". Dates are Sony's, and a few vary by country.";
+  const post=COMING.posts.find(p=>p&&/^https:\/\/blog\.playstation\.com\//.test(p.url||""));
+  const src=$("comesrc");src.hidden=!post;if(post)src.href=post.url;
+  $("comedeck").innerHTML=cg.map(x=>{
+    const g=x.id&&BYID.get(x.id),img=/^https:\/\/blog\.playstation\.com\/tachyon\//.test(x.img||"")?x.img:"";
+    const p=COMING.posts[x.post],href=g?gameUrl(g):(p&&/^https:\/\/blog\.playstation\.com\//.test(p.url||"")?p.url:"");
+    const pic=g?tile(g):`<span class="tile ext" aria-hidden="true"><span class="tape"><span class="lab">${esc(tapeName(x.t))}</span><span class="vhs">VHS</span></span>${img?`<img src="${esc(img)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()">`:""}</span>`;
+    const plats=Array.isArray(x.p)?x.p.filter(v=>typeof v==="string").join(", "):"";
+    return `<${href?`a href="${esc(href)}" target="_blank" rel="noopener"`:"div"} class="card">${pic}<span class="ct">${esc(x.t)}</span><span class="cm">${esc([x.tier,plats].filter(Boolean).join(" · "))}</span><span class="talk arr">Arrives ${esc(short(x.date))}</span></${href?"a":"div"}>`;}).join("");
+}
+function icsArrivals(list){
+  const esc_=t=>String(t).replace(/\\/g,"\\\\").replace(/([,;])/g,"\\$1").replace(/\r?\n/g,"\\n");
+  const ymd=iso=>iso.replace(/-/g,""),next=iso=>{const d=new Date(iso+"T12:00:00");d.setDate(d.getDate()+1);return d.toISOString().slice(0,10).replace(/-/g,"");};
+  const stamp=new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+/,"");
+  const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//PS Plus Rental Wall//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH"];
+  list.forEach(x=>lines.push("BEGIN:VEVENT",`UID:arrive-${x.t.toLowerCase().replace(/[^a-z0-9]+/g,"-")}-${x.date}@psplus-rental-wall`,`DTSTAMP:${stamp}`,
+    `DTSTART;VALUE=DATE:${ymd(x.date)}`,`DTEND;VALUE=DATE:${next(x.date)}`,`SUMMARY:${esc_(x.t+" arrives on PS Plus "+x.tier)}`,
+    `DESCRIPTION:${esc_(x.t+" joins PS Plus "+x.tier+" today, according to Sony's announcement.")}`,"TRANSP:TRANSPARENT",
+    "BEGIN:VALARM","ACTION:DISPLAY",`DESCRIPTION:${esc_(x.t+" is on PS Plus today")}`,"TRIGGER:PT10H","END:VALARM","END:VEVENT"));
+  lines.push("END:VCALENDAR");return lines.join("\r\n")+"\r\n";
 }
 function renderTaste(){
   const rated=GAMES.filter(g=>MARKS[g.id]==="p"&&RATE[g.id]);
@@ -2160,6 +2202,9 @@ $("q").addEventListener("keydown",e=>{
 });
 function clearSearch(){S.q="";$("q").value="";clearTimeout(qTimer);render(false);$("q").focus();}
 $("qclear").addEventListener("click",clearSearch);
+$("comecal").addEventListener("click",()=>{const cg=comingNow();if(!cg.length)return;
+  const url=URL.createObjectURL(new Blob([icsArrivals(cg)],{type:"text/calendar;charset=utf-8"}));
+  const a=document.createElement("a");a.href=url;a.download="ps-plus-coming-soon.ics";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);});
 $("lastcal").addEventListener("click",()=>{
   const want=GAMES.filter(g=>LEAVING[g.id]&&inScope(g)&&MARKS[g.id]==="w");
   const list=want.length?want:GAMES.filter(g=>LEAVING[g.id]&&inScope(g)&&!["p","b","x"].includes(MARKS[g.id]));

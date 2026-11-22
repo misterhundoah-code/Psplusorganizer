@@ -41,6 +41,7 @@ XPLAY = (load("crossplay.json", {}) or {}).get("games", {})
 RATINGS = (load("ratings/en-ca.json", {}) or {}).get("games", {})
 ART = set(load("art.json", []) or [])
 LEAVING = CAT.get("leaving", {}) or {}
+COMING = load("coming.json", {}) or {}
 TODAY = date.today()
 
 esc = html.escape
@@ -206,7 +207,8 @@ def list_nav(current=None):
     items = "".join(f'<li><a href="/lists/{s}"{" aria-current=page" if s == current else ""}>{esc(t)}</a></li>'
                     for s, t, *_ in LISTS)
     lv = f'<li><a href="/lists/leaving-ps-plus"{" aria-current=page" if current == "leaving-ps-plus" else ""}>Games leaving PS Plus soon</a></li>'
-    return f'<ul class="lists">{lv}{items}</ul>'
+    nw = f'<li><a href="/lists/new-on-ps-plus"{" aria-current=page" if current == "new-on-ps-plus" else ""}>New on PS Plus: coming soon</a></li>'
+    return f'<ul class="lists">{nw}{lv}{items}</ul>'
 
 
 def leaving_games():
@@ -245,6 +247,37 @@ def build():
             + f"<h2>More PS Plus lists</h2>{list_nav('leaving-ps-plus')}")
     written["leaving-ps-plus"] = page("leaving-ps-plus", title, desc, body, f"{SITE}/lists/leaving-ps-plus")
 
+    cg = [x for x in COMING.get("games", []) if (x.get("date") or "") >= TODAY.isoformat()]
+    byid = {g["id"]: g for g in GAMES}
+    months = sorted({x["date"][:7] for x in cg})
+    mname = " and ".join(date.fromisoformat(m + "-01").strftime("%B") for m in months)
+    title = f"New on PS Plus{(' in ' + mname) if mname else ''}: games coming soon"
+    desc = (f"The {len(cg)} games Sony has announced for PS Plus Essential, Extra and Premium that haven't arrived yet, with "
+            "arrival dates.") if cg else "Games Sony has announced for PS Plus that haven't arrived yet."
+    rows = []
+    for x in cg:
+        g = byid.get(x.get("id") or "")
+        cover = (f'<img src="/art/{g["id"]}.webp" alt="" width="60" height="75" loading="lazy">' if g and g["id"] in ART
+                 else '<span class="nocover" aria-hidden="true"></span>')
+        plats = ", ".join(x.get("p") or [])
+        score = (g or {}).get("m")
+        rows.append(f'<tr><td class="n"></td><td class="cv">{cover}</td><td class="t"><b>{esc(x["t"])}</b>'
+                    f'<span class="leave" style="background:var(--blue)">Arrives {esc(short_date(x["date"]))}</span>'
+                    f'<span class="meta">{esc(" · ".join(b for b in (x.get("tier"), plats) if b))}</span></td>'
+                    f'<td class="m">{score or "–"}</td><td class="h">{hours((g or {}).get("h")) or "–"}</td></tr>')
+    srcs = "".join(f'<li><a href="{esc(p["url"])}" rel="noopener">{esc(p["title"])}</a></li>' for p in COMING.get("posts", [])
+                   if str(p.get("url", "")).startswith("https://blog.playstation.com/"))
+    body = (f"<h1>{esc(title)}</h1>"
+            + (f'<p class="intro">Games Sony has announced for PS Plus that arrive soon, in order of arrival. '
+               f'Dates are from Sony\'s announcements on the PlayStation Blog; a few vary by country.</p>'
+               '<table><thead><tr><th class="n"><span class="vh">#</span></th><th class="cv"><span class="vh">Cover</span></th>'
+               '<th>Game</th><th class="m">Metascore</th><th class="h">Main story</th></tr></thead><tbody>' + "".join(rows)
+               + f"</tbody></table><h2>Sony's announcements</h2><ul>{srcs}</ul>" if cg else
+               '<p class="intro">Nothing announced right now. Sony announces the monthly games near the end of each month and '
+               'the Extra and Premium additions about a week before they arrive; this page updates the same day.</p>')
+            + f"<h2>More PS Plus lists</h2>{list_nav('new-on-ps-plus')}")
+    written["new-on-ps-plus"] = page("new-on-ps-plus", title, desc, body, f"{SITE}/lists/new-on-ps-plus")
+
     body = ('<h1>PS Plus lists</h1><p class="intro">Ready-made lists from the PS Plus Rental Wall, updated whenever the catalogue '
             'changes. Each one opens on the interactive wall, where you can filter further and keep track of what you\'ve played.</p>'
             + list_nav())
@@ -260,7 +293,7 @@ def build():
             old.unlink()
 
     update_index(lv, when_txt)
-    urls = [f"{SITE}/", f"{SITE}/lists/", f"{SITE}/lists/leaving-ps-plus"] + [f"{SITE}/lists/{s}" for s, *_ in LISTS]
+    urls = [f"{SITE}/", f"{SITE}/lists/", f"{SITE}/lists/new-on-ps-plus", f"{SITE}/lists/leaving-ps-plus"] + [f"{SITE}/lists/{s}" for s, *_ in LISTS]
     sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     sm += [f"  <url><loc>{u}</loc><changefreq>weekly</changefreq></url>" for u in urls]
     sm += [f"  <url><loc>{SITE}/{p}</loc><changefreq>yearly</changefreq></url>" for p in ("privacy.html", "terms.html")]
