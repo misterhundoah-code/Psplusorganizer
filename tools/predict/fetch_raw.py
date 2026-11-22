@@ -25,8 +25,43 @@ for i, p in enumerate(PAGES):
     j = S.get(API, params={"action": "parse", "page": p, "prop": "wikitext", "format": "json", "formatversion": 2, "redirects": 1}, timeout=60).json()
     (OUT / f"wiki-{i}.txt").write_text(f"{p}\n{j['parse']['wikitext']}", encoding="utf-8"); time.sleep(1)
 
+# Wikidata: every game released on PS4 or PS5, with its other platforms, publishers,
+# developers, series and release dates. One query per console, grouped so each game is one row.
+Q = """SELECT ?g (SAMPLE(?lab) AS ?t) (SAMPLE(?art) AS ?w) (MIN(?d) AS ?rel)
+  (GROUP_CONCAT(DISTINCT ?platL; separator="|") AS ?plats) (GROUP_CONCAT(DISTINCT ?pubL; separator="|") AS ?pubs)
+  (GROUP_CONCAT(DISTINCT ?devL; separator="|") AS ?devs) (GROUP_CONCAT(DISTINCT ?serL; separator="|") AS ?sers)
+  (GROUP_CONCAT(DISTINCT ?genL; separator="|") AS ?gens) (GROUP_CONCAT(DISTINCT ?modeL; separator="|") AS ?modes)
+WHERE {
+  ?g wdt:P400 wd:%s .
+  ?g rdfs:label ?lab . FILTER(LANG(?lab) = "en")
+  OPTIONAL { ?g wdt:P577 ?d }
+  OPTIONAL { ?g wdt:P400 ?plat . ?plat rdfs:label ?platL . FILTER(LANG(?platL) = "en") }
+  OPTIONAL { ?g wdt:P123 ?pub . ?pub rdfs:label ?pubL . FILTER(LANG(?pubL) = "en") }
+  OPTIONAL { ?g wdt:P178 ?dev . ?dev rdfs:label ?devL . FILTER(LANG(?devL) = "en") }
+  OPTIONAL { ?g wdt:P179 ?ser . ?ser rdfs:label ?serL . FILTER(LANG(?serL) = "en") }
+  OPTIONAL { ?g wdt:P136 ?gen . ?gen rdfs:label ?genL . FILTER(LANG(?genL) = "en") }
+  OPTIONAL { ?g wdt:P404 ?mode . ?mode rdfs:label ?modeL . FILTER(LANG(?modeL) = "en") }
+  OPTIONAL { ?a schema:about ?g ; schema:isPartOf <https://en.wikipedia.org/> ; schema:name ?art }
+} GROUP BY ?g"""
+for name, qid in (("ps5", "Q63184502"), ("ps4", "Q5014725")):
+    for attempt in range(3):
+        r = requests.get("https://query.wikidata.org/sparql", params={"query": Q % qid, "format": "json"},
+                         headers={"User-Agent": "PSPlusRentalWall/1.0 (https://github.com/misterhundoah-code/Psplusorganizer)",
+                                  "Accept": "application/sparql-results+json"}, timeout=300)
+        print("wikidata", name, r.status_code, len(r.text))
+        if r.status_code == 200: break
+        time.sleep(20)
+    if r.status_code == 200:
+        rows = [{k: v["value"] for k, v in b.items()} for b in r.json()["results"]["bindings"]]
+        (OUT / f"wikidata-{name}.json").write_text(json.dumps(rows, ensure_ascii=False), encoding="utf-8")
+    else:
+        (OUT / f"wikidata-{name}-err.txt").write_text(r.text[:5000])
+    time.sleep(5)
+
 # Page views: 50 articles per request, following redirects back to the title we asked for.
 pool = json.loads((ROOT / "data" / "predict-pool.json").read_text(encoding="utf-8"))
+for f in OUT.glob("wikidata-*.json"):
+    pool += [{"w": r["w"]} for r in json.loads(f.read_text(encoding="utf-8")) if r.get("w")]
 extra = json.loads((ROOT / "data" / "about.json").read_text(encoding="utf-8"))
 titles = sorted({g["w"] for g in pool if g.get("w")} | {v["w"] for v in extra.values() if isinstance(v, dict) and v.get("w")})
 views = {}
@@ -56,6 +91,7 @@ print("views", len(views))
 # Blog archive: WordPress feeds page back with ?paged=N.
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
 for n in range(1, 80):
+    if (OUT / f"blog-{n:02d}.xml").exists(): continue
     try:
         r = requests.get("https://blog.playstation.com/tag/playstation-plus/feed/", params={"paged": n}, headers={"User-Agent": UA}, timeout=60)
     except Exception as e:

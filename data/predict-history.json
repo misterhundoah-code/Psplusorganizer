@@ -1,0 +1,5255 @@
+[
+{
+"kind": "monthly",
+"month": "2022-06",
+"date": null,
+"title": "PlayStation Plus Monthly Games for June: God of War, Naruto to Boruto: Shinobi Striker, Nickelodeon All-Star Brawl",
+"games": [
+{
+"t": "God of War",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Naruto to Boruto: Shinobi Striker",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Nickelodeon All-Star Brawl",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2022-07",
+"date": "2022-07-19",
+"title": "PlayStation Plus Game Catalog lineup for July: Stray, Final Fantasy VII Remake Intergrade, Marvel’s Avengers",
+"games": [
+{
+"t": "Stray",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Final Fantasy VII Remake Intergrade",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Marvel’s Avengers",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2022-07",
+"date": null,
+"title": "PlayStation Plus Monthly Games for July: Crash Bandicoot 4: It’s About Time, Man of Medan, Arcadegeddon",
+"games": [
+{
+"t": "Crash Bandicoot 4: It’s About Time",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+},
+{
+"t": "The Dark Pictures Anthology: Man of Medan",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Arcadegeddon",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2022-08",
+"date": null,
+"title": "PlayStation Plus Monthly Games for August: Yakuza: Like A Dragon, Tony Hawk’s Pro Skater 1+2, Little Nightmares",
+"games": [
+{
+"t": "Yakuza: Like A Dragon",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Tony Hawk’s Pro Skater 1+2 Cross-Gen Deluxe Bundle",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Little Nightmares",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2022-10",
+"date": "2022-10-18",
+"title": "PlayStation Plus Game Catalog lineup for October: Grand Theft Auto: Vice City – The Definitive Edition, Dragon Quest XI S: Echoes of an Elusive Age, Assassin’s Creed Odyssey",
+"games": [
+{
+"t": "Grand Theft Auto: Vice City – The Definitive Edition",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Assassin’s Creed Odyssey",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Dragon Quest Builders 2",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Inside",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "The Medium",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Yakuza 3 Remastered",
+"tier": "Premium",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Yakuza 4 Remastered",
+"tier": "Premium",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Yakuza 5 Remastered",
+"tier": "Premium",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Limbo",
+"tier": "Premium",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Ultra Street Fighter IV",
+"tier": "Premium",
+"p": [
+"PS4"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2022-10",
+"date": "2022-10-04",
+"title": "PlayStation Plus Monthly Games for October: Hot Wheels Unleashed, Injustice 2, Superhot",
+"games": [
+{
+"t": "Hot Wheels Unleashed",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Injustice 2",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Superhot",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2022-11",
+"date": "2022-11-15",
+"title": "PlayStation Plus Game Catalog lineup for November: Skyrim, Rainbow Six Siege, Kingdom Hearts III and more",
+"games": [
+{
+"t": "The Elder Scrolls V: Skyrim – Special Edition",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Tom Clancy’s Rainbow Six Siege",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Kingdom Hearts HD 1.5 + 2.5 ReMIX",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Kingdom Hearts HD 2.8 Final Chapter Prologue",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Kingdom Hearts III",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Kingdom Hearts: Melody of Memory",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Oddworld: Soulstorm – Enhanced Edition",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Tom Clancy’s The Division 2",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Tom Clancy’s Ghost Recon Breakpoint",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Chorus",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "What Remains of Edith Finch",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "The Gardens Between",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2022-11",
+"date": "2022-11-01",
+"title": "PlayStation Plus Monthly Games for November: Nioh 2, Lego Harry Potter Collection, Heavenly Bodies",
+"games": [
+{
+"t": "Nioh 2 / Nioh 2 Remastered",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Lego Harry Potter Collection",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Heavenly Bodies",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2022-12",
+"date": "2022-12-06",
+"title": "PlayStation Plus Monthly Games for December: Divine Knockout: Founder’s Edition, Mass Effect Legendary Edition, Biomutant",
+"games": [
+{
+"t": "Divine Knockout: Founder’s Edition",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Mass Effect Legendary Edition",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Biomutant",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2023-01",
+"date": "2023-01-03",
+"title": "PlayStation Plus Monthly Games for January: Star Wars Jedi: Fallen Order, Fallout 76, Axiom Verge 2",
+"games": [
+{
+"t": "Star Wars Jedi: Fallen Order",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Fallout 76",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Axiom Verge 2",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2023-02",
+"date": "2023-02-07",
+"title": "PlayStation Plus Monthly Games for February: Evil Dead: The Game, OlliOlliWorld, Destiny 2: Beyond Light, Mafia: Definitive Edition",
+"games": [
+{
+"t": "Evil Dead: The Game",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "OlliOlliWorld",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Destiny 2: Beyond Light",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Mafia: The Definitive Edition",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2023-04",
+"date": "2023-04-04",
+"title": "PlayStation Plus Monthly Games for April: Meet Your Maker, Sackboy: A Big Adventure, Tails of Iron",
+"games": [
+{
+"t": "Meet Your Maker",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Sackboy: A Big Adventure",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Tails of Iron",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2023-05",
+"date": "2023-05-16",
+"title": "PlayStation Plus Game Catalog lineup for May: Ratchet & Clank: Rift Apart, Humanity, Watch Dogs: Legion",
+"games": [
+{
+"t": "Ratchet & Clank: Rift Apart",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Humanity",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Watch Dogs: Legion",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Dishonored 2",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Dishonored: Death of the Outsider",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Sakuna: Of Rice and Ruin",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Tomb Raider: Definitive Edition",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Rise of the Tomb Raider: 20 Year Celebration",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Shadow of the Tomb Raider",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Bus Simulator 21: Next Stop",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "The Evil Within 2",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Wolfenstein: Youngblood",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Thymesia",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Rain World",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Lake",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Conan Exiles",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Rune Factory 4 Special",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Soundfall",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Syphon Filter: Logan’s Shadow",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Blade Dancer: Lineage of Light",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Pursuit Force",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Ghostbusters: The Video Game Remastered",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2023-05",
+"date": "2023-05-02",
+"title": "PlayStation Plus Monthly Games for May: GRID Legends, Chivalry 2 and Descenders",
+"games": [
+{
+"t": "GRID Legends",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Chivalry 2",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Descenders",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2023-06",
+"date": "2023-06-06",
+"title": "PlayStation Plus Monthly Games for June: NBA 2K23, Jurassic World Evolution 2 and Trek to Yomi",
+"games": [
+{
+"t": "NBA 2K23",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Jurassic World Evolution 2",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Trek to Yomi",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2023-07",
+"date": "2023-07-04",
+"title": "PlayStation Plus Monthly Games for July: Call of Duty: Black Ops Cold War, Alan Wake Remastered, Endling – Extinction is Forever",
+"games": [
+{
+"t": "Call of Duty: Black Ops Cold War Cross-Gen Bundle",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Alan Wake Remastered",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Endling – Extinction is Forever",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2023-08",
+"date": "2023-08-29",
+"title": "PlayStation Plus Game Catalog for August: Sea of Stars, Moving Out 2, Destiny 2: The Witch Queen",
+"games": [
+{
+"t": "Sea of Stars",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Moving Out 2",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Destiny 2: The Witch Queen",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Lost Judgment",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Destroy All Humans 2 Reprobed",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Two Point Hospital: Jumbo Edition",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Source of Madness",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Cursed to Golf",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Dreams",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "PJ Masks: Heroes of the Night",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Hotel Transylvania: Scary-Tale Adventures",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Lawn Mowing Simulator: Landmark Edition",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Spellforce III Reforced",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Midnight Fight Express",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "MediEvil: Resurrection",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Ape Escape: On the Loose",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Pursuit Force: Extreme Justice",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2023-09",
+"date": "2023-09-05",
+"title": "PlayStation Plus Monthly Games for September: Saints Row, Black Desert – Traveler Edition, Generation Zero",
+"games": [
+{
+"t": "Saints Row",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Black Desert – Traveler Edition",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2023-10",
+"date": "2023-10-17",
+"title": "PlayStation Plus Game Catalog for October: Gotham Knights, Disco Elysium: The Final Cut, The Dark Pictures Anthology: House of Ashes",
+"games": [
+{
+"t": "Gotham Knights",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Disco Elysium – The Final Cut",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "The Dark Pictures Anthology: House of Ashes",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Alien: Isolation",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Dead Island Definitive Edition",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Outlast 2",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Elite Dangerous",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "FAR: Changing Tides",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Eldest Souls",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Röki",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "A-Train Express*",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Tekken 6",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Soulcalibur: Broken Destiny",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Ape Escape Academy",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "IQ Final",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2023-11",
+"date": null,
+"title": "PlayStation Plus Game Catalog for November: Teardown, Dragon’s Dogma: Dark Arisen, Superliminal and more",
+"games": [
+{
+"t": "Teardown",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Dragon’s Dogma: Dark Arisen",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Mobile Suit Gundam: Extreme vs. Maxi Boost On",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Dead Island: Riptide Definitive Edition",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Superliminal",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Eiyuden Chronicle: Rising",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Nobunaga’s Ambition: Taishi",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Alternate Jake Hunter: Daedalus The Awakening of Golden Jazz",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "River City Melee Mach!!",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Grandia",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Jet Moto",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Up",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Klonoa Phantasy Reverie Series",
+"tier": "Premium",
+"p": [
+"PS4"
+]
+},
+{
+"t": "PaRappa the Rapper 2",
+"tier": "Premium",
+"p": [
+"PS4"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2023-11",
+"date": "2023-11-07",
+"title": "PlayStation Plus Monthly Games for November – Mafia II: Definitive Edition, Dragon Ball: The Breakers, Aliens Fireteam Elite",
+"games": [
+{
+"t": "Mafia II: Definitive Edition",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Dragon Ball: The Breakers",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Aliens Fireteam Elite",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2023-12",
+"date": "2023-12-19",
+"title": "PlayStation Plus Game Catalog for December: Grand Theft Auto V, Stranger of Paradise: Final Fantasy Origin, Metal: Hellsinger and more",
+"games": [
+{
+"t": "Grand Theft Auto V",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Stranger of Paradise: Final Fantasy Origin",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Moto GP23",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Metal: Hellsinger*",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Salt and Sacrifice",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Moonscars",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Mega Man 11",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Gigabash",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Grime",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Tinykin",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Prodeus",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Shadowrun Returns",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Shadowrun: Dragonfall – Director’s Cut",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Shadowrun: Hong Kong – Extended Edition",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Mega Man Legacy Collection",
+"tier": "Premium",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Mega Man Legacy Collection 2",
+"tier": "Premium",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Thrillville",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Thrillville: Off the Rails",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Buzz Lightyear of Star Command",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2023-12",
+"date": "2023-12-05",
+"title": "PlayStation Plus Monthly Games for December: Lego 2K Drive, Powerwash Simulator, Sable",
+"games": [
+{
+"t": "Lego 2K Drive",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Powerwash Simulator",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Sable",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2024-01",
+"date": "2024-01-16",
+"title": "PlayStation Plus Game Catalog for January: Resident Evil 2, Tiny Tina’s Wonderlands, Hardspace: Shipbreaker and more",
+"games": [
+{
+"t": "Tiny Tina’s Wonderlands – Next-Level Edition",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Resident Evil 2",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Hardspace: Shipbreaker",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "LEGO City Undercover",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Just Cause 3",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Session: Skate Sim",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Shadow Tactics: Blades of the Shogun",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Vampire: The Masquerade – Swansong",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Surviving the Aftermath",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Rally Cross",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Star Wars: Episode 1 The Phantom Menace",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Street Fighter: 30th Anniversary Collection",
+"tier": "Premium",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Legend of Mana",
+"tier": "Premium",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Secret of Mana",
+"tier": "Premium",
+"p": [
+"PS4"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2024-01",
+"date": "2024-01-02",
+"title": "PlayStation Plus Monthly Games for January: A Plague Tale: Requiem, Evil West, Nobody Saves the World",
+"games": [
+{
+"t": "A Plague Tale: Requiem",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Evil West",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Nobody Saves the World",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2024-02",
+"date": "2024-02-20",
+"title": "PlayStation Plus Game Catalog for February: Need for Speed Unbound, The Outer Worlds, Tales of Arise, Assassin’s Creed Valhalla and more",
+"games": [
+{
+"t": "Need for Speed Unbound",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "The Outer Worlds: Spacer’s Choice Edition",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Tales of Arise",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Assassin’s Creed Valhalla",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "LEGO Worlds",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "LEGO Jurassic World",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Roguebook",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Rogue Lords",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Tales of Zestiria",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Resistance: Retribution",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Tales of Symphonia",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Tales of Vesperia",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2024-02",
+"date": "2024-02-06",
+"title": "PlayStation Plus Monthly Games for February: Foamstars, Rollerdrome, Steelrising",
+"games": [
+{
+"t": "Foamstars",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Rollerdrome",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Steelrising",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2024-03",
+"date": "2024-03-19",
+"title": "PlayStation Plus Game Catalog for March: NBA 2K24, Marvel’s Midnight Suns, Resident Evil 3, Mystic Pillars: Remastered and more",
+"games": [
+{
+"t": "NBA 2K24 Kobe Bryant Edition",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Marvel’s Midnight Suns",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Resident Evil 3",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "LEGO DC Supervillains",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Mystic Pillars: Remastered",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Blood Bowl 3",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Super Neptunia RPG",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Dragon Ball Z: Kakarot*",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Jak and Daxter The Lost Frontier",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Cool Boarders",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Gods Eater Burst",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Phoenix Wright: Ace Attorney Trilogy",
+"tier": "Premium",
+"p": [
+"PS4"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2024-03",
+"date": "2024-03-05",
+"title": "PlayStation Plus Monthly Games for March: EA Sports F1 23, Sifu, Hello Neighbor 2, Destiny 2: Witch Queen",
+"games": [
+{
+"t": "EA Sports F1 23",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Sifu",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Hello Neighbor 2",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Destiny 2: Witch Queen**",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2024-04",
+"date": "2024-04-16",
+"title": "PlayStation Plus Game Catalog for April: Dave the Diver, Tales of Kenzera: Zau, The Crew 2 and more",
+"games": [
+{
+"t": "Animal Well*",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Tales of Kenzera: Zau*",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Dave the Diver",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Oddballers",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Construction Simulator",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "The Crew 2",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Raji: An Ancient Epic",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Lego Ninjago Movie Videogame",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Nour: Play With Your Food",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Deliver Us Mars",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Lego Marvel’s Avengers",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Miasma Chronicles",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Stray Blade",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2024-05",
+"date": "2024-05-21",
+"title": "PlayStation Plus Game Catalog for May: Red Dead Redemption 2, Deceive Inc., Crime Boss: Rockay City and more",
+"games": [
+{
+"t": "Red Dead Redemption 2*",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Deceive Inc.",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "The Sims 4 City Living**",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Crime Boss: Rockay City",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "The Settlers: New Allies",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Stranded: Alien Dawn",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Cat Quest",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Cat Quest II",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "The LEGO Movie 2 Videogame",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Watch Dogs*",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "2Xtreme",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "G-Police",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Worms Pinball",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2024-05",
+"date": "2024-05-07",
+"title": "PlayStation Plus Monthly Games for May: EA Sports FC 24, Ghostrunner 2, Tunic, Destiny 2: Lightfall",
+"games": [
+{
+"t": "EA Sports FC 24 Standard Edition",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Ghostrunner 2",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Tunic",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Destiny 2: Lightfall***",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2024-06",
+"date": "2024-06-18",
+"title": "PlayStation Plus Game Catalog for June: Monster Hunter Rise, Football Manager 2024, Crusader Kings III, After Us and more",
+"games": [
+{
+"t": "Monster Hunter Rise",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Football Manager 2024",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Crusader Kings III",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Monster Energy Supercross – The Official Videogame 6",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "After Us",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Anno 1800",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Police Simulator: Patrol Officers",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Far Cry 4*",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "LEGO The Hobbit",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "LEGO The Incredibles",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "PlayStation Premium",
+"tier": "Premium",
+"p": [
+"PS VR2"
+]
+},
+{
+"t": "Kayak VR: Mirage",
+"tier": "Premium",
+"p": [
+"PS VR2"
+]
+},
+{
+"t": "LEGO Star Wars II: The Original Trilogy",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Ghosthunter",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Daxter",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2024-07",
+"date": "2024-07-16",
+"title": "PlayStation Plus Game Catalog for July: Remnant II, Crisis Core – Final Fantasy VII – Reunion, and more",
+"games": [
+{
+"t": "Remnant II – Standard Edition",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Crisis Core – Final Fantasy VII – Reunion",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Mount & Blade II: Bannerlord",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "The Jackbox Party Pack 9",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Pathfinder: Wrath of the Righteous",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "No More Heroes 3",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Travis Strikes Again: No More Heroes Complete Edition",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Deadcraft",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Steep*",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "PlayStation Premium",
+"tier": "Premium",
+"p": [
+"PS VR2"
+]
+},
+{
+"t": "Job Simulator",
+"tier": "Premium",
+"p": [
+"PS VR2"
+]
+},
+{
+"t": "Summoner",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Ratchet and Clank Size Matters",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Jeanne d’Arc",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2024-07",
+"date": null,
+"title": "PlayStation Plus Monthly Games for July: Borderlands 3, NHL 24, Among Us",
+"games": [
+{
+"t": "Borderlands 3",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "NHL 24",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Among Us",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2024-08",
+"date": "2024-08-20",
+"title": "PlayStation Plus Game Catalog for August: The Witcher 3: Wild Hunt, Wild Hearts, Cult of the Lamb and more",
+"games": [
+{
+"t": "The Witcher 3: Wild Hunt",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Wild Hearts Standard Edition",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Cult of the Lamb",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Ride 5",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Watch Dogs 2*",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Sword Art Online: Last Recollection",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Naruto to Boruto: Shinobi Striker*",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Sword Art Online: Alicization Lycoris",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Sword Art Online: Fatal Bullet",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Sword Art Online: Hollow Realization",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "PlayStation Premium",
+"tier": "Premium",
+"p": [
+"PS VR2"
+]
+},
+{
+"t": "Vacation Simulator**",
+"tier": "Premium",
+"p": [
+"PS VR2"
+]
+},
+{
+"t": "TimeSplitters",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "TimeSplitters 2",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "TimeSplitters: Future Perfect",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Sword Art Online: Lost Song",
+"tier": "Premium",
+"p": [
+"PS4"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2024-08",
+"date": null,
+"title": "PlayStation Plus Monthly Games for August: LEGO Star Wars The Skywalker Saga, FNAF Security Breach, Ender Lilies: Quietus of the Knights",
+"games": [
+{
+"t": "LEGO Star Wars The Skywalker Saga",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Five Nights at Freddy’s Security Breach",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Ender Lilies: Quietus of the Knights",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2024-09",
+"date": "2024-09-17",
+"title": "PlayStation Plus Game Catalog for September: The Plucky Squire, Night in the Woods, Under The Waves and more",
+"games": [
+{
+"t": "The Plucky Squire",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Under The Waves",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Night in the Woods",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Chernobylite",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Wild Card Football",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Space Engineers",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Road 96",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Ben 10",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Far Cry 5*",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "PlayStation Premium",
+"tier": "Premium",
+"p": [
+"PS VR2"
+]
+},
+{
+"t": "Pistol Whip",
+"tier": "Premium",
+"p": [
+"PS VR2"
+]
+},
+{
+"t": "Secret Agent Clank",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Sky Gunner",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Mister Mosquito",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2024-09",
+"date": null,
+"title": "PlayStation Plus Monthly Games for September: Quidditch Champions, MLB The Show 24, Little Nightmares II",
+"games": [
+{
+"t": "Quidditch Champions*",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "MLB The Show 24",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Little Nightmares II",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2024-10",
+"date": "2024-10-15",
+"title": "PlayStation Plus Game Catalog for October: Dead Island 2, Two Point Campus, Gris, Return to Monkey Island and more",
+"games": [
+{
+"t": "Dead Island 2",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Two Point Campus",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "The Dark Pictures Anthology: The Devil in Me",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Gris",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Return to Monkey Island",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Ghostbusters: Spirits Unleashed",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Firefighting Simulator The Squad",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Overpass 2",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Tour de France 2023",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Tom Clancy’s Ghost Recon: Wildlands*",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "PlayStation Premium",
+"tier": "Premium",
+"p": [
+"PS VR2"
+]
+},
+{
+"t": "The Last Clockwinder",
+"tier": "Premium",
+"p": [
+"PS VR2"
+]
+},
+{
+"t": "Dino Crisis",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Siren",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "R-Type Dimensions EX",
+"tier": "Premium",
+"p": [
+"PS4"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2024-10",
+"date": "2024-10-01",
+"title": "PlayStation Plus Monthly Games for October: WWE 2K24, Dead Space, Doki Doki Literature Club Plus!",
+"games": [
+{
+"t": "WWE 2K24",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Dead Space",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Doki Doki Literature Club Plus!",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2024-11",
+"date": "2024-11-19",
+"title": "PlayStation Plus Game Catalog for November: Grand Theft Auto V, Dying Light 2: Stay Human, Like a Dragon: Ishin, and more",
+"games": [
+{
+"t": "Grand Theft Auto V*",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "MotoGP 24",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "The Sims 4 Island Living* (Add-on only)",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Digimon Survive",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Overcooked! All You Can Eat",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Stick Fight: The Game",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Clash: Artifacts of Chaos",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Killer Frequency",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Hungry Shark World",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Chivalry 2",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Synapse",
+"tier": "Premium",
+"p": [
+"PS VR2"
+]
+},
+{
+"t": "Blood Omen: Legacy of Kain",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Blood Omen 2",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2024-11",
+"date": null,
+"title": "PlayStation Plus Monthly Games for November: Hot Wheels Unleashed 2 – Turbocharged, Ghostwire: Tokyo, Death Note Killer Within",
+"games": [
+{
+"t": "Hot Wheels Unleashed 2 – Turbocharged",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Ghostwire: Tokyo",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Death Note Killer Within",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2024-12",
+"date": "2024-12-17",
+"title": "PlayStation Plus Game Catalog for December: Sonic Frontiers, Forspoken, Rabbids: Party of Legends, WRC Generations and more",
+"games": [
+{
+"t": "Sonic Frontiers",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Forspoken",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Rabbids: Party of Legends",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "WRC Generations",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "F.I.S.T.: Forged In Shadow Torch",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Jurassic World Evolution 2",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Coffee Talk",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Coffee Talk Episode 2: Hibiscus & Butterfly",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "A Space for the Unbound",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "PHOGS",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Biped",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Sly 2: Band of Thieves",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Sly 3: Honor Among Thieves",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Jak and Daxter: The Precursor Legacy",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Star Wars: Tales from the Galaxy’s Edge",
+"tier": "Premium",
+"p": [
+"PS VR2"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2024-12",
+"date": null,
+"title": "PlayStation Plus Monthly Games for December: It Takes Two, Aliens: Dark Descent, Temtem",
+"games": [
+{
+"t": "It Takes Two",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Aliens: Dark Descent",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Temtem",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2025-01",
+"date": "2025-01-21",
+"title": "PlayStation Plus Game Catalog for January: God of War Ragnarök, Like a Dragon Gaiden: The Man Who Erased His Name, Atlas Fallen: Reign of Sand, and more",
+"games": [
+{
+"t": "God of War Ragnarök",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Like a Dragon Gaiden: The Man Who Erased His Name",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Sayonara Wild Hearts",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "ANNO: Mutationem",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Orcs Must Die 3",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Citizen Sleeper",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Poker Club",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2025-02",
+"date": null,
+"title": "PlayStation Plus Game Catalog for February: Star Wars Jedi: Survivor, TopSpin 2K25, Lost Records: Bloom & Rage – Tape 1 and more",
+"games": [
+{
+"t": "Star Wars Jedi: Survivor",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "TopSpin 2K25",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Lost Records: Bloom & Rage – Tape 1",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Somerville",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Tin Hearts",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Mordhau",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Patapon 3",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Dropship: United Peace Force",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2025-02",
+"date": "2025-02-04",
+"title": "PlayStation Plus Monthly Games for February: Payday 3, High on Life, Pac-Man World Re-Pac",
+"games": [
+{
+"t": "Payday 3",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+},
+{
+"t": "High on Life",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Pac-Man World Re-Pac",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2025-03",
+"date": "2025-03-18",
+"title": "PlayStation Plus Game Catalog for March: UFC 5, Prince of Persia: The Lost Crown, Captain Tsubasa: Rise of New Champions and more",
+"games": [
+{
+"t": "UFC 5",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Prince of Persia: The Lost Crown",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Captain Tsubasa: Rise of New Champions",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Mobile Suit Gundam Battle Operation Code Fairy",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Arcade Paradise",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Bang-On Balls: Chronicles",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "You Suck at Parking",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Syberia – The World Before",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2025-04",
+"date": "2025-04-15",
+"title": "PlayStation Plus Game Catalog for April: Hogwarts Legacy, Blue Prince, the second episode of Lost Records: Bloom & Rage and more",
+"games": [
+{
+"t": "Hogwarts Legacy",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Blue Prince",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Lost Records: Bloom & Rage – Tape 2",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Alone in the Dark 2",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2025-04",
+"date": "2025-04-01",
+"title": "PlayStation Plus Monthly Games for April: RoboCop: Rogue City, The Texas Chain Saw Massacre, Digimon Story: Cyber Sleuth – Hacker’s Memory",
+"games": [
+{
+"t": "RoboCop: Rogue City",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+},
+{
+"t": "The Texas Chain Saw Massacre",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Digimon Story: Cyber Sleuth – Hacker’s Memory",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2025-05",
+"date": "2025-05-20",
+"title": "PlayStation Plus Game Catalog for May: Sand Land, Soul Hackers 2, Five Nights at Freddy’s: Help Wanted, Battlefield V and more",
+"games": [
+{
+"t": "Sand Land",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Soul Hackers 2",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Five Nights at Freddy’s: Help Wanted – Full Time Edition",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Granblue Fantasy Versus: Rising",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Humankind",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Story of Seasons: A Wonderful Life",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Gloomhaven Mercenaries Edition",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Battle Engine Aquila",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2025-05",
+"date": "2025-05-06",
+"title": "PlayStation Plus Monthly Games for May: Ark: Survival Ascended, Balatro, Warhammer 40,000: Boltgun",
+"games": [
+{
+"t": "Ark: Survival Ascended",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Balatro",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Warhammer 40,000: Boltgun",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2025-06",
+"date": "2025-06-17",
+"title": "PlayStation Plus Game Catalog for June: FBC: Firebreak, Battlefield 2042, Five Nights at Freddy’s: Help Wanted 2 and more",
+"games": [
+{
+"t": "FBC: Firebreak",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Battlefield 2042",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Five Nights at Freddy’s: Help Wanted 2",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "theHunter: Call of the Wild",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "We Love Katamari Reroll + Royal Reverie",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Eiyuden Chronicles: Hundred Heroes",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Train Sim World 5",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Endless Dungeon Definitive Edition",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Deus Ex: The Conspiracy",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2025-07",
+"date": "2025-07-15",
+"title": "PlayStation Plus Game Catalog for July: Cyberpunk 2077, Abiotic Factor, Banishers: Ghosts of New Eden and more",
+"games": [
+{
+"t": "Cyberpunk 2077",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Abiotic Factor",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Banishers: Ghosts of New Eden",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Bluey: The Videogame",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Planet Zoo",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Risk of Rain 2",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Tropico 6",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "New World: Aeternum",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Twisted Metal 3",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Twisted Metal 4",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2025-08",
+"date": "2025-08-19",
+"title": "PlayStation Plus Game Catalog for August: Mortal Kombat 1, Marvel’s Spider-Man, Sword of the Sea, Earth Defense Force 6 and more",
+"games": [
+{
+"t": "Mortal Kombat 1",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Marvel’s Spider-Man",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Sword of the Sea",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Earth Defense Force 6",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Unicorn Overlord",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Atelier Ryza 3 Alchemist of the End & the Secret Key",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Indika",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Harold Halibut",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Coral Island",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Resident Evil 2",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2025-08",
+"date": "2025-08-05",
+"title": "PlayStation Plus Monthly Games for August: Lies of P, Day Z, My Hero One’s Justice 2",
+"games": [
+{
+"t": "Lies of P",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "My Hero One’s Justice 2",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2025-09",
+"date": null,
+"title": "PlayStation Plus Game Catalog for September: WWE 2K25, Persona 5 Tactica, Green Hell, Fate/Samurai Remnant, and more",
+"games": [
+{
+"t": "WWE 2K25",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Persona 5 Tactica",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Green Hell",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Fate/Samurai Remnant",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Crow Country",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "The Invincible",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Conscript",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Legacy of Kain: Defiance",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2025-09",
+"date": "2025-09-02",
+"title": "PlayStation Plus Monthly Games for September: Psychonauts 2, Stardew Valley, Viewfinder",
+"games": [
+{
+"t": "Psychonauts 2",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Stardew Valley",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Viewfinder",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2025-10",
+"date": null,
+"title": "PlayStation Plus Game Catalog for October: Silent Hill 2, Until Dawn, V Rising, Yakuza: Like a Dragon and more",
+"games": [
+{
+"t": "Silent Hill 2",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Until Dawn",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "V Rising",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Yakuza: Like a Dragon",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Poppy Playtime: Chapter 1",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "As Dusk Falls",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Wizard with a Gun",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Tekken 3",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2025-10",
+"date": "2025-10-07",
+"title": "PlayStation Plus Monthly Games for October: Alan Wake 2, Goat Simulator 3, Cocoon",
+"games": [
+{
+"t": "Alan Wake 2",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Goat Simulator 3",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Cocoon",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2025-11",
+"date": "2025-12-02",
+"title": "PlayStation Plus Game Catalog for November: Grand Theft Auto V, Red Dead Redemption, Pacific Drive, Still Wakes the Deep and more",
+"games": [
+{
+"t": "Red Dead Redemption",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Grand Theft Auto V*",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Pacific Drive",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Still Wakes the Deep",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Insurgency: Sandstorm",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Thank Goodness You’re Here!",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "The Talos Principle 2",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Monster Jam Showdown",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "MotoGP 25",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Tomb Raider: Anniversary",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2025-11",
+"date": "2025-11-04",
+"title": "PlayStation Plus Monthly Games for November: Stray, EA Sports WRC 24, Totally Accurate Battle Simulator",
+"games": [
+{
+"t": "Stray",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "EA Sports WRC 24",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Totally Accurate Battle Simulator",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2025-12",
+"date": null,
+"title": "PlayStation Plus Game Catalog for December: Assassin’s Creed Mirage, Wo Long: Fallen Dynasty, Skate Story and more",
+"games": [
+{
+"t": "Assassin’s Creed Mirage",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Wo Long: Fallen Dynasty",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Skate Story",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Granblue Fantasy: Relink",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Planet Coaster 2",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Cat Quest III",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Lego Horizon Adventures",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Paw Patrol: Grand Prix",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Paw Patrol World",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Soulcalibur III",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2025-12",
+"date": "2025-12-02",
+"title": "PlayStation Plus Monthly Games for December: LEGO Horizon Adventures, Killing Floor 3, The Outlast Trials, more",
+"games": [
+{
+"t": "LEGO Horizon Adventures",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Killing Floor 3",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+},
+{
+"t": "The Outlast Trials",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Synduality Echo of Ada",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Neon White",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2026-01",
+"date": "2026-01-20",
+"title": "PlayStation Plus Game Catalog for January: Resident Evil Village, Like a Dragon: Infinite Wealth, Expeditions: A MudRunner Game and more",
+"games": [
+{
+"t": "Resident Evil Village",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Like a Dragon: Infinite Wealth",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Expeditions: A MudRunner Game",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "A Quiet Place: The Road Ahead",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Darkest Dungeon II",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "The Exit 8",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Art of Rally",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "A Little to the Left",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Ridge Racer",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2026-01",
+"date": "2026-01-06",
+"title": "PlayStation Plus Monthly Games for January: Need for Speed Unbound, Disney Epic Mickey: Rebrushed, Core Keeper",
+"games": [
+{
+"t": "Need For Speed Unbound",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Disney Epic Mickey: Rebrushed",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Core Keeper",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2026-02",
+"date": "2026-02-17",
+"title": "PlayStation Plus Game Catalog for February: Marvel’s Spider-Man 2, Test Drive Unlimited Solar Crown, Neva, Season: A Letter to the Future and more",
+"games": [
+{
+"t": "Marvel’s Spider-Man 2",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Test Drive Unlimited Solar Crown",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Neva",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Season: A Letter to the Future",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Monster Hunter Stories 2: Wings of Ruin",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Monster Hunter Stories",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Venba",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Echoes of the End: Enhanced Edition",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Rugby 25",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Disney Pixar Wall-E",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2026-02",
+"date": "2026-02-03",
+"title": "PlayStation Plus Monthly Games for February: Undisputed, Subnautica: Below Zero, Ultros, Ace Combat 7: Skies Unknown",
+"games": [
+{
+"t": "Undisputed",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Subnautica: Below Zero",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Ultros",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Ace Combat 7: Skies Unknown",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2026-03",
+"date": "2026-03-17",
+"title": "PlayStation Plus Game Catalog for March: Warhammer 40,000: Space Marine 2, EA Sports Madden NFL 26, Persona 5 Royal, Blasphemous 2 and more",
+"games": [
+{
+"t": "Warhammer 40,000: Space Marine 2",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "EA Sports Madden NFL 26",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Persona 5 Royal",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Persona 5 Royal – Ultimate Edition",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Blasphemous 2",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Metal Eden",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Lord of the Rings: Return to Moria",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Astroneer",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Tekken Dark Resurrection",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2026-03",
+"date": "2026-03-03",
+"title": "PlayStation Plus Monthly Games for March: PGA Tour 2K25, Monster Hunter Rise, Slime Rancher 2, The Elder Scrolls Online Collection: Gold Road",
+"games": [
+{
+"t": "PGA Tour 2K25",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Monster Hunter Rise",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Slime Rancher 2",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+},
+{
+"t": "The Elder Scrolls Online Collection: Gold Road",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2026-04",
+"date": "2026-04-21",
+"title": "PlayStation Plus Game Catalog for April: The Crew Motorfest, Horizon Zero Dawn Remastered, Football Manager 26 Console, Warriors: Abyss and more",
+"games": [
+{
+"t": "The Crew Motorfest",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Horizon Zero Dawn Remastered",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Football Manager 26 Console",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Warriors: Abyss",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Squirrel with a Gun",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "The Casting of Frank Stone",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Monster Train",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Wild Arms 4",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2026-05",
+"date": "2026-05-19",
+"title": "PlayStation Plus Game Catalog for May: Star Wars Outlaws, Red Dead Redemption 2, Bramble: The Mountain King, The Thaumaturge and more",
+"games": [
+{
+"t": "Star Wars Outlaws",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Red Dead Redemption 2*",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Bramble: The Mountain King",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "The Thaumaturge",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Flintlock: The Siege of Dawn",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Broken Sword – Shadows of the Templar: Reforged",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Enotria: The Last Song Standard Edition",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Time Crisis",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2026-05",
+"date": "2026-05-05",
+"title": "PlayStation Plus Monthly Games for May: EA Sports FC 26, Wuchang: Fallen Feathers, Nine Sols",
+"games": [
+{
+"t": "EA Sports FC 26",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Wuchang: Fallen Feathers",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Nine Sols",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2026-06",
+"date": "2026-06-16",
+"title": "PlayStation Plus Game Catalog for June: Final Fantasy XVI, Sonic X Shadow Generations, Kingdom Come: Deliverance, and more",
+"games": [
+{
+"t": "Final Fantasy XVI",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Sonic X Shadow Generations",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Kingdom Come: Deliverance",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Life is Strange: Double Exposure",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Farming Simulator 25",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Blades of Fire",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Black Desert",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Gitaroo Man",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2026-07",
+"date": "2026-07-21",
+"title": "PlayStation Plus Game Catalog for July – Avatar: Frontiers of Pandora, Rise of the Ronin, Firefighting Simulator: Ignite and more",
+"games": [
+{
+"t": "Avatar: Frontiers of Pandora",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Rise of the Ronin",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Firefighting Simulator: Ignite",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Mighty Morphin Power Rangers: Rita’s Rewind",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Dying Light",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Citizen Sleeper 2: Starward Vector",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Snow Bros. Wonderland",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Psi-Ops: The Mindgate Conspiracy",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2026-07",
+"date": "2026-07-07",
+"title": "PlayStation Plus Monthly Games for July – Call of Duty: Modern Warfare III, For the King II, CrossCode",
+"games": [
+{
+"t": "Call of Duty: Modern Warfare III – Cross-Gen Bundle",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "For the King II",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "CrossCode",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2026-08",
+"date": null,
+"title": "PlayStation Plus Game Catalog for August: Helldivers 2, Kingdom Come Deliverance II, Vampire Survivors, Hell is Us and more",
+"games": [
+{
+"t": "Helldivers 2",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Kingdom Come: Deliverance II",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Vampire Survivors",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Hell is Us",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Umamusume Pretty Derby – Party Dash",
+"tier": "Extra",
+"p": [
+"PS4"
+]
+},
+{
+"t": "Two Point Museum",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Metro Exodus",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Dying Light 2",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Onimusha: Dawn of Dreams",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Disney’s Atlantis: The Lost Empire",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2026-08",
+"date": "2026-08-04",
+"title": "PlayStation Plus Monthly Games for August – Dying Light 2 Stay Human: Reloaded Edition, Big Walk, Signalis",
+"games": [
+{
+"t": "Dying Light 2 Stay Human: Reloaded Edition",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Big Walk",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Signalis",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2026-09",
+"date": "2026-09-15",
+"title": "PlayStation Plus Game Catalog for September: RuneScape: Dragonwilds, WWE 2K26, Ball x Pit, Date Everything! and more",
+"games": [
+{
+"t": "RuneScape: Dragonwilds",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "WWE 2K26",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Ball x Pit",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Date Everything!",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Slitterhead",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Ninja Gaiden: Ragebound",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Dungeons of Hinterberg",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Sniper Elite: Resistance",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Mega Man X Command Mission",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Metro Redux",
+"tier": "Premium",
+"p": [
+"PS4"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2026-09",
+"date": "2026-09-01",
+"title": "PlayStation Plus Monthly Games for September – Sniper Elite: Resistance, MLB The Show 26, Wobbly Life, Chained Echoes",
+"games": [
+{
+"t": "Sniper Elite: Resistance",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "MLB The Show 26",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Wobbly Life",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Chained Echoes",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2026-10",
+"date": "2026-10-20",
+"title": "PlayStation Plus Game Catalog for October: Mafia: The Old Country, Horizon Forbidden West, Mycopunk and more",
+"games": [
+{
+"t": "Mafia: The Old Country",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Horizon Forbidden West",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Mycopunk",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Poppy Playtime: Chapter 2",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "The Midnight Walk",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Tales of Arise – Beyond the Dawn Edition",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Monster Energy Supercross 25 – The Official Video Game",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Dino Crisis 2",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "RollerCoaster Tycoon 3 Complete Edition",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "monthly",
+"month": "2026-10",
+"date": "2026-10-06",
+"title": "PlayStation Plus Monthly Games for October: F1 25, Hunt: Showdown 1896, Earth Defense Force: World Brothers 2",
+"games": [
+{
+"t": "F1 25",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Hunt: Showdown 1896",
+"tier": "Essential",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Earth Defense Force: World Brothers 2",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+},
+{
+"kind": "catalog",
+"month": "2026-11",
+"date": "2026-11-17",
+"title": "PlayStation Plus Game Catalog for November: Death Stranding 2: On the Beach, Like a Dragon: Pirate Yakuza in Hawaii, Atomfall, Dragon Quest III HD-2D Remake and more",
+"games": [
+{
+"t": "Death Stranding 2: On the Beach",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Like a Dragon: Pirate Yakuza in Hawaii",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Atomfall",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Dragon Quest III HD-2D Remake",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Trepang2",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "MotoGP 26",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Hell Let Loose",
+"tier": "Extra",
+"p": [
+"PS5"
+]
+},
+{
+"t": "Cricket 26 – The Official Game of the Ashes",
+"tier": "Extra",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Soul Reaver 2",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Freedom Wars Remastered",
+"tier": "Premium",
+"p": [
+"PS4",
+"PS5"
+]
+}
+]
+}
+]
