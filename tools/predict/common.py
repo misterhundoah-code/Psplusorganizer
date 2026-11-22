@@ -16,6 +16,10 @@ def norm(t):
     t = re.sub(r"\(.*?\)", " ", t)
     t = re.sub(r"[^a-z0-9]+", " ", t).strip()
     return t
+DUPE = re.compile(r"\b(digital deluxe|deluxe|ultimate|complete|standard|gold|goty|game of the year|ps4 (and|&) ps5|edition|bundle)\b")
+def dupe_key(t):
+    """Same game, different box: drops edition words but keeps remasters and director's cuts apart."""
+    return re.sub(r"\s+", " ", DUPE.sub(" ", norm(t))).strip()
 def squash(t): return norm(t).replace(" ", "")
 def norm_ed(t):
     t = norm(re.split(r"\s[–—-]\s", t)[0])
@@ -56,9 +60,10 @@ class Linker:
             self.by.setdefault(norm(g["t"]), i); self.byed.setdefault(norm_ed(g["t"]), i)
             if g.get("w"): self.byw.setdefault(g["w"].lower(), i)
             self.bysq = getattr(self, "bysq", {}); self.bysq.setdefault(squash(g["t"]), i)
+            self.bydk = getattr(self, "bydk", {}); self.bydk.setdefault(dupe_key(g["t"]), i)
     def find(self, t, w=None):
         if w and w.lower() in self.byw: return self.byw[w.lower()]
-        for k, d in ((norm(t), self.by), (norm_ed(t), self.byed), (norm_ed(t), self.by), (squash(t), self.bysq), (norm_ed(t).replace(" ", ""), self.bysq)):
+        for k, d in ((norm(t), self.by), (dupe_key(t), self.bydk), (squash(t), self.bysq), (norm_ed(t), self.byed), (norm_ed(t), self.by), (norm_ed(t).replace(" ", ""), self.bysq)):
             if k in d: return d[k]
         k = norm_ed(t)
         cands = [i for kk, i in self.byed.items() if kk and (k.startswith(kk + " ") or kk.startswith(k + " ")) and min(len(k), len(kk)) >= 8]

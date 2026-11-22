@@ -14,7 +14,7 @@ from pathlib import Path
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import load, norm, norm_ed, series, pub as normpub, Linker, ROOT
+from common import load, norm, norm_ed, dupe_key, series, pub as normpub, Linker, ROOT
 
 RAW = ROOT / "data" / "predict-raw"
 WDFILE = Path(sys.argv[1]) if len(sys.argv) > 1 else RAW / "wikidata.json"
@@ -26,14 +26,16 @@ def ms(i): return f"{i // 12}-{i % 12 + 1:02d}"
 def rel_m(d): return mi(d[:7]) if d else None
 
 # ---------- the pool: Wikidata first, Wikipedia's lists for anything Wikidata lacks ----------
-PLAT = {"Q5014725": "PlayStation 4", "Q63184502": "PlayStation 5", "Q13361286": "Xbox One", "Q19610114": "Nintendo Switch",
-        "Q122761124": "Nintendo Switch 2", "Q48493": "iOS", "Q64350339": "Stadia", "Q48263": "Xbox 360"}
+PLAT = {"Q5014725": "PlayStation 4", "Q63184502": "PlayStation 5", "Q13361286": "Xbox One", "Q98973368": "Xbox Series X and Series S",
+        "Q48263": "Xbox 360", "Q19610114": "Nintendo Switch", "Q122761124": "Nintendo Switch 2", "Q1406": "Microsoft Windows",
+        "Q14116": "macOS", "Q388": "Linux", "Q94": "Android", "Q48493": "iOS", "Q10683": "PlayStation 3", "Q188808": "PlayStation Vita"}
 FREE = re.compile(r"free[- ]to[- ]play", re.I)
 NEVER = {norm(t) for t in ["Fortnite", "Roblox", "Apex Legends", "Genshin Impact", "Warframe", "Call of Duty: Warzone", "Rocket League",
          "Fall Guys", "Marvel Rivals", "Overwatch 2", "Honkai: Star Rail", "Zenless Zone Zero", "eFootball", "Destiny 2", "Paladins",
          "Smite", "Smite 2", "Brawlhalla", "War Thunder", "World of Tanks", "Dauntless", "Neverwinter", "Path of Exile", "Path of Exile 2",
          "The Finals", "XDefiant", "Multiversus", "Spectre Divide", "Wuthering Waves", "The First Descendant", "Delta Force", "Once Human",
-         "Infinity Nikki", "Marvel Snap", "Splitgate", "Splitgate 2", "Concord", "Minecraft", "Grand Theft Auto V", "Red Dead Redemption 2"]}
+         "Infinity Nikki", "Marvel Snap", "Splitgate", "Splitgate 2", "Concord", "Call of Duty: Warzone 2.0",
+         "Where Winds Meet", "99 Nights in the Forest", "Blue Protocol: Star Resonance", "Arena Breakout: Infinite", "Minecraft", "Grand Theft Auto V", "Red Dead Redemption 2"]}
 # Minecraft, GTA V and RDR2: always among the best sellers and kept off subscriptions by their makers; listed so they don't swamp the top.
 
 V = json.loads((RAW / "views.json").read_text(encoding="utf-8"))
@@ -41,7 +43,7 @@ wd = json.loads(WDFILE.read_text(encoding="utf-8"))
 wl = load("predict-pool.json")
 pool, seen = [], {}
 def add(g):
-    k = norm_ed(g["t"])
+    k = dupe_key(g["t"])
     if not k or k in seen: return
     seen[k] = len(pool); pool.append(g)
 for g in wd:
@@ -49,11 +51,12 @@ for g in wd:
     if not ({"PlayStation 4", "PlayStation 5"} & plats): continue
     add({"t": g["t"], "w": g.get("w"), "rel": g.get("rel"), "pub": sorted({normpub(p) for p in g["pub"] if not re.fullmatch(r"Q\d+", p)}),
          "dev": [d for d in g["dev"] if not re.fullmatch(r"Q\d+", d)], "ser": [s for s in g["ser"] if not re.fullmatch(r"Q\d+", s)],
-         "plats": sorted(plats), "free": any(FREE.search(x) for x in g["gen"] + g["mode"]),
+         "plats": sorted(plats), "src": "wd", "free": any(FREE.search(x) for x in g["gen"] + g["mode"]),
          "multi": any(re.search(r"multiplayer|online|co-op|cooperative", x, re.I) for x in g["mode"])})
 for g in wl:
-    if norm_ed(g["t"]) in seen:
-        p = pool[seen[norm_ed(g["t"])]]
+    if dupe_key(g["t"]) in seen:
+        p = pool[seen[dupe_key(g["t"])]]
+        if len(g["t"]) < len(p["t"]) or (g.get("w") and not p.get("w")): p["t"] = g["t"]; p["w"] = g.get("w") or p.get("w")
         if not p["rel"] and g["rel"]: p["rel"] = g["rel"]
         if not p["pub"]: p["pub"] = sorted({normpub(x) for x in g["pub"]})
         if not p["dev"]: p["dev"] = g["dev"]
@@ -61,9 +64,10 @@ for g in wl:
     add({"t": g["t"], "w": g.get("w"), "rel": g.get("rel"), "pub": sorted({normpub(x) for x in g["pub"]}), "dev": g["dev"], "ser": [],
          "plats": ["PlayStation 5" if p == "PS5" else "PlayStation 4" for p in g["p"]], "free": False, "multi": False})
 # The wall's own PS4/PS5 games, so past additions that neither list has still count.
-F = load("facts.json"); AB = load("about.json")
+F = load("facts.json"); AB = load("about.json"); _pre = Linker(list(pool))
 for g in load("games.json"):
-    if not ({"PS4", "PS5"} & set(g["p"])) or norm_ed(g["t"]) in seen: continue
+    if not ({"PS4", "PS5"} & set(g["p"])) or dupe_key(g["t"]) in seen: continue
+    if _pre.find(g["t"], (AB.get(g["id"]) or {}).get("w")) is not None: continue
     f = F.get(g["id"], {})
     add({"t": g["t"], "w": (AB.get(g["id"]) or {}).get("w"), "rel": f"{g['y']}-06-30" if g.get("y") else None,
          "pub": sorted({normpub(x) for x in f.get("pub", [])}), "dev": f.get("dev", []), "ser": [f["ser"]] if f.get("ser") else [],
@@ -72,7 +76,7 @@ for g in load("games.json"):
 for g in pool:
     g["views"] = V.get(g["w"] or "", 0) or V.get(g["t"], 0)
     g["sony"] = "Sony" in g["pub"]
-    g["excl"] = not any(re.search(r"Windows|Xbox|Switch|Stadia", p) for p in g["plats"])
+    g["excl"] = g.get("src") == "wd" and not g["sony"] and not any(re.search(r"Windows|Xbox|Switch|Stadia", p) for p in g["plats"])
     g["ps5"] = "PlayStation 5" in g["plats"]
     g["skey"] = norm(g["ser"][0]) if g["ser"] else series(g["t"])
     g["rm"] = rel_m(g["rel"])
@@ -98,6 +102,12 @@ for g in G:
     if g.get("e"): ess_add.setdefault(i, mi(g["e"]))
     if g["cat"]: in_cat_now.add(i)
 launch = {i for i in in_cat_now if i not in extra_add}     # on the catalogue since the June 2022 relaunch
+if "--young" in sys.argv:
+    for name, adds in (("extra", extra_add), ("monthly", ess_add)):
+        ys = sorted(((pool[i]["views"], pool[i]["t"], m - pool[i]["rm"]) for i, m in adds.items() if pool[i]["rm"] is not None and m - pool[i]["rm"] < 12), reverse=True)[:8]
+        print(name, "added within a year, most viewed:", ys)
+    big = sorted(((g["views"], g["t"], g["rel"]) for g in pool if g["rm"] and g["rm"] >= mi("2025-12")), reverse=True)[:10]
+    print("released in the last year, most viewed:", big)
 print("extra additions linked", len(extra_add), "| monthly linked", len(ess_add), "| catalogue now", len(in_cat_now))
 
 # ---------- features ----------
@@ -113,8 +123,8 @@ def track(kind_adds, m, which=None):
         if g["rm"] is None or g["rm"] > m - 6 or g["skip"]: continue
         src = kind_adds if which is None else (kind_adds[which],)
         hit = any(a.get(i, 10**9) < m for a in src)
-        for p in g["pub"]: tot_p[p] += 1; hit_p[p] += hit
-        for d in g["dev"]: tot_d[d] += 1; hit_d[d] += hit
+        for p in set(g["pub"]) | set(g["dev"]): tot_p[p] += 1; hit_p[p] += hit
+        for d in set(g["dev"]) | set(g["pub"]): tot_d[d] += 1; hit_d[d] += hit
     base = max(1e-4, sum(hit_p.values()) / max(1, sum(tot_p.values())))
     return tot_p, hit_p, tot_d, hit_d, base
 
@@ -200,6 +210,38 @@ def evaluate(kind, months_train, months_test):
                     "found": [pool[meta[idx[k]][1]]["t"] for k in range(len(idx)) if ym[k] and int(np.where(order == k)[0][0]) < 50]})
     return clf, res
 
+MON = ["January","February","March","April","May","June","July","August","September","October","November","December"]
+def nice(d):
+    return f"{MON[int(d[5:7]) - 1]} {d[:4]}" if d and len(d) >= 7 else "date not set"
+def reasons(g, i, d, c, kind, m):
+    """Plain-English signals for one game, strongest first, each with its direction (+1 helps, -1 hurts)."""
+    where = "the Game Catalog" if kind == "extra" else "the monthly games"
+    out = []
+    age = d["age"]
+    yrs = "under a year" if age < 12 else ("about a year" if age < 18 else f"about {round(age / 12)} years")
+    def add(f, txt):
+        v = c.get(f, 0)
+        if abs(v) > 0.04: out.append((v, txt))
+    if g["sony"] and abs(c.get("Sony game, 1 to 3 years old", 0)) > 0.04: add("Sony game, 1 to 3 years old", f"Sony's own game, {yrs} old: about when Sony tends to add its own games")
+    elif g["sony"]: add("Sony game", "Sony's own game")
+    if d["pub"][1]: add("publisher track record", f"{d['pub'][1]}: {d['pub'][2]} of {d['pub'][3]} of its games have joined {where}")
+    if d["dev"][1] and d["dev"][1] not in g["pub"]: add("developer track record", f"{d['dev'][1]}: {d['dev'][2]} of {d['dev'][3]} of its games have joined {where}")
+    if d["seq"]:
+        h = d["seq"]; due = rel_m(h["rel"]) >= m
+        add("sequel or follow-up due soon", f"{h['t']} {'is due' if due else 'came out'} {nice(h['rel'])}")
+    add("big new release", "A big new release: usually too soon for a subscription")
+    for f, txt in (("day one", "Brand new: some smaller games join on launch day"), ("under 6 months old", f"Out {max(age, 0)} months: usually too new"),
+                   ("6 to 12 months old", "Out 6 to 12 months"), ("1 to 2 years old", "Out 1 to 2 years: the most common age to join"),
+                   ("2 to 4 years old", "Out 2 to 4 years")):
+        add(f, txt)
+    if g["views"]: add("popularity", f"{'Popular' if c.get('popularity', 0) > 1.2 else 'Some interest'}: {g['views']:,} Wikipedia views in the last 60 days")
+    add("PlayStation exclusive", "Only on PlayStation, from an outside publisher")
+    if i in ess_add: add("was a monthly game", f"Was a monthly game in {nice(ms(ess_add[i]))}")
+    add("already on Extra", "Already on the Game Catalog")
+    add("multiplayer", "Multiplayer")
+    out.sort(key=lambda x: -abs(x[0]))
+    return [[1 if v > 0 else -1, t] for v, t in out[:6]]
+
 def months(a, b): return list(range(mi(a), mi(b) + 1))
 
 out = {"asof": TODAY.isoformat(), "month": NOW_M, "feats": FEATS}
@@ -228,13 +270,21 @@ for kind, start in (("extra", "2022-07"), ("essential", "2019-01")):
             p3 *= 1 - clf.predict_proba([x])[0, 1]
         g = pool[i]
         contrib = {f: float(c * v) for f, c, v in zip(FEATS, clf.coef_[0], x0)}
-        rows.append({"t": g["t"], "w": g["w"], "rel": g["rel"], "pub": g["pub"], "dev": g["dev"][:3], "p": round(1 - p3, 4),
+        rows.append({"why": reasons(g, i, detail, contrib, kind, m0), "t": g["t"], "w": g["w"], "rel": g["rel"], "pub": g["pub"], "dev": g["dev"][:3], "p": round(1 - p3, 4),
                      "excl": g["excl"], "sony": g["sony"], "views": g["views"], "ps5": g["ps5"],
                      "was": ("extra" if i in extra_add else None), "monthly": ms(ess_add[i]) if i in ess_add else None,
                      "c": {k: round(v, 3) for k, v in contrib.items() if abs(v) > 0.05},
                      "pubtr": detail["pub"][1:] if detail["pub"][1] else None, "devtr": detail["dev"][1:] if detail["dev"][1] else None,
                      "seq": {"t": detail["seq"]["t"], "rel": detail["seq"]["rel"]} if detail["seq"] else None})
+    # Nothing anywhere near this big has ever joined within a year of launch, and the page-view signal
+    # can't learn that (old launches' views have long since faded), so it's a rule: wait out the first year.
+    cap = 2 * max((pool[i]["views"] for i, mm in adds.items() if pool[i]["rm"] is not None and 0 <= mm - pool[i]["rm"] < 12), default=10**9)
+    for r in rows:
+        age = m0 - rel_m(r["rel"])
+        if age < 12 and r["views"] > cap:
+            r["p"] = round(r["p"] * 0.1, 4); r["why"].insert(0, [-1, f"A huge new release: nothing this big has joined {'the Game Catalog' if kind == 'extra' else 'the monthly games'} in its first year"])
     rows.sort(key=lambda r: -r["p"])
-    out[kind] = {"backtest": res, "weights": coef, "top": rows[:400], "n": len(rows)}
+    for n, r in enumerate(rows): r["rank"] = n + 1
+    out[kind] = {"backtest": res, "weights": coef, "top": rows, "n": len(rows), "cap": cap}
     print("   top 15 for", NOW_M, ":", [(r["t"], r["p"]) for r in rows[:15]])
 if "--eval" not in sys.argv: (ROOT / "data" / "predict.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
