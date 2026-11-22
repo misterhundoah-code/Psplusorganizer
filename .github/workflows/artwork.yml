@@ -45,7 +45,7 @@ jobs:
       - if: inputs.probe == ''
         run: python tools/fetch_art.py ${{ inputs.refresh && '--refresh' || '' }}
       - if: inputs.probe == ''
-        run: python -u tools/fetch_wide_art.py ${{ inputs.refresh && '--force' || '' }} | tee art/wide/fetch-log.txt
+        run: mkdir -p art/wide && python -u tools/fetch_wide_art.py ${{ inputs.refresh && '--force' || '' }} | tee art/wide/fetch-log.txt
       - name: Commit any new artwork
         if: inputs.probe == ''
         id: commit

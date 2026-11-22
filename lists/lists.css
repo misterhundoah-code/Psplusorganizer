@@ -69,3 +69,22 @@ footer{max-width:980px;margin:30px auto 0;padding:20px clamp(16px,4vw,40px) 40px
 td.num,th.num{text-align:center;white-space:nowrap}
 @media (max-width:560px){.plist li.g{grid-template-columns:30px 1fr 70px}.plist .pc b{font-size:19px}}
 .note{max-width:72ch;background:var(--case);border-left:6px solid var(--yellow);padding:10px 14px;margin:0 0 16px;font-size:15px}
+
+/* Featured picks with write-ups (lists with data/list-copy.json) */
+.picks{display:grid;gap:22px;margin:22px 0 8px}
+.pick{display:grid;grid-template-columns:minmax(0,400px) 1fr;background:var(--case);border:3px solid var(--ink);box-shadow:6px 6px 0 var(--ink)}
+.pick .art{position:relative;overflow:hidden;background:#0E1636;aspect-ratio:16/9;align-self:start;border-right:3px solid var(--ink)}
+.pick .art img{display:block;width:100%;height:100%;object-fit:cover}
+.pick .art.cover img{position:relative;z-index:1;width:auto;height:100%;margin:0 auto;object-fit:contain}
+.pick .art.cover img.bg{position:absolute;inset:-20px;z-index:0;width:calc(100% + 40px);height:calc(100% + 40px);object-fit:cover;filter:blur(18px) brightness(.55);margin:0}
+.pick .rank{position:absolute;z-index:2;top:0;left:0;background:var(--yellow);color:#0E1636;font-family:var(--display);font-size:30px;line-height:1;padding:8px 12px 6px;border-right:3px solid #0E1636;border-bottom:3px solid #0E1636}
+.pick .pbody{padding:14px 18px 16px}
+.pick h2{font-size:22px;margin:0 0 2px;line-height:1.2}
+.pick .meta{color:var(--muted);font-size:14px;margin:0 0 8px}
+.pick p{margin:0 0 10px}
+.plinks{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0 !important}
+.plinks a{font-weight:700;font-size:14px;text-decoration:none;border:2px solid var(--ink);padding:4px 10px;color:var(--ink);background:transparent}
+.plinks a:hover{background:var(--ink);color:var(--case)}
+.plinks a:last-child{background:var(--blue);border-color:var(--blue);color:#fff}
+.faq h3{font-size:17px;margin:20px 0 4px}.faq p{margin:0;max-width:72ch}
+@media (max-width:720px){.pick{grid-template-columns:1fr}.pick .art{border-right:0;border-bottom:3px solid var(--ink)}}

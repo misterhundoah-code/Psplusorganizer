@@ -1,0 +1,17 @@
+{
+ "best-ps-plus-extra-games": {
+  "title": "The 10 best PS Plus Extra games right now ({month})",
+  "h1": "The best PS Plus Extra games",
+  "desc": "The highest-rated games in the PS Plus Extra Game Catalog, from {top} to God of War Ragnarök, with how long each takes to beat. Updated whenever the catalogue changes.",
+  "intro": "PS Plus Extra has over {count_floor} games in its catalogue, and the best of them are some of the finest games ever made. These are the ten with the highest Metascores right now, with a few words on each and how long the main story takes, so you can pick one that fits the time you have. The full ranked list follows, and it updates by itself whenever Sony adds or removes games.",
+  "featured": 10,
+  "faq": [
+   ["What's the best game on PS Plus Extra?", "By Metascore, it's {top}, at {top_score}. If you'd rather not commit 100 hours, God of War is just behind it at 94 and takes about 21 hours."],
+   ["How many games are in PS Plus Extra?", "There are {count} games in the Game Catalog right now. Sony adds a batch every month and removes a few, so the number moves around."],
+   ["What's the difference between PS Plus Essential and Extra?", "Essential gives you online multiplayer and a few monthly games to claim. Extra adds the Game Catalog: hundreds of PS4 and PS5 games you can download and play for as long as you're subscribed. Premium adds the Classics, game trials and cloud streaming on top."],
+   ["Do I keep PS Plus Extra games if I cancel?", "No. Catalog games stay playable only while you subscribe at the Extra tier or higher. Your saves stay, so you can pick up where you left off if you come back."],
+   ["Do games leave PS Plus Extra?", "Yes, most months. Sony usually confirms which games are leaving a few weeks ahead, and our <a href=\"/lists/leaving-ps-plus\">leaving soon list</a> tracks them."],
+   ["What's a great short game on PS Plus Extra?", "Undertale takes about 7 hours and Celeste about 8, and both are among the best-rated games on the service. Our <a href=\"/lists/short-ps-plus-games\">short games list</a> has more."]
+  ]
+ }
+}

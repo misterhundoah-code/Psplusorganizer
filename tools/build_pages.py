@@ -18,6 +18,7 @@ for Canada and the US (the site's base data); each page says so and the wall sho
 import html
 import json
 import re
+import urllib.parse
 from datetime import date
 from pathlib import Path
 
@@ -38,7 +39,10 @@ CAT = load("catalogue.json", {})
 FACTS = load("facts.json", {})
 FACTS = FACTS.get("games", FACTS) if isinstance(FACTS, dict) else {}
 XPLAY = (load("crossplay.json", {}) or {}).get("games", {})
-PREDICT = load("predict-page.json")     # from tools/predict/model.py; the page is skipped until it exists
+PREDICT = load("predict-page.json")
+WRITEUPS = load("writeups.json", {}) or {}      # id -> a few sentences, written by hand, reused on every list
+COPY = load("list-copy.json", {}) or {}         # slug -> title, intro, how many to feature, FAQ
+WIDE = {p.stem for p in (ROOT / "art" / "wide").glob("*.webp")} if (ROOT / "art" / "wide").exists() else set()     # from tools/predict/model.py; the page is skipped until it exists
 RATINGS = (load("ratings/en-ca.json", {}) or {}).get("games", {})
 ART = set(load("art.json", []) or [])
 LEAVING = CAT.get("leaving", {}) or {}
@@ -204,6 +208,78 @@ def table(gs, numbered=True, show_leave=True):
             + "".join(rows) + "</tbody></table>")
 
 
+EDITION = re.compile(r"\b(ultimate|deluxe|digital deluxe|complete|definitive|gold|game of the year|goty|standard|remastered|"
+                     r"director'?s cut|ps4 (and|&) ps5|edition)\b")
+def edition_key(t):
+    """One key per game across its editions: Persona 5 Royal and its Ultimate Edition, The Last of Us Part II and its remaster."""
+    t = re.sub(r"[’'™®©]", "", t.lower())
+    t = re.sub(r"\(.*?\)", " ", t)
+    t = EDITION.sub(" ", re.split(r"\s[–—-]\s", t)[0])
+    return re.sub(r"[^a-z0-9]+", " ", t).strip()
+
+
+def one_per_game(gs):
+    """Keeps the best entry for each game: the one with a write-up, else the newest."""
+    best = {}
+    for g in gs:
+        k = edition_key(g["t"])
+        cur = best.get(k)
+        if cur is None or ((g["id"] in WRITEUPS) > (cur["id"] in WRITEUPS)) or (
+                (g["id"] in WRITEUPS) == (cur["id"] in WRITEUPS) and (g.get("y") or 0) > (cur.get("y") or 0)):
+            best[k] = g
+    keep = {id(g) for g in best.values()}
+    return [g for g in gs if id(g) in keep]
+
+
+def mc_url(g):
+    t = re.sub(r"\s*\((?:PS\d|PSP|Classic|\d{4})\)\s*$", "", re.sub(r"[®™]", "", g["t"]))
+    return "https://www.metacritic.com/search/" + urllib.parse.quote(t) + "/?category=13"
+
+
+def yt_url(g):
+    plat = "PS5" if "PS5" in (g.get("p") or []) else ((g.get("p") or ["PlayStation"])[0])
+    return "https://www.youtube.com/results?search_query=" + urllib.parse.quote_plus(f"{g['t']} {plat} trailer")
+
+
+def picks(gs, n):
+    """The featured cards at the top of a list: art, write-up and links for the first n games."""
+    out = []
+    for i, g in enumerate(gs[:n], 1):
+        if g["id"] in WIDE:
+            art = f'<img src="/art/wide/{g["id"]}.webp" alt="" width="960" height="540" loading="{"eager" if i < 3 else "lazy"}" decoding="async">'
+            cls = "art wide"
+        elif g["id"] in ART:
+            art = f'<img src="/art/{g["id"]}.webp" alt="" width="256" height="256" loading="lazy" decoding="async"><img class="bg" src="/art/{g["id"]}.webp" alt="" aria-hidden="true">'
+            cls = "art cover"
+        else:
+            art, cls = "", "art none"
+        plat = " / ".join(g.get("p") or [])
+        bits = [b for b in (plat, f"Metascore {g['m']}" if g.get("m") else "", f"about {hours(g.get('h'))} main story" if g.get("h") else "") if b]
+        lv = LEAVING.get(g["id"])
+        leave = f'<span class="leave">Leaving {esc(short_date(lv))}</span>' if lv else ""
+        text = WRITEUPS.get(g["id"]) or g.get("d") or ""
+        links = [f'<a href="{esc(g["u"])}" rel="noopener">PlayStation Store</a>' if g.get("u") else "",
+                 f'<a href="{esc(mc_url(g))}" rel="noopener">Metacritic</a>',
+                 f'<a href="{esc(yt_url(g))}" rel="noopener">Trailers on YouTube</a>',
+                 f'<a href="/?q={urllib.parse.quote(g["t"])}">Open on the wall</a>']
+        out.append(f'<article class="pick"><div class="{cls}">{art}<span class="rank">{i}</span></div><div class="pbody">'
+                   f'<h2>{esc(g["t"])}</h2>{leave}<p class="meta">{esc(" · ".join(bits))}</p><p>{esc(text)}</p>'
+                   f'<p class="plinks">{"".join(l for l in links if l)}</p></div></article>')
+    return '<div class="picks">' + "".join(out) + "</div>"
+
+
+def fill(text, vals):
+    return re.sub(r"\{(\w+)\}", lambda m: str(vals.get(m.group(1), m.group(0))), text)
+
+
+def faq_html(faq, vals):
+    qa = [(fill(q, vals), fill(a, vals)) for q, a in faq]
+    ld = {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
+        {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": re.sub(r"<[^>]+>", "", a)}} for q, a in qa]}
+    return ('<h2>Questions</h2><div class="faq">' + "".join(f"<h3>{esc(q)}</h3><p>{a}</p>" for q, a in qa) + "</div>"
+            + f'<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>')
+
+
 def list_nav(current=None):
     items = "".join(f'<li><a href="/lists/{s}"{" aria-current=page" if s == current else ""}>{esc(t)}</a></li>'
                     for s, t, *_ in LISTS)
@@ -280,6 +356,23 @@ def build():
     written = {}
     for slug, title, desc, intro, keep, query, limit in LISTS:
         gs = by_score([g for g in GAMES if keep(g)])
+        cp = COPY.get(slug)
+        if cp:
+            gs = one_per_game(gs)
+            total = len(gs)
+            vals = {"month": TODAY.strftime("%B %Y"), "count": total, "count_floor": total // 50 * 50,
+                    "top": gs[0]["t"] if gs else "", "top_score": gs[0].get("m") if gs else ""}
+            n = cp.get("featured", 10)
+            shown = gs[:limit] if limit else gs
+            q = esc(query)
+            body = (f'<h1>{esc(fill(cp.get("h1", title), vals))}</h1><p class="intro">{esc(fill(cp["intro"], vals))}</p>'
+                    + picks(gs, n)
+                    + f'<h2>The full list</h2><p class="intro">The top {len(shown)} of {total}, as of {esc(asof)}. Availability is for Canada and the US;'
+                    f' <a href="/?{q}">open the wall</a> to pick your own country and hide what you\'ve played.</p>'
+                    f'<p><a class="btn" href="/?{q}">Open these on the wall</a></p>'
+                    + table(shown) + (faq_html(cp["faq"], vals) if cp.get("faq") else "") + f'<h2>More PS Plus lists</h2>{list_nav(slug)}')
+            written[slug] = page(slug, fill(cp.get("title", title), vals), fill(cp.get("desc", desc), vals), body, f"{SITE}/lists/{slug}")
+            continue
         total = len(gs)
         shown = gs[:limit] if limit else gs
         more = (f"Showing the top {len(shown)} of {total}. The wall has all {total}, and lets you hide what you've played."
