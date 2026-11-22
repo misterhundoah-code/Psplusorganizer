@@ -313,7 +313,8 @@ if "--eval" not in sys.argv:
     for k in SNAP: SNAP[k] = dict(sorted(SNAP[k].items())[-24:])
     SNAPF.write_text(json.dumps(SNAP, ensure_ascii=False, indent=1), encoding="utf-8")
     # The compact file the site's page reads: [title, 3-month chance, year, publisher, reasons, monthly curve in basis points]
-    page = {"asof": out["asof"]}
+    page = {"asof": out["asof"], "stats": {"pool": len(pool), "views": sum(1 for g in pool if g["views"]), "wikidata": len(wd),
+             "extra_linked": len(extra_add), "monthly_linked": len(ess_add), "catalogue_now": len(in_cat_now)}}
     for k in ("extra", "essential"):
         o = out[k]
         page[k] = {"n": o["n"], "start": o["start"], "weights": o["weights"], "live": o["live"],
