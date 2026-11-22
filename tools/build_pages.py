@@ -38,6 +38,7 @@ CAT = load("catalogue.json", {})
 FACTS = load("facts.json", {})
 FACTS = FACTS.get("games", FACTS) if isinstance(FACTS, dict) else {}
 XPLAY = (load("crossplay.json", {}) or {}).get("games", {})
+PREDICT = load("predict-page.json")     # from tools/predict/model.py; the page is skipped until it exists
 RATINGS = (load("ratings/en-ca.json", {}) or {}).get("games", {})
 ART = set(load("art.json", []) or [])
 LEAVING = CAT.get("leaving", {}) or {}
@@ -207,8 +208,65 @@ def list_nav(current=None):
     items = "".join(f'<li><a href="/lists/{s}"{" aria-current=page" if s == current else ""}>{esc(t)}</a></li>'
                     for s, t, *_ in LISTS)
     lv = f'<li><a href="/lists/leaving-ps-plus"{" aria-current=page" if current == "leaving-ps-plus" else ""}>Games leaving PS Plus soon</a></li>'
+    pr = (f'<li><a href="/lists/coming-to-ps-plus"{" aria-current=page" if current == "coming-to-ps-plus" else ""}>Likely to join PS Plus next: predictions</a></li>'
+          if PREDICT else "")
     nw = f'<li><a href="/lists/new-on-ps-plus"{" aria-current=page" if current == "new-on-ps-plus" else ""}>New on PS Plus: coming soon</a></li>'
-    return f'<ul class="lists">{nw}{lv}{items}</ul>'
+    return f'<ul class="lists">{nw}{lv}{pr}{items}</ul>'
+
+
+def predict_page():
+    """Which games are likely to join PS Plus next (data/predict-page.json, from tools/predict/model.py). The top 25
+    Game Catalog picks are in the HTML; lists/predict.js loads the rest, the tabs, search and the month-by-month charts."""
+    d = PREDICT["extra"]
+    start = date.fromisoformat(d["start"] + "-01")
+    mon = start.strftime("%B %Y")
+    pct = lambda p: f"{round(p * 100)}%" if p >= 0.1 else (f"{p * 100:.1f}%" if p >= 0.001 else "<0.1%")
+    items = []
+    for n, (t, p, y, pub, why, _) in enumerate(d["rows"][:25], 1):
+        chips = "".join(f'<li class="{"up" if sg > 0 else "down"}">{esc(w)}</li>' for sg, w in why)
+        items.append(f'<li class="g" data-n="{n}"><span class="n">{n}</span><div class="t"><b>{esc(t)}</b><span class="meta">{esc(" · ".join(b for b in (y, pub) if b))}</span></div>'
+                     f'<div class="pc"><b>{pct(p)}</b><span>1 in {round(1 / p) if p else "–"}</span></div><ul class="why">{chips}</ul></li>')
+    top3 = ", ".join(r[0] for r in d["rows"][:3])
+    bt = d["backtest"]; tot = sum(r["added"] for r in bt); hit = sum(r["top50"] for r in bt)
+    rows = "".join(f'<tr><td>{date.fromisoformat(r["month"] + "-01").strftime("%B %Y")}</td><td class="num">{r["added"]}</td>'
+                   f'<td class="num">{r["top50"]}</td><td>{esc(", ".join(r["found"])) or "None"}</td></tr>' for r in reversed(bt))
+    title = f"Which games are coming to PS Plus? Predictions from {mon}"
+    desc = (f"Every PS4 and PS5 game ranked by its chance of joining the PS Plus Game Catalog or the monthly games in the next three months. "
+            f"Top picks right now: {top3}.")
+    body = f"""<h1>Which games are coming to PS Plus next?</h1>
+<p class="note"><b>A note on accuracy:</b> these are educated guesses, not inside information. The model catches a fair share of each
+month's additions but misses plenty, and the game details it learns from, like publishers and release dates, come from Wikipedia and
+Wikidata and are sometimes wrong. We're always refining it and checking the data, so if you spot something off,
+<a href="https://github.com/misterhundoah-code/Psplusorganizer/issues/new/choose" rel="noopener">let us know</a>.</p>
+<p class="intro">Every PS4 and PS5 game that isn't on PS Plus yet, ranked by how likely it is to join in the next three months. The odds come from a
+model trained on every lineup Sony has announced since PS Plus Extra launched in 2022, so treat this as a watchlist rather than a promise.
+Open any game to see how its chances change month by month.</p>
+<p class="small">Updated {esc(date.fromisoformat(PREDICT["asof"]).strftime("%-d %B %Y"))}. <span id="pwhen">Chances are for the three months from {esc(mon)}.</span></p>
+<div class="ptabs" id="ptabs" role="tablist" hidden><button type="button" role="tab" data-k="extra" aria-selected="true">Game Catalog (Extra)</button><button type="button" role="tab" data-k="essential" aria-selected="false">Monthly games (Essential)</button></div>
+<form class="pfind" id="pfind" hidden><label for="pq" class="vh">Look up a game</label><input id="pq" type="search" placeholder="Look up a game, like Elden Ring or Ghost of Yōtei" autocomplete="off"></form>
+<ol class="plist" id="plist">{"".join(items)}</ol>
+<button type="button" class="pmore" id="pmore" hidden>Show the next 50</button>
+<h2>How it works</h2>
+<p class="small">For every month since PS Plus Extra launched (and since 2019 for the monthly games), each PS4 and PS5 game that could have been
+added is one example, and the games Sony actually added are the hits. The model learns how much each signal mattered. The bars show how
+strongly each one pushes a game up or down.</p>
+<div class="psig" id="psig"></div>
+<details class="small"><summary>Rules and limits</summary><ul>
+<li>The year's biggest launches are held back: nothing anywhere near as big as GTA VI has ever joined in its first year, so those wait until the year is up.</li>
+<li>Free-to-play games are left out, since they don't need PS Plus.</li>
+<li>Popularity is how often the game's Wikipedia article was read in the last 60 days: a good guide to interest today, but not to how big a game was at launch.</li>
+<li>Deals between Sony and publishers are invisible to the model, so surprise launch-day indies will always catch it out.</li>
+<li>Games without a Wikipedia or Wikidata entry are missing, or the model knows less about them.</li></ul>
+<p>Sources: Wikidata and Wikipedia (CC BY-SA) for games, publishers, release dates and page views; the PlayStation Blog for past lineups.</p></details>
+<section id="plive" hidden><h2>Our record so far</h2><p class="small">Each month we save our top 50 before Sony announces the lineup, then count how many we had.</p>
+<table><thead><tr><th>Month</th><th class="num">Added</th><th class="num">In our top 50</th><th>Ones we had</th></tr></thead><tbody id="plivebody"></tbody></table></section>
+<h2>How it did on months it hadn't seen</h2>
+<p class="small" id="pbtnote">We trained the model without the last 12 months, then had it rank each of them. Of the {tot} games Sony added
+that we could match, {hit} ({round(hit / max(tot, 1) * 100)}%) were in that month's top 50. Picking 50 at random would catch less than 1%.</p>
+<table><thead><tr><th>Month</th><th class="num">Added</th><th class="num">In our top 50</th><th>Ones we had in the top 50</th></tr></thead><tbody id="pbt">{rows}</tbody></table>
+<h2>More PS Plus lists</h2>{list_nav("coming-to-ps-plus")}
+<script src="/lists/predict.js" defer></script>"""
+    return page("coming-to-ps-plus", title, desc, body, f"{SITE}/lists/coming-to-ps-plus")
 
 
 def leaving_games():
@@ -278,6 +336,9 @@ def build():
             + f"<h2>More PS Plus lists</h2>{list_nav('new-on-ps-plus')}")
     written["new-on-ps-plus"] = page("new-on-ps-plus", title, desc, body, f"{SITE}/lists/new-on-ps-plus")
 
+    if PREDICT:
+        written["coming-to-ps-plus"] = predict_page()
+
     body = ('<h1>PS Plus lists</h1><p class="intro">Ready-made lists from the PS Plus Rental Wall, updated whenever the catalogue '
             'changes. Each one opens on the interactive wall, where you can filter further and keep track of what you\'ve played.</p>'
             + list_nav())
@@ -293,7 +354,7 @@ def build():
             old.unlink()
 
     update_index(lv, when_txt)
-    urls = [f"{SITE}/", f"{SITE}/lists/", f"{SITE}/lists/new-on-ps-plus", f"{SITE}/lists/leaving-ps-plus"] + [f"{SITE}/lists/{s}" for s, *_ in LISTS]
+    urls = [f"{SITE}/", f"{SITE}/lists/", f"{SITE}/lists/new-on-ps-plus", f"{SITE}/lists/leaving-ps-plus"] + ([f"{SITE}/lists/coming-to-ps-plus"] if PREDICT else []) + [f"{SITE}/lists/{s}" for s, *_ in LISTS]
     sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     sm += [f"  <url><loc>{u}</loc><changefreq>weekly</changefreq></url>" for u in urls]
     sm += [f"  <url><loc>{SITE}/{p}</loc><changefreq>yearly</changefreq></url>" for p in ("privacy.html", "terms.html")]

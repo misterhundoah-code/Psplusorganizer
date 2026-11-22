@@ -31,3 +31,41 @@ td.h,th.h{width:96px;text-align:right;white-space:nowrap}
 .lists a[aria-current]{font-weight:800;text-decoration:none}
 footer{max-width:980px;margin:30px auto 0;padding:20px clamp(16px,4vw,40px) 40px;color:var(--muted);font-size:13.5px}
 @media (max-width:560px){td.n,th.n{display:none}td.cv{width:58px}td.cv img,.nocover{width:46px;height:58px}td.m,th.m{width:56px}td.h,th.h{width:60px}.d{display:none}}
+
+/* Likely to join PS Plus (coming-to-ps-plus) */
+:root{--up:#1F7A4D;--down:#B3321F;--chip:#EEF0F5;--barc:#1E3A9E}
+@media (prefers-color-scheme:dark){:root{--up:#62D995;--down:#FF8A78;--chip:#212C58;--barc:#9DB2FF}}
+.small{color:var(--muted);font-size:14.5px;max-width:72ch}
+.ptabs{display:flex;gap:6px;margin:20px 0 0;flex-wrap:wrap}
+.ptabs button{font:inherit;font-weight:800;font-size:15px;color:var(--ink);background:var(--case);border:2px solid var(--line);border-radius:3px;padding:7px 14px;cursor:pointer}
+.ptabs button[aria-selected=true]{background:var(--blue);border-color:var(--blue);color:#fff}
+.pfind{margin:14px 0 0}.pfind input{width:100%;font:inherit;font-size:16px;padding:10px 12px;border:3px solid var(--ink);background:var(--case);color:var(--ink);border-radius:0}
+.plist{list-style:none;margin:14px 0 0;padding:0;background:var(--case);border:3px solid var(--ink)}
+.plist li.g{display:grid;grid-template-columns:44px 1fr 92px;gap:2px 12px;padding:12px 12px 12px 6px;border-bottom:1px solid var(--line)}
+.plist li.g:last-child{border-bottom:0}
+.plist .n{color:var(--muted);font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
+.plist .t b{font-size:17px;display:block}
+.plist .pc{text-align:right}.plist .pc b{display:block;font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.1}
+.plist .pc span{color:var(--muted);font-size:12.5px}
+.plist .why,.plist .month{grid-column:2 / 4}
+.why{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0 0;padding:0;list-style:none}
+.why li{font-size:13px;line-height:1.35;background:var(--chip);border-left:4px solid var(--c);padding:3px 8px;border-radius:2px}
+.why li.up{--c:var(--up)}.why li.down{--c:var(--down)}
+.why li::before{font-weight:900;color:var(--c);margin-right:5px}.why li.up::before{content:"+"}.why li.down::before{content:"\2212"}
+.month{margin-top:6px}.month summary{cursor:pointer;font-weight:700;font-size:14px;color:var(--blue)}
+@media (prefers-color-scheme:dark){.month summary{color:#9DB2FF}}
+.chartsum{margin:8px 0 2px;font-size:14px}
+.odds{display:block;max-width:100%;height:auto}
+.odds .gl{stroke:var(--line);stroke-width:1}.odds .base{stroke:var(--muted);stroke-width:1}
+.odds .ax{fill:var(--muted);font-size:12px;font-family:var(--body)}
+.odds .bar{fill:var(--barc)}.odds .hit{fill:transparent}
+.odds .bh:hover .bar,.odds .bh:focus .bar{fill:var(--ink)}.odds .bh:focus{outline:none}
+.tipline{min-height:1.5em;margin:2px 0 0;font-size:13.5px;color:var(--muted)}
+.pmore{font:inherit;font-weight:700;margin:12px 0 0;background:transparent;border:2px solid var(--ink);color:var(--ink);padding:6px 14px;cursor:pointer}
+.empty{padding:14px;color:var(--muted)}
+.psig{display:grid;grid-template-columns:1fr 120px;gap:4px 14px;max-width:640px;font-size:15px}
+.sbar{height:12px;align-self:center;background:var(--line);position:relative}
+.sbar i{position:absolute;top:0;bottom:0}.sbar i.up{background:var(--up)}.sbar i.down{background:var(--down)}
+td.num,th.num{text-align:center;white-space:nowrap}
+@media (max-width:560px){.plist li.g{grid-template-columns:30px 1fr 70px}.plist .pc b{font-size:19px}}
+.note{max-width:72ch;background:var(--case);border-left:6px solid var(--yellow);padding:10px 14px;margin:0 0 16px;font-size:15px}

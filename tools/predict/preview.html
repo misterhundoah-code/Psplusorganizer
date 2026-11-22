@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Likely to join PS Plus next (preview)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Bungee&display=swap">
+<style>
+:root{--floor:#E6E9F0;--case:#FFFFFF;--ink:#0E1636;--muted:#545D7A;--line:#C9CFDD;--blue:#1E3A9E;--yellow:#FFC925;--red:#E23D28;--good:#1F7A4D;--bad:#B3321F;--chip:#EEF0F5;
+  --display:"Bungee","Arial Black",Impact,sans-serif;--body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:light dark}
+@media (prefers-color-scheme:dark){:root{--floor:#0F1733;--case:#172146;--ink:#EEF1FA;--muted:#A3ACC8;--line:#2B386A;--good:#62D995;--bad:#FF8A78;--chip:#212C58}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--floor);color:var(--ink);font:16px/1.5 var(--body)}
+.sign{background:var(--yellow);color:#0E1636;border-bottom:8px solid var(--blue);padding:16px clamp(16px,4vw,40px);display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.sign .home{font-family:var(--display);font-size:26px;line-height:.95;color:var(--blue)}
+.draft{font-weight:800;font-size:13px;background:#0E1636;color:#FFC925;padding:3px 9px;border-radius:3px}
+main{max-width:980px;margin:0 auto;padding:26px clamp(16px,4vw,40px) 40px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(26px,4.4vw,40px);line-height:1.05;margin:0 0 12px}
+h2{font-size:20px;margin:34px 0 8px}
+.intro{max-width:68ch;margin:0 0 6px}
+.small{color:var(--muted);font-size:14px;max-width:70ch}
+.tabs{display:flex;gap:6px;margin:22px 0 0;flex-wrap:wrap}
+.tabs button{font:inherit;font-weight:800;font-size:15px;color:var(--ink);background:var(--case);border:2px solid var(--line);border-radius:3px;padding:7px 14px;cursor:pointer}
+.tabs button[aria-selected=true]{background:var(--blue);border-color:var(--blue);color:#fff}
+.find{display:flex;gap:8px;margin:16px 0 4px}
+.find input{flex:1;font:inherit;font-size:16px;padding:10px 12px;border:3px solid var(--ink);background:var(--case);color:var(--ink);border-radius:0}
+ol{list-style:none;margin:14px 0 0;padding:0;background:var(--case);border:3px solid var(--ink)}
+li.g{display:grid;grid-template-columns:44px 1fr 92px;gap:2px 12px;padding:12px 12px 12px 6px;border-bottom:1px solid var(--line)}
+li.g:last-child{border-bottom:0}
+.n{color:var(--muted);font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
+.t b{font-size:17px}
+.meta{color:var(--muted);font-size:13.5px}
+.pc{text-align:right}
+.pc b{display:block;font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.1}
+.pc span{color:var(--muted);font-size:12.5px}
+.why{grid-column:2 / 4;display:flex;flex-wrap:wrap;gap:5px;margin-top:4px;padding:0;list-style:none}
+.why li{font-size:13px;line-height:1.35;background:var(--chip);border-left:4px solid var(--c);padding:3px 8px;border-radius:2px}
+.why li.up{--c:var(--good)}.why li.down{--c:var(--bad)}
+.why li::before{font-weight:900;color:var(--c);margin-right:5px}
+.why li.up::before{content:"+"}.why li.down::before{content:"−"}
+.empty{padding:14px;color:var(--muted)}
+.more{font:inherit;font-weight:700;margin:12px 0 0;background:transparent;border:2px solid var(--ink);color:var(--ink);padding:6px 14px;cursor:pointer}
+table{width:100%;border-collapse:collapse;background:var(--case);border:3px solid var(--ink);font-size:14.5px}
+th{text-align:left;font-size:13px;color:var(--muted);padding:8px 10px;border-bottom:2px solid var(--line)}
+td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+td.num{text-align:center;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sig{display:grid;grid-template-columns:1fr 120px;gap:4px 14px;max-width:640px;font-size:15px}
+.bar{height:12px;align-self:center;background:var(--line);position:relative}
+.bar i{position:absolute;top:0;bottom:0;background:var(--c)}
+details{margin-top:8px}summary{font-weight:800;cursor:pointer}
+@media (max-width:560px){li.g{grid-template-columns:30px 1fr 70px}.pc b{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="sign"><span class="home">PS Plus<br>Rental Wall</span><span class="draft">Preview: not on the site yet</span></div>
+<main>
+  <h1>Likely to join PS Plus next</h1>
+  <p class="intro">Every PS4 and PS5 game that isn't on PS Plus yet, ranked by how likely it is to join in the next three months. The odds come from a model trained on every lineup Sony has announced since 2022, so treat this as a watchlist rather than a promise.</p>
+  <p class="small" id="asof"></p>
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" data-k="extra" aria-selected="true">Game Catalog (Extra)</button>
+    <button type="button" role="tab" data-k="essential" aria-selected="false">Monthly games (Essential)</button>
+  </div>
+  <form class="find" id="find"><label class="vh" for="q" style="position:absolute;left:-9999px">Look up a game</label><input id="q" type="search" placeholder="Look up a game, like Elden Ring or Ghost of Yōtei" autocomplete="off"></form>
+  <ol id="list" aria-live="polite"></ol>
+  <button type="button" class="more" id="more">Show the next 50</button>
+
+  <h2>How it works</h2>
+  <p class="small">For each month since PS Plus Extra launched (and since 2019 for the monthly games), every PS4 and PS5 game that could have been added is one example, and the games Sony actually added are the hits. The model learns how much each of these signals mattered. The bars show how strongly each one pushes a game up (green) or down (red).</p>
+  <div class="sig" id="sig"></div>
+  <details><summary>Rules and limits</summary>
+    <ul class="small">
+      <li>The year's biggest launches are held back: nothing anywhere near as big as GTA VI has ever joined in its first year, so those wait until the year is up.</li>
+      <li>Free-to-play games are left out, since they don't need PS Plus.</li>
+      <li>Popularity is how often the game's Wikipedia article was read in the last 60 days. It's a good guide to interest today, but older games' launch-time buzz isn't captured.</li>
+      <li>Deals between Sony and publishers are invisible to the model, so surprise launch-day indies will always catch it out.</li>
+      <li>Games without a Wikipedia or Wikidata entry are missing or know less about themselves.</li>
+    </ul>
+    <p class="small">Sources: Wikidata and Wikipedia (CC BY-SA) for games, publishers, release dates and page views; the PlayStation Blog for past lineups.</p>
+  </details>
+
+  <h2>How it did on months it hadn't seen</h2>
+  <p class="small" id="btnote"></p>
+  <table><thead><tr><th>Month</th><th class="num">Added</th><th class="num">In our top 50</th><th>Ones we had in the top 50</th></tr></thead><tbody id="bt"></tbody></table>
+</main>
+<script>
+let D=null,K="extra",SHOW=50;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fold=s=>s.normalize("NFKD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+const MON=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const mname=m=>MON[+m.slice(5,7)-1]+" "+m.slice(0,4);
+function pct(p){const v=p*100;return v>=10?Math.round(v)+"%":v>=1?v.toFixed(1)+"%":v>=0.1?v.toFixed(1)+"%":"<0.1%";}
+function odds(p){if(p<0.001)return "long shot";const n=Math.round(1/p);return "1 in "+n.toLocaleString();}
+function item(r,rank){const [t,p,y,pub,why]=r;
+  return `<li class="g"><span class="n">${rank}</span><div class="t"><b>${esc(t)}</b><div class="meta">${[y,pub].filter(Boolean).map(esc).join(" · ")}</div></div>
+  <div class="pc"><b>${pct(p)}</b><span>${odds(p)}</span></div>
+  <ul class="why">${why.map(([s,w])=>`<li class="${s>0?"up":"down"}">${esc(w)}</li>`).join("")}</ul></li>`;}
+function render(){const rows=D[K].rows,q=fold($("q").value);
+  let list=rows.map((r,i)=>[r,i+1]);
+  if(q){list=list.filter(([r])=>fold(r[0]).includes(q)).slice(0,30);$("more").hidden=true;}
+  else{list=list.slice(0,SHOW);$("more").hidden=SHOW>=rows.length;}
+  $("list").innerHTML=list.length?list.map(([r,n])=>item(r,n)).join(""):`<li class="empty">No game by that name among the ${D[K].n.toLocaleString()} candidates. It may already be on PS Plus, be free-to-play, or be missing from Wikipedia's lists.</li>`;
+  const w=D[K].weights,NAMES={"popularity":"How popular it is","1 to 2 years old":"Out 1 to 2 years","2 to 4 years old":"Out 2 to 4 years","6 to 12 months old":"Out 6 to 12 months","under 6 months old":"Out less than 6 months","day one":"Brand new (launch day)",
+    "publisher track record":"Publisher's record of adding games","developer track record":"Developer's record","publisher's other track record":"Publisher's record on the other tier","PS5 game":"On PS5",
+    "Sony game":"Sony's own game","Sony game, 1 to 3 years old":"Sony's own game, 1 to 3 years old","PlayStation exclusive":"Only on PlayStation (outside publisher)","sequel or follow-up due soon":"Sequel due soon",
+    "was a monthly game":"Already given as a monthly game","already on Extra":"Already on the Game Catalog","multiplayer":"Multiplayer","big new release":"Big new release"};
+  const ws=Object.entries(w).filter(([,v])=>Math.abs(v)>=0.05).sort((a,b)=>b[1]-a[1]),mx=Math.max(...ws.map(([,v])=>Math.abs(v)));
+  $("sig").innerHTML=ws.map(([k,v])=>`<span>${esc(NAMES[k]||k)}</span><span class="bar" title="${v}"><i style="--c:${v>0?"var(--good)":"var(--bad)"};left:${v>0?50:50-Math.abs(v)/mx*50}%;width:${Math.abs(v)/mx*50}%"></i></span>`).join("");
+  const bt=D[K].backtest,tot=bt.reduce((a,r)=>a+r.added,0),hit=bt.reduce((a,r)=>a+r.top50,0);
+  $("btnote").textContent=`The model was trained without the last 12 months, then asked to rank each of them. Out of the ${tot} games Sony added that we could match, ${hit} (${Math.round(hit/tot*100)}%) were in that month's top 50, out of about ${bt[bt.length-1].cands.toLocaleString()} candidates. Picking 50 at random would catch less than 1%.`;
+  $("bt").innerHTML=bt.slice().reverse().map(r=>`<tr><td>${mname(r.month)}</td><td class="num">${r.added}</td><td class="num">${r.top50}</td><td>${r.found.map(esc).join(", ")||"–"}</td></tr>`).join("");}
+document.querySelector(".tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;K=b.dataset.k;SHOW=50;
+  document.querySelectorAll(".tabs button").forEach(x=>x.setAttribute("aria-selected",x===b));render();});
+$("q").addEventListener("input",render);$("find").addEventListener("submit",e=>e.preventDefault());
+$("more").addEventListener("click",()=>{SHOW+=50;render();});
+fetch("data.json").then(r=>r.json()).then(d=>{D=d;$("asof").textContent="Worked out on "+new Date(d.asof+"T12:00").toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})+". Chances are for the next three months.";render();})
+  .catch(()=>{$("list").innerHTML='<li class="empty">Couldn\'t load the list.</li>';});
+</script>
+</body>
+</html>
