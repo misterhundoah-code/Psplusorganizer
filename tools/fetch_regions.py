@@ -191,6 +191,7 @@ def main():
         return best[0]["id"]
 
     out = {"asOf": date.today().isoformat(), "regions": {}}
+    psn_ids = {}
     (ROOT / "data/ratings").mkdir(exist_ok=True)
     for loc in site_regions():
         reg, ok = {"cat": [], "cl": [], "extra": []}, True
@@ -209,6 +210,13 @@ def main():
             seen = set()
             for e in entries:
                 gid = match(e, kind)
+                if gid:
+                    # Sony's ids for the game, so a PlayStation library import can match by id, not just by name.
+                    if e.get("conceptId"):
+                        psn_ids.setdefault("c", {})[str(e["conceptId"])] = gid
+                    tid = re.search(r"-((?:CUSA|PPSA|NPUA|NPUB|NPEA|NPEB|BCUS|BLUS|BCES|BLES|PCSA|PCSE)\d{5})_", e.get("productId") or "")
+                    if tid:
+                        psn_ids.setdefault("t", {})[tid.group(1)] = gid
                 if gid and gid not in ratings:
                     r = rating_entry(e)
                     if r:
@@ -244,6 +252,10 @@ def main():
     if not out["regions"]:
         sys.exit("No region lists could be downloaded; leaving data/regions.json alone.")
     (ROOT / "data/regions.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    if psn_ids:
+        (ROOT / "data/psn-ids.json").write_text(json.dumps({k: dict(sorted(v.items())) for k, v in psn_ids.items()},
+                                                           separators=(",", ":")), encoding="utf-8")
+        print(f"Sony ids: {len(psn_ids.get('c', {}))} concepts, {len(psn_ids.get('t', {}))} title ids")
     if UNKNOWN_RATINGS:
         print("Ratings with no known minimum age (add them to NAMED_AGES):", sorted(UNKNOWN_RATINGS))
 
