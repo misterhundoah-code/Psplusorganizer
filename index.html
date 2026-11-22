@@ -621,7 +621,7 @@ body:not(.noplat) #wall .cm .ckind+.ctm::before{content:" · "}
 #comedeck .talk.arr,#comedeck .card:nth-child(n) .talk.arr{background:var(--blue);color:#fff;transform:rotate(-3deg);white-space:nowrap;font-size:13px}
 
 /* Import from PlayStation */
-.psnbtn{margin-top:8px;width:100%}
+.psnbtn{margin-top:4px;width:100%}
 dialog.dlgbox#psndlg{width:min(640px,calc(100vw - 24px))}
 .dlg.psn .psnsteps{padding-left:22px;margin:10px 0}
 .dlg.psn .psnsteps .hint{display:block;margin-top:2px}
@@ -714,6 +714,9 @@ dialog.dlgbox#psndlg{width:min(640px,calc(100vw - 24px))}
           <label for="region" style="margin-top:6px">Your country</label>
           <select id="region"></select>
           <span class="hint" id="regionhint">Shows the Game Catalogue and Classics games Sony offers in that country, and sends store links to its PlayStation Store.</span>
+          <span class="lab" style="margin-top:6px">Your PlayStation games</span>
+          <button type="button" class="btn psnbtn" id="psnbtn">Import from my PlayStation account</button>
+          <span class="hint">Tags the games you own and marks the ones you've played, straight from your PlayStation account. You add a bookmark once, click it on Sony's library page, then paste the result here. It never sees your password.</span>
         </div>
         <h2 class="railhead">Filters</h2>
         <div class="grp">
@@ -840,7 +843,6 @@ dialog.dlgbox#psndlg{width:min(640px,calc(100vw - 24px))}
         <div class="grp">
           <span class="lab">Your data</span>
           <div class="seg"><button type="button" id="backup">Download backup</button><button type="button" id="restorebtn">Restore a backup</button></div>
-          <button type="button" class="btn psnbtn" id="psnbtn">Import from my PlayStation account</button>
           <input type="file" id="restorefile" accept="application/json,.json" hidden>
           <span class="hint" id="datamsg">A backup is a small file with your marks, ratings, notes and added games.</span>
         </div>
