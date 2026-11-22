@@ -25,75 +25,47 @@ for i, p in enumerate(PAGES):
     j = S.get(API, params={"action": "parse", "page": p, "prop": "wikitext", "format": "json", "formatversion": 2, "redirects": 1}, timeout=60).json()
     (OUT / f"wiki-{i}.txt").write_text(f"{p}\n{j['parse']['wikitext']}", encoding="utf-8"); time.sleep(1)
 
-# Wikidata: every game released on PS4 or PS5. A light query lists them; their details
-# (platforms, publishers, developers, series, genres, modes, release dates) come from
-# wbgetentities, 50 at a time, and the names of those things from a second pass.
-WD = "https://www.wikidata.org/w/api.php"
+# Wikidata: every game released on PS4 or PS5, built from one small query per property
+# (a single grouped query times out), with labels in English.
 UAH = {"User-Agent": "PSPlusRentalWall/1.0 (https://github.com/misterhundoah-code/Psplusorganizer)", "Accept": "application/sparql-results+json"}
-ids = set()
-for qid in ("Q63184502", "Q5014725"):
+def sparql(q):
     for attempt in range(4):
         try:
-            r = requests.get("https://query.wikidata.org/sparql", params={"query": f"SELECT ?g WHERE {{ ?g wdt:P400 wd:{qid} . }}", "format": "json"}, headers=UAH, timeout=120)
-            if r.status_code == 200:
-                ids |= {b["g"]["value"].rsplit("/", 1)[1] for b in r.json()["results"]["bindings"]}; break
-            print("sparql", qid, r.status_code)
+            r = requests.get("https://query.wikidata.org/sparql", params={"query": q, "format": "json"}, headers=UAH, timeout=120)
+            if r.status_code == 200: return r.json()["results"]["bindings"]
+            print("sparql", r.status_code, r.text[:120].replace("\n", " "))
         except Exception as e:
-            print("sparql", qid, e)
-        time.sleep(15)
-print("wikidata games", len(ids))
-PROPS = {"P400": "plat", "P123": "pub", "P178": "dev", "P179": "ser", "P136": "gen", "P404": "mode"}
-FAILED = []
-def wbget(batch, **kw):
-    """Entities for up to 50 ids. If Wikidata rejects the batch (one bad id sinks all 50), split it."""
-    for attempt in range(3):
-        try:
-            r = S.get(WD, params={"action": "wbgetentities", "ids": "|".join(batch), "format": "json", "maxlag": 5, **kw}, timeout=90)
-            j = r.json()
-            if "entities" in j: return j["entities"]
-            err = j.get("error", {})
-            print("wbget", len(batch), err.get("code"), str(err.get("info"))[:150])
-            if err.get("code") != "maxlag": break
-        except Exception as e:
-            print("wbget", len(batch), e)
-        time.sleep(5 * (attempt + 1))
-    if len(batch) > 1:
-        h = len(batch) // 2
-        return {**wbget(batch[:h], **kw), **wbget(batch[h:], **kw)}
-    FAILED.append(batch[0]); return {}
-
-games, refs = [], set()
-idl = sorted(ids)
-for k in range(0, len(idl), 50):
-    ents = wbget(idl[k:k + 50], props="labels|claims|sitelinks", languages="en", sitefilter="enwiki")
-    for q, e in ents.items():
-        cl = e.get("claims", {})
-        def vals(p):
-            out = []
-            for c in cl.get(p, []):
-                v = c.get("mainsnak", {}).get("datavalue", {}).get("value")
-                if isinstance(v, dict) and "id" in v: out.append(v["id"])
-            return out
-        dates = []
-        for c in cl.get("P577", []):
-            v = c.get("mainsnak", {}).get("datavalue", {}).get("value")
-            if isinstance(v, dict) and v.get("time") and v.get("precision", 0) >= 9: dates.append(v["time"][1:11].replace("-00", "-01"))
-        g = {"q": q, "t": e.get("labels", {}).get("en", {}).get("value"), "w": e.get("sitelinks", {}).get("enwiki", {}).get("title"),
-             "rel": min(dates) if dates else None}
-        for p, name in PROPS.items():
-            g[name] = vals(p); refs |= set(g[name])
-        if g["t"]: games.append(g)
-    time.sleep(1)
-names = {}
-rl = sorted(refs)
-for k in range(0, len(rl), 50):
-    for q, e in wbget(rl[k:k + 50], props="labels", languages="en").items():
-        names[q] = e.get("labels", {}).get("en", {}).get("value", q)
-    time.sleep(1)
-for g in games:
-    for name in PROPS.values(): g[name] = [names.get(x, x) for x in g[name]]
+            print("sparql", e)
+        time.sleep(20 * (attempt + 1))
+    return None
+games = {}
+PROPS = {"plat": "P400", "pub": "P123", "dev": "P178", "ser": "P179", "gen": "P136", "mode": "P404"}
+for qid in ("Q63184502", "Q5014725"):
+    rows = sparql(f"""SELECT ?g ?t ?w WHERE {{ ?g wdt:P400 wd:{qid} . OPTIONAL {{ ?g rdfs:label ?t . FILTER(LANG(?t) = "en") }}
+      OPTIONAL {{ ?a schema:about ?g ; schema:isPartOf <https://en.wikipedia.org/> ; schema:name ?w }} }}""") or []
+    print("games", qid, len(rows))
+    for b in rows:
+        q = b["g"]["value"].rsplit("/", 1)[1]
+        g = games.setdefault(q, {"q": q, "t": None, "w": None, "rel": None, **{k: [] for k in PROPS}})
+        g["t"] = g["t"] or b.get("t", {}).get("value"); g["w"] = g["w"] or b.get("w", {}).get("value")
+    time.sleep(3)
+    rows = sparql(f"""SELECT ?g (MIN(?d) AS ?rel) WHERE {{ ?g wdt:P400 wd:{qid} ; p:P577/psv:P577 ?dv . ?dv wikibase:timeValue ?d ;
+      wikibase:timePrecision ?pr . FILTER(?pr >= 10) }} GROUP BY ?g""") or []
+    print("dates", qid, len(rows))
+    for b in rows:
+        g = games.get(b["g"]["value"].rsplit("/", 1)[1])
+        if g: d = b["rel"]["value"][:10]; g["rel"] = min(filter(None, [g["rel"], d]))
+    time.sleep(3)
+    for name, prop in PROPS.items():
+        rows = sparql(f"""SELECT ?g ?l WHERE {{ ?g wdt:P400 wd:{qid} ; wdt:{prop} ?x . ?x rdfs:label ?l . FILTER(LANG(?l) = "en") }}""") or []
+        print(name, qid, len(rows))
+        for b in rows:
+            g = games.get(b["g"]["value"].rsplit("/", 1)[1])
+            if g and b["l"]["value"] not in g[name]: g[name].append(b["l"]["value"])
+        time.sleep(3)
+games = [g for g in games.values() if g["t"]]
 (OUT / "wikidata.json").write_text(json.dumps(games, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-print("wikidata saved", len(games), "of", len(ids), "; failed batches", len(FAILED))
+print("wikidata saved", len(games))
 
 # Page views: 50 articles per request, following redirects back to the title we asked for.
 pool = json.loads((ROOT / "data" / "predict-pool.json").read_text(encoding="utf-8"))
