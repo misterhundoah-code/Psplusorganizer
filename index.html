@@ -588,6 +588,14 @@ body.notags #rows .tags{display:none}
 body:not(.noplat) #wall .cm .ckind+.ctm::before{content:" · "}
 
 #dlgfacts a.src{color:var(--muted);font-size:12px}
+
+/* "How this was made" link in the sign's top row, and its notice. */
+.madebtn{margin-right:auto;background:none;border:0;padding:2px 0;font:inherit;font-size:13px;font-weight:600;color:var(--yellow-ink);
+  text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.madebtn:hover{text-decoration-thickness:2px}
+.dlg.made h3{font-size:16px;margin:18px 0 6px}
+.dlg.made ul{padding-left:20px;margin:0}
+.dlg.made li{margin:0 0 8px}
 </style>
 </head>
 <body>
@@ -595,6 +603,7 @@ body:not(.noplat) #wall .cm .ckind+.ctm::before{content:" · "}
   <header class="hero">
    <div class="sign">
     <div class="toprow">
+      <button type="button" class="madebtn" id="madebtn" aria-haspopup="dialog">How this was made</button>
       <div class="acctrow" id="acct" hidden></div>
       <div class="themesw" role="group" aria-label="Colour theme"><button type="button" data-theme-set="auto" title="Match your device"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 1.8a6.2 6.2 0 0 1 0 12.4z" fill="currentColor"/></svg>Auto</button><button type="button" data-theme-set="light"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3.2" fill="currentColor"/><g stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9 13 13M3 13l1.1-1.1M11.9 4.1 13 3"/></g></svg>Light</button><button type="button" data-theme-set="dark"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13.6 10.2A6 6 0 0 1 5.8 2.4a6 6 0 1 0 7.8 7.8z" fill="currentColor"/></svg>Dark</button></div>
     </div>
@@ -900,6 +909,24 @@ body:not(.noplat) #wall .cm .ckind+.ctm::before{content:" · "}
       <dl class="facts" id="dlgfacts"></dl>
       <p class="dlglinks"><a id="dlgtrailer" class="btn" target="_blank" rel="noopener">▶ Watch trailers on YouTube</a></p>
       <div class="about" id="dlgabout"></div></div>
+  </dialog>
+  <dialog class="dlgbox" id="madedlg" aria-labelledby="madettl">
+    <div class="dlg made">
+      <h2 id="madettl">How this was made</h2>
+      <p>I'm a PS Plus subscriber who wanted a better way to work through the catalogue, not a professional developer. I built this site with Claude, Anthropic's AI model. Claude wrote most of the code; I decided what the site should do, tested it and chose what went in. I should have said so when I first shared it.</p>
+      <h3>What that means for you</h3>
+      <ul>
+        <li><b>No AI runs while you use the site.</b> Nothing you do here is sent to Claude, Anthropic or any other AI service.</li>
+        <li><b>Most game information comes from published sources:</b> availability and age ratings from Sony's PS Plus lists, scores from Metacritic, playtimes from HowLongToBeat, and the longer descriptions, credits and crossplay from Wikipedia and Wikidata.</li>
+        <li><b>Some was written with Claude's help:</b> the one-line synopses, the camera view (first-person, top-down and so on) and the style tags were drafted with Claude when the site started and haven't all been checked by hand. If one is off, please report it.</li>
+        <li>The "why you might like it" notes are simple rules based on your own ratings, not AI.</li>
+        <li><b>Your marks stay in your browser</b> unless you create an account, which stores an encrypted copy only your password can unlock, or opt in to community scores, which are shared anonymously and shown only as totals. The <a href="privacy.html" target="_blank">Privacy Policy</a> has the details.</li>
+        <li><b>The code is public</b> on <a href="https://github.com/misterhundoah-code/Psplusorganizer" target="_blank" rel="noopener">GitHub</a>, and the site is built straight from it, so anyone can check how it works.</li>
+      </ul>
+      <h3>Found a problem?</h3>
+      <p>Wrong game data, a bad cover, a bug or an idea: please <a href="https://github.com/misterhundoah-code/Psplusorganizer/issues/new/choose" target="_blank" rel="noopener">report it on GitHub</a> (you'll need a free GitHub account). People's reports have already fixed several real bugs, and every one gets read.</p>
+      <form method="dialog" class="row"><button class="btn primary">Close</button></form>
+    </div>
   </dialog>
   <dialog class="dlgbox" id="welcomedlg" aria-labelledby="welcomettl">
     <div class="dlg welcome">
@@ -2297,6 +2324,7 @@ function showNotice(){$("notice").hidden=false;}
 $("noticeok").addEventListener("click",()=>{markSeen("psplus-notice");$("notice").hidden=true;});
 $("shownotice").addEventListener("click",showNotice);
 if(!seen("psplus-notice"))showNotice();
+$("madebtn").addEventListener("click",()=>$("madedlg").showModal());
 const wd=$("welcomedlg");
 wd.addEventListener("close",()=>markSeen("psplus-welcomed"));
 $("welcometier").addEventListener("click",e=>{const b=e.target.closest("button");if(b)setTier(S.tier===b.dataset.v?"":b.dataset.v);});

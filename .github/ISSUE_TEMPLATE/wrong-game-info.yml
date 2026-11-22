@@ -1,0 +1,23 @@
+name: Wrong game information
+description: A game that's wrong, missing, or has the wrong cover, score, playtime, rating or region.
+labels: ["data"]
+body:
+  - type: input
+    id: game
+    attributes:
+      label: Which game?
+      placeholder: Resident Evil 4 (PS3)
+    validations:
+      required: true
+  - type: textarea
+    id: wrong
+    attributes:
+      label: What's wrong, and what should it be?
+      description: A link showing the right information (PlayStation Store, HowLongToBeat, Metacritic) helps a lot.
+    validations:
+      required: true
+  - type: input
+    id: country
+    attributes:
+      label: Your country on the site
+      placeholder: Canada

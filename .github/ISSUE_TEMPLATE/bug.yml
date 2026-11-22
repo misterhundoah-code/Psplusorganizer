@@ -1,0 +1,16 @@
+name: Something doesn't work
+description: A bug, an error message, or something that looks broken.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what you saw instead. A screenshot helps.
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and browser
+      placeholder: iPhone, Safari / Windows, Chrome
