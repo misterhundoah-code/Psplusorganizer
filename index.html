@@ -619,6 +619,21 @@ body:not(.noplat) #wall .cm .ckind+.ctm::before{content:" · "}
 .tile.ext{overflow:hidden;background:#0E1636}
 .tile.ext{position:relative}.tile.ext img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 #comedeck .talk.arr,#comedeck .card:nth-child(n) .talk.arr{background:var(--blue);color:#fff;transform:rotate(-3deg);white-space:nowrap;font-size:13px}
+
+/* Import from PlayStation */
+.psnbtn{margin-top:8px;width:100%}
+dialog.dlgbox#psndlg{width:min(640px,calc(100vw - 24px))}
+.dlg.psn .psnsteps{padding-left:22px;margin:10px 0}
+.dlg.psn .psnsteps .hint{display:block;margin-top:2px}
+#psndlg #psnresult label.check{display:flex;flex-direction:row;gap:8px;align-items:flex-start;text-align:left;font-weight:600;margin:6px 0}
+#psnresult label.check input{margin-top:4px;flex:none}
+.dlg.psn .psnsteps li{margin:0 0 14px;line-height:1.5}
+.dlg.psn .psnbm{display:inline-block;margin:6px 0;cursor:grab}
+.dlg.psn textarea{display:block;width:100%;margin:6px 0;font:13px/1.4 ui-monospace,monospace}
+.dlg.psn .linkish{background:none;border:0;padding:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer}
+.dlg.psn .err{color:var(--red)}.dlg.psn .ok{font-weight:700}
+#psnresult{border-top:2px solid var(--line);padding-top:10px}
+@media (max-width:700px){.onlywide{display:none}}
 </style>
 </head>
 <body>
@@ -825,6 +840,7 @@ body:not(.noplat) #wall .cm .ckind+.ctm::before{content:" · "}
         <div class="grp">
           <span class="lab">Your data</span>
           <div class="seg"><button type="button" id="backup">Download backup</button><button type="button" id="restorebtn">Restore a backup</button></div>
+          <button type="button" class="btn psnbtn" id="psnbtn">Import from my PlayStation account</button>
           <input type="file" id="restorefile" accept="application/json,.json" hidden>
           <span class="hint" id="datamsg">A backup is a small file with your marks, ratings, notes and added games.</span>
         </div>
@@ -949,6 +965,24 @@ body:not(.noplat) #wall .cm .ckind+.ctm::before{content:" · "}
       <dl class="facts" id="dlgfacts"></dl>
       <p class="dlglinks"><a id="dlgtrailer" class="btn" target="_blank" rel="noopener">▶ Watch trailers on YouTube</a></p>
       <div class="about" id="dlgabout"></div></div>
+  </dialog>
+  <dialog class="dlgbox" id="psndlg" aria-labelledby="psnttl">
+    <div class="dlg psn">
+      <h2 id="psnttl">Import from your PlayStation account</h2>
+      <p>Mark the games you've played and tag the games you own, straight from your PlayStation account. It takes three steps, and you only need step 1 once.</p>
+      <ol class="psnsteps">
+        <li><b>Add the bookmark.</b> <span class="onlywide">Drag this button to your browser's bookmarks bar:</span>
+          <a class="btn primary psnbm" id="psnbm" href="#" title="Drag me to your bookmarks bar">Copy my PlayStation library</a>
+          <span class="hint">On a phone or if dragging doesn't work: <button type="button" class="linkish" id="psncopy">copy the bookmark code</button>, bookmark any page, then edit that bookmark and paste the code in as its address.</span></li>
+        <li><b>Run it on Sony's site.</b> Open <a href="https://library.playstation.com/recently-purchased" target="_blank" rel="noopener">library.playstation.com</a>, sign in if asked, then click the bookmark (on a phone, type its name in the address bar and tap it). It copies your list.</li>
+        <li><b>Paste it here.</b>
+          <textarea id="psnpaste" rows="3" placeholder="Paste here"></textarea>
+          <button type="button" class="btn" id="psncheck">Check my list</button></li>
+      </ol>
+      <div id="psnresult" hidden></div>
+      <p class="hint">The bookmark only talks to Sony, using the sign-in you already have there: it never sees your password, and <a href="psn-import.js" target="_blank">its code is public</a>. Your list is matched here in your browser and isn't sent anywhere, except in your encrypted account if you use one. It relies on how Sony's site works today, so it may stop working if Sony changes it.</p>
+      <form method="dialog" class="row"><button class="btn">Close</button></form>
+    </div>
   </dialog>
   <dialog class="dlgbox" id="madedlg" aria-labelledby="madettl">
     <div class="dlg made">
@@ -2418,6 +2452,60 @@ $("noticeok").addEventListener("click",()=>{markSeen("psplus-notice");$("notice"
 $("shownotice").addEventListener("click",showNotice);
 if(!seen("psplus-notice"))showNotice();
 $("madebtn").addEventListener("click",()=>$("madedlg").showModal());
+/* ---- Import from PlayStation (see psn-import.js, the bookmark's code) ----
+   The pasted list holds "owned" (bought or claimed, with Sony's concept and title ids) and "played" (PS4/PS5
+   games with the last time they were played). Games are matched by Sony's ids (data/psn-ids.json, from
+   tools/fetch_regions.py), then by name. Owned games are tagged as in your library; played games you
+   haven't marked yet become Playing (played in the last 30 days) or Played. Nothing already marked is
+   changed, and the whole import can be undone. */
+let PSNIDS=null,PSNPLAN=null,PSNUNDO=null;
+const normT=t=>String(t).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[™®©]/g,"")
+  .replace(/\b(ps4 (?:&|and) ps5|ps5 (?:&|and) ps4|ps4|ps5)\b/g," ").replace(/&/g," and ").replace(/[^a-z0-9]+/g,"");
+async function psnPrep(){
+  if(!PSNIDS)PSNIDS=await fetch("data/psn-ids.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>({}));
+  const bm=$("psnbm");if(bm.dataset.ready)return;
+  try{const code=await (await fetch("psn-import.js",{cache:"no-cache"})).text();bm.href="javascript:"+encodeURIComponent(code);bm.dataset.ready="1";bm.dataset.code="javascript:"+code.replace(/\/\*[\s\S]*?\*\//g,"").replace(/\n\s*/g," ");}catch(e){}
+}
+$("psnbtn").addEventListener("click",()=>{psnPrep();$("psnresult").hidden=true;$("psndlg").showModal();});
+$("psnbm").addEventListener("click",e=>{e.preventDefault();alert("Drag this button to your bookmarks bar, then use it on library.playstation.com.");});
+$("psncopy").addEventListener("click",async e=>{await psnPrep();const c=$("psnbm").dataset.code;if(!c)return;
+  try{await navigator.clipboard.writeText(c);e.target.textContent="copied";}catch(_){prompt("Copy this code:",c);}});
+function psnMatch(x){
+  if(!x||typeof x!=="object")return null;
+  const c=x.c!=null&&PSNIDS.c&&PSNIDS.c[String(x.c)],t=typeof x.t==="string"&&PSNIDS.t&&PSNIDS.t[x.t.replace(/_.*/,"")];
+  const id=c||t||(typeof x.n==="string"&&NAMEIDX.get(normT(x.n)));
+  return id&&BYID.has(id)?id:null;
+}
+let NAMEIDX=null;
+$("psncheck").addEventListener("click",async()=>{
+  await psnPrep();
+  if(!NAMEIDX){NAMEIDX=new Map();GAMES.forEach(g=>{const k=normT(g.t);if(!NAMEIDX.has(k))NAMEIDX.set(k,g.id);});}
+  const out=$("psnresult");out.hidden=false;let j;
+  try{j=JSON.parse($("psnpaste").value.trim());if(!j||j.app!=="psplus-import"||!Array.isArray(j.owned)||!Array.isArray(j.played))throw 0;}
+  catch(e){out.innerHTML=`<p class="err">That doesn't look like a list from the bookmark. Run the bookmark on library.playstation.com, then paste again.</p>`;return;}
+  const owned=new Set(),played=new Map();
+  j.owned.slice(0,5000).forEach(x=>{const id=psnMatch(x);if(id)owned.add(id);});
+  const now=Date.now();
+  j.played.slice(0,5000).forEach(x=>{const id=psnMatch(x);if(!id)return;const ts=Date.parse(x&&x.last)||0;if(!played.has(id)||ts>played.get(id))played.set(id,ts);});
+  const toLib=[...owned].filter(id=>LIB[id]!==1),toMark=[...played].filter(([id])=>!MARKS[id]);
+  const recent=toMark.filter(([,ts])=>now-ts<30*864e5).length;
+  PSNPLAN={toLib,toMark};
+  out.innerHTML=`<p>Found <b>${j.owned.length}</b> bought or claimed games and <b>${j.played.length}</b> played games on your account. <b>${owned.size+[...played.keys()].filter(id=>!owned.has(id)).length}</b> of them are on the wall.</p>
+    <label class="check"><input type="checkbox" id="psnlib" ${toLib.length?"checked":"disabled"}> Tag ${toLib.length} ${toLib.length===1?"game":"games"} you own or claimed as in your library</label>
+    <label class="check"><input type="checkbox" id="psnplay" ${toMark.length?"checked":"disabled"}> Mark ${toMark.length} played ${toMark.length===1?"game":"games"}: ${recent} as Playing (played in the last 30 days), ${toMark.length-recent} as Played</label>
+    <p class="hint">Games you've already marked aren't changed. PS3 and Vita games aren't in Sony's lists.</p>
+    <button type="button" class="btn primary" id="psngo" ${toLib.length||toMark.length?"":"disabled"}>Import</button>`;
+  $("psngo").addEventListener("click",()=>{
+    const lib=$("psnlib").checked,pl=$("psnplay").checked;if(!PSNPLAN)return;
+    PSNUNDO={MARKS:Object.assign({},MARKS),LIB:Object.assign({},LIB)};
+    let a=0,b=0;
+    if(lib)PSNPLAN.toLib.forEach(id=>{LIB[id]=1;a++;});
+    if(pl)PSNPLAN.toMark.forEach(([id,ts])=>{if(MARKS[id])return;MARKS[id]=now-ts<30*864e5?"g":"p";b++;});
+    PSNPLAN=null;saveMarks();renderHero();render(false);
+    out.innerHTML=`<p class="ok">Imported: ${a} tagged as in your library, ${b} marked as played or playing.</p><button type="button" class="btn" id="psnundo">Undo the import</button>`;
+    $("psnundo").addEventListener("click",()=>{if(!PSNUNDO)return;MARKS=PSNUNDO.MARKS;LIB=PSNUNDO.LIB;PSNUNDO=null;saveMarks();renderHero();render(false);out.innerHTML=`<p>Import undone.</p>`;});
+  });
+});
 const wd=$("welcomedlg");
 wd.addEventListener("close",()=>markSeen("psplus-welcomed"));
 $("welcometier").addEventListener("click",e=>{const b=e.target.closest("button");if(b)setTier(S.tier===b.dataset.v?"":b.dataset.v);});

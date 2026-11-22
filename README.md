@@ -180,3 +180,11 @@ The wall is one interactive page, so `tools/build_pages.py` also writes plain-HT
 
 Each list's "Open these on the wall" button is a link such as `/?src=plus&players=c&sort=m`: the wall reads `src`, `players`, `age`, `tlen`, `tmode`, `sort`, `desc`, `minm`, `styles`, `pv`, `plat`, `sys`, `onlyleave`, `layout` and `q` from the address, applies them over the defaults (keeping the visitor's country, tier and display choices), then removes them from the address bar. `src=plus` means everything Extra and Premium include right now, without old monthly games.
 
+## Coming soon
+
+`tools/fetch_coming.py` (run twice a day by `.github/workflows/coming.yml`) reads the PlayStation Blog's RSS feeds for Sony's monthly announcements ("PlayStation Plus Monthly Games for…" and "PlayStation Plus Game Catalog for…") and writes the games that haven't arrived yet to `data/coming.json`, with tier, platforms, arrival date (including per-game later dates) and Sony's promo image. The wall shows them on a Coming soon shelf, and `tools/build_pages.py` makes `lists/new-on-ps-plus`. If Sony changes the post format and nothing parses, the existing file is kept; `data/coming-manual.json` (a list of `{"t", "p", "tier", "date"}`) can fill in by hand.
+
+## Import from a PlayStation account
+
+The "Import from my PlayStation account" button (in Your data) explains a three-step import. `psn-import.js` is the code of a bookmark that runs on library.playstation.com while the visitor is signed in: it calls the same GraphQL queries Sony's own pages use (`getPurchasedGameList` and `getUserGameList`, persisted-query hashes as used by the `psn-api` library) with the visitor's session, and copies the bought/claimed and played lists to the clipboard. Pasted into the wall, games are matched by Sony's concept id or title id (`data/psn-ids.json`, written by `tools/fetch_regions.py` from Sony's catalogue lists) and then by name; owned games are tagged as in the library and unmarked played games become Playing (last 30 days) or Played, with Undo. If Sony changes those queries, the bookmark shows an error and nothing is copied; update the hashes in `psn-import.js`.
+
