@@ -630,6 +630,8 @@ body:not(.noplat) #wall .cm .ckind+.ctm::before{content:" · "}
 /* Import from PlayStation */
 .psnbtn{margin-top:4px;width:100%}
 dialog.dlgbox#psndlg{width:min(640px,calc(100vw - 24px))}
+/* The AI disclosure is a long read: a wider column on desktop, scrolling inside if the screen is short. */
+dialog.dlgbox#madedlg{width:min(720px,calc(100vw - 32px));max-height:calc(100vh - 48px);overflow:auto}
 .dlg.psn .psnsteps{padding-left:22px;margin:10px 0}
 .dlg.psn .psnsteps .hint{display:block;margin-top:2px}
 #psndlg #psnresult label.check{display:flex;flex-direction:row;gap:8px;align-items:flex-start;text-align:left;font-weight:600;margin:6px 0}
