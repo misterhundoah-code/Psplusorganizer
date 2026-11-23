@@ -44,7 +44,7 @@ class OutOfQuota(Exception):
 def norm(t, strip_edition=False):
     t = re.sub("[\u2122\u00ae\u00a9]", "", t)
     t = unicodedata.normalize("NFKD", t).encode("ascii", "ignore").decode().lower()
-    t = t.replace("&", " and ")
+    t = re.sub(r"\((19|20)\d\d\)", " ", t).replace("&", " and ")
     if strip_edition:
         t = EDITION.sub(" ", t)
     return re.sub(r"[^a-z0-9]+", " ", t).strip()
@@ -75,10 +75,17 @@ class Api:
 
 def match(api, g):
     """Return an OpenCritic record for game g, or None."""
-    hits = api.get("/game/search", criteria=g["t"]) or []
     want, want_loose = norm(g["t"]), norm(g["t"], True)
-    cands = [h for h in hits if norm(h.get("name", "")) == want] or \
-            [h for h in hits if norm(h.get("name", ""), True) == want_loose]
+
+    def pick(hits):
+        return [h for h in hits if norm(h.get("name", "")) == want] or \
+               [h for h in hits if norm(h.get("name", ""), True) == want_loose]
+
+    cands = pick(api.get("/game/search", criteria=g["t"]) or [])
+    if not cands and want_loose and want_loose != want:
+        # "Tomb Raider: Definitive Edition" is listed on OpenCritic as "Tomb Raider"
+        short = re.split(r"[:\-\u2013]\s*(?=[^:]*\b(edition|remaster|cut|goty)\b)", g["t"], flags=re.I)[0].strip()
+        cands = pick(api.get("/game/search", criteria=short or want_loose) or [])
     for h in cands[:2]:
         d = api.get(f"/game/{h['id']}")
         yr = int((d.get("firstReleaseDate") or "0")[:4] or 0)
