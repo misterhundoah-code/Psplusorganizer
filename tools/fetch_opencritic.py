@@ -67,8 +67,9 @@ class Api:
         if r.status_code == 429:
             raise OutOfQuota("API says the daily allowance is used up (429)")
         if r.status_code in (401, 403):
-            raise SystemExit(f"OpenCritic API refused the key ({r.status_code}): {r.text[:200]}")
-        r.raise_for_status()
+            raise SystemExit(f"::error::OpenCritic API refused the key ({r.status_code}): {r.text[:200]}")
+        if not r.ok:
+            raise SystemExit(f"::error::OpenCritic API error {r.status_code} on {path}: {r.text[:200]}")
         return r.json()
 
 
@@ -111,7 +112,7 @@ def main():
     a = ap.parse_args()
     key = os.environ.get("OPENCRITIC_KEY", "").strip()
     if not key:
-        sys.exit("Set OPENCRITIC_KEY (the RapidAPI key for the OpenCritic API).")
+        sys.exit("::error::No API key: add a repository secret named OPENCRITIC_KEY (or RAPIDAPI_KEY) holding the RapidAPI key.")
     api = Api(key, a.budget)
     if a.probe:
         hits = api.get("/game/search", criteria=a.probe)
