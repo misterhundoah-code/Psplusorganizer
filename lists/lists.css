@@ -90,3 +90,13 @@ td.num,th.num{text-align:center;white-space:nowrap}
 @media (max-width:720px){.pick{grid-template-columns:1fr}.pick .art{border-right:0;border-bottom:3px solid var(--ink)}}
 @media (min-width:721px){.pick .art{align-self:stretch;aspect-ratio:auto;min-height:225px}.pick .art.wide img{position:absolute;inset:0}}
 .hub{display:flex;flex-wrap:wrap;gap:14px;margin:18px 0 8px}
+
+/* Site navigation bar (tools/build_pages.py writes it on every page) */
+.sitenav{background:#0E1636;border-bottom:2px solid #1E3A9E;position:relative}
+.sitenav-in{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;max-width:1720px;margin:0 auto;padding:0 max(16px,calc(50vw - 836px))}
+.sitenav-in::-webkit-scrollbar{display:none}
+.sitenav a{flex:0 0 auto;color:#C9D2F0;text-decoration:none;font-weight:700;font-size:14px;padding:10px 12px 8px;border-bottom:3px solid transparent;white-space:nowrap}
+.sitenav a:hover{color:#fff}
+.sitenav a[aria-current=page]{color:#fff;border-bottom-color:#FFC925}
+.sitenav a:focus-visible{outline:2px solid #FFC925;outline-offset:-2px}
+@media (max-width:720px){.sitenav::after{content:"";position:absolute;top:0;right:0;bottom:0;width:28px;background:linear-gradient(90deg,rgba(14,22,54,0),#0E1636);pointer-events:none}.sitenav a{font-size:13.5px;padding:10px 10px 8px}}
