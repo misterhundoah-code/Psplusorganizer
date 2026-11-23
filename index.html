@@ -399,6 +399,13 @@ tr.nolib .title a{color:var(--muted);text-decoration:line-through}
 .tbar .tr::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--muted);opacity:.5}
 .tbar .tv{font-variant-numeric:tabular-nums;color:var(--muted);font-size:12.5px;text-align:right}
 .tfact{font-size:14px;margin:0 0 7px}
+.tlike{display:flex;flex-wrap:wrap;gap:6px 14px;margin:0 0 10px}
+.quick{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}
+.quick::-webkit-scrollbar{display:none}
+.quick button{flex:none;font:600 14px var(--body);color:var(--ink);background:var(--case);border:2px solid var(--line);border-radius:0;padding:6px 12px;cursor:pointer}
+.quick button:hover{border-color:var(--blue)}
+.quick button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.quick button:focus-visible{outline:3px solid var(--yellow,#FFC925);outline-offset:2px}
 .tfact b{font-weight:700}
 .big{font-weight:900;font-stretch:120%;font-size:30px;line-height:1;margin-right:6px;color:var(--accent)}
 .ask{border-top:2px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:8px}
@@ -948,6 +955,12 @@ dialog.dlgbox#madedlg{width:min(720px,calc(100vw - 32px));max-height:calc(100vh 
         <input type="search" id="q" placeholder="Search games, styles or your notes" aria-label="Search games" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
         <kbd id="qkey" title="Press / to search">/</kbd>
         <button type="button" id="qclear" aria-label="Clear search" hidden>✕</button>
+      </div>
+      <div class="quick" id="quick" role="group" aria-label="Quick filters">
+        <button type="button" data-k="short" aria-pressed="false">Under 10 hours</button>
+        <button type="button" data-k="top" aria-pressed="false">Metascore 85+</button>
+        <button type="button" data-k="coop" aria-pressed="false">Co-op</button>
+        <button type="button" data-k="ps5" aria-pressed="false">PS5</button>
       </div>
       <div class="qelse" id="qelse" aria-live="polite" hidden></div>
       <button class="btn" id="addopen" type="button" aria-expanded="false">＋ Add a game that isn't listed</button>
@@ -1744,8 +1757,18 @@ function renderTaste(){
   const want=GAMES.filter(g=>MARKS[g.id]==="w");
   const hrs=Math.round(want.reduce((a,g)=>a+(g.h??0),0));
   const sum=$("tastesum"),grid=$("tastegrid");
-  if(!TASTE.on){sum.textContent=`Rate or bounce off ${3-TASTE.n} more ${3-TASTE.n===1?"game":"games"} to unlock it`;
-    grid.innerHTML=`<p class="tfact">Once you have rated or bounced off three games, this panel shows which styles, camera views and lengths you favour, and where you part ways with the critics.</p>`;return;}
+  if(!TASTE.on){
+    const left=3-TASTE.n,more=`${left} more ${left===1?"game":"games"}`;
+    const lean=Object.entries(TASTE.style).filter(e=>e[1]>0.05).sort((a,b)=>b[1]-a[1]).slice(0,3).map(e=>e[0]);
+    const rank=g=>RATE[g.id]>=4?0:MARKS[g.id]==="p"&&!RATE[g.id]?1:MARKS[g.id]==="g"?2:MARKS[g.id]==="w"?3:9;
+    const liked=GAMES.filter(g=>rank(g)<9&&!(RATE[g.id]&&RATE[g.id]<4)).sort((a,b)=>rank(a)-rank(b)).slice(0,3);
+    const full=`<p class="tfact">Rate or bounce off ${more} and this panel shows which styles, camera views and lengths you favour, and where you part ways with the critics.</p>`;
+    if(!lean.length&&!liked.length){sum.textContent=`Rate or bounce off ${more} to unlock it`;grid.innerHTML=full;return;}
+    sum.textContent=lean.length?`Early read: you lean towards ${lean.join(", ")} · ${more} to unlock the rest`:`Early read · ${more} to unlock the rest`;
+    grid.innerHTML=`<div class="tcol"><h3>An early read</h3>${lean.length?`<p class="tfact">From the games you've marked so far, you lean towards <b>${lean.map(esc).join("</b>, <b>")}</b>.</p>`:""}`
+      +(liked.length?`<p class="tfact">Find games like the ones you have rated highly or want to play:</p><p class="tlike">${liked.map(g=>`<button type="button" class="lnk" data-like="${esc(g.id)}">More like ${esc(g.t)}</button>`).join("")}</p>`:"")
+      +full+`</div>`;
+    return;}
   const avg=rated.length?(rated.reduce((a,g)=>a+RATE[g.id],0)/rated.length).toFixed(1):"–";
   sum.textContent=`${rated.length} rated · average ${avg} stars · ${want.length} on your want list (${hrs} hours)`;
   const st=Object.entries(TASTE.style).sort((a,b)=>b[1]-a[1]);
@@ -1971,6 +1994,7 @@ function render(animate){
   const asc=!S.desc;$("dir").textContent=asc?"↑":"↓";
   $("dir").title=asc?"Ascending. Click to reverse.":"Descending. Click to reverse.";
   const press=(sel,v)=>document.querySelectorAll(sel).forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===v));
+  syncQuick();
   press("#plat button",S.plat);press("#players button",S.players);press("#agef button",S.age);press("#sysf button",S.sys);press("#tlen button",S.tlen);press("#src button",S.src);
   document.querySelectorAll("#styles button").forEach(b=>b.setAttribute("aria-pressed",S.styles.includes(b.dataset.v)));
   document.querySelectorAll("#tabs button[data-v]").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===S.view));
@@ -2595,6 +2619,14 @@ $("aadd").addEventListener("click",()=>{
   $("at").value="";$("ah").value="";$("anote").value="";$("aurl").value="";
   ADD.stars=0;ADD.styles=[];ADD.y=null;ADD.d="";ADD.u="";ADD.p=[];renderAdd();$("aurl").focus();
 });
+/* Quick filters: one-tap shortcuts for the commonest filters. Each sets the same setting as its control in
+   Filters and sorting, so they stay in step; tapping a lit one turns it back off. */
+const QUICK={short:["tlen","0-10"],top:["minm",85],coop:["players","c"],ps5:["plat","PS5"]};
+function syncQuick(){document.querySelectorAll("#quick button").forEach(b=>{const [k,v]=QUICK[b.dataset.k];b.setAttribute("aria-pressed",S[k]===v);});}
+$("quick").addEventListener("click",e=>{const b=e.target.closest("button[data-k]");if(!b)return;const [k,v]=QUICK[b.dataset.k];
+  S[k]=S[k]===v?DEF[k]:v;render();});
+$("tastegrid").addEventListener("click",e=>{const t=e.target.closest("button[data-like]");if(!t)return;
+  CTX={ser:null,like:t.dataset.like};render();$("ctx").scrollIntoView({block:"nearest"});});
 $("reset").addEventListener("click",()=>{const view=S.view,region=S.region,since=S.since,tier=S.tier;S=Object.assign({},DEF,{styles:[],pv:[],view,region,since,tier});render();});
 onRows("click",e=>{
   if(e.currentTarget.id==="dlgrows"&&e.target.closest("[data-ser],[data-like]"))$("gamedlg").close();
