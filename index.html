@@ -249,6 +249,7 @@ dialog.dlgbox{overscroll-behavior:contain}
 .gamebox .comm{margin:10px 6px 0;font-size:14px;color:var(--ink)}
 .gamebox .comm .lab{font-weight:800;margin-right:6px}
 .gamebox .comm b{color:var(--ink)}
+
 .gamebox .comm .cmempty{color:var(--muted)}
 .gamebox .facts{display:grid;grid-template-columns:max-content 1fr;gap:4px 16px;margin:12px 6px 0;font-size:14px;max-width:68ch}
 .gamebox .facts dt{font-weight:700;color:var(--muted)}
@@ -1026,7 +1027,7 @@ dialog.dlgbox#madedlg{width:min(720px,calc(100vw - 32px));max-height:calc(100vh 
     <!-- guides:end -->
 
   <footer>
-    <div><b>Where the numbers come from.</b> Game Catalogue: Sony's PlayStation Plus feed (October 2026 snapshot), updated by hand with the October and November 2026 additions and removals. Which games show for your country comes from Sony's own Game Catalogue and Classics lists for that country, checked twice a week; Sony publishes none for Brazil, so Brazil uses the Latin American list. Monthly games: every PS4 and PS5 monthly game in North America, from the November 2013 PS4 launch to October 2022 as listed by the PlayStation Fandom wiki, and the Essential line-ups from November 2022 to November 2026 as reported by Game Rant, Insider Gaming and Beebom. PS3 and PS Vita monthly games aren't included. A game offered twice shows its most recent month. Many older monthly games no longer have Metascores or completion times here, and a few have been delisted from the store. Metacritic: Metascores collected July 2026, with about 150 gaps checked on metacritic.com on 16 November 2026. Completion times: HowLongToBeat averages collected March 2026.</div>
+    <div><b>Where the numbers come from.</b> Game Catalogue: Sony's PlayStation Plus feed (October 2026 snapshot), updated by hand with the October and November 2026 additions and removals. Which games show for your country comes from Sony's own Game Catalogue and Classics lists for that country, checked twice a week; Sony publishes none for Brazil, so Brazil uses the Latin American list. Monthly games: every PS4 and PS5 monthly game in North America, from the November 2013 PS4 launch to October 2022 as listed by the PlayStation Fandom wiki, and the Essential line-ups from November 2022 to November 2026 as reported by Game Rant, Insider Gaming and Beebom. PS3 and PS Vita monthly games aren't included. A game offered twice shows its most recent month. Many older monthly games no longer have Metascores or completion times here, and a few have been delisted from the store. Critic scores: OpenCritic scores come from <a href="https://opencritic.com/" rel="noopener">OpenCritic</a>, through its API, and are refreshed monthly. Metacritic: Metascores collected July 2026, with about 150 gaps checked on metacritic.com on 16 November 2026. Completion times: HowLongToBeat averages collected March 2026.</div>
     <div><b>How "Priority for me" works.</b> It starts from a game's Metascore (68 when there is none) and moves it up or down by as much as about 20 points according to your taste. Taste comes from the styles and lengths of the games you have marked: a 5-star rating counts strongly for those styles, 3 stars is neutral, 1 star and Bounced count against, and Want and Not interested count a little. The small number beside the score is how far your taste moved it. It switches on once you have rated or bounced off three games, and it is a rough guide based on broad style tags, so treat it as a nudge.</div>
     <div><b>Classics.</b> Sony's Premium Classics list for your country: PS1, PS2 and PSP games, PS4 remasters and two arcade fighters. <b>PS3 streaming.</b> Sony doesn't publish a list of the PS3 games Premium streams, so the 328 here come from Thumbsticks' list of the Classics Catalog, cross-checked against PlayStation Universe's (19 November 2026). That's the US and Canadian line-up: 67 of them aren't offered elsewhere and are hidden outside the US and Canada, and countries whose top tier is Deluxe rather than Premium (such as Brazil, Mexico and Australia) get no PS3 streaming at all. The line-up changes from time to time, so check the console before you count on one. Metacritic reviewed few PS1-era games, so many Classics have no Metascore, and some scores are for another platform's release. Times are HowLongToBeat averages for the original release.</div>
     <div><b>Games you add.</b> A game you add carries only what you enter, or what its PlayStation Store page shows if you paste the link (title, platforms, genres and release year). Added games have no Metascore, are never recommended back to you, and are saved with your marks.</div>
@@ -1866,6 +1867,7 @@ function fillDlg(){if(!DLG_ID)return;const g=BYID.get(DLG_ID);if(!g)return;const
   const w=whyFor(g);$("dlgwhy").innerHTML=w;$("dlgwhy").hidden=!w;fillAbout(g);
   loadCommunity();const cl=communityLine(g);$("dlgcomm").innerHTML=cl?`<span class="lab">Rental Wall members</span> ${cl}`:"";$("dlgcomm").hidden=!cl;
   fillFacts(g);
+  loadOC();
   fillBuy(g);
   $("dlgtrailer").href="https://www.youtube.com/results?search_query="+encodeURIComponent(`${g.t} ${g.p.includes("PS5")?"PS5":g.p[0]||"PlayStation"} trailer`);}
 /* Longer description from Wikipedia (data/about.json, made by tools/fetch_wiki.py), loaded the first
@@ -1908,6 +1910,13 @@ function whyFor(g){
     :d>=4||L.length?"Likely a good fit.":d<=-4||D.length?"Maybe not one for you.":"Could go either way.";
   return `<b class="verdict">${verdict}</b> ${parts.join(" ")}`;
 }
+/* OpenCritic scores (data/opencritic.json, made by tools/fetch_opencritic.py through OpenCritic's API).
+   Their terms: name OpenCritic next to the score and link to the game's OpenCritic page. */
+let OC=null,OC_LOADING=null;
+function loadOC(){if(!OC_LOADING)OC_LOADING=fetch("data/opencritic.json").then(r=>r.ok?r.json():{}).catch(()=>({})).then(j=>{OC=j;if(DLG_ID)fillFacts(BYID.get(DLG_ID));});}
+function ocFact(g){const o=OC&&OC[g.id];if(!o||!o.u)return "";
+  const a=`<a href="${esc(o.u)}" target="_blank" rel="noopener">OpenCritic</a>`;
+  return o.r!=null?`${o.r}% recommend it on ${a}`:o.s!=null?`${o.s} on ${a}`:"";}
 function openGame(id){DLG_ID=id;fillDlg();const d=$("gamedlg");if(!d.open)d.showModal();}
 function fillRows(n){const end=Math.min(PEND.length,n);
   if(end>SHOWN){$(WALL()?"wall":"rows").insertAdjacentHTML("beforeend",PEND.slice(SHOWN,end).join(""));SHOWN=end;}
@@ -2240,6 +2249,8 @@ function fillFacts(g){
     // Say which PlayStation version only when it matters: "Xbox, and PC from the PS5 version only".
     const w=[xp.x&&"Xbox"+(only(xp.x)?` from the ${xp.x.join(" and ")} version only`:""),xp.p&&"PC"+(only(xp.p)?` from the ${xp.p.join(" and ")} version only`:"")].filter(Boolean);
     rows.push(["Crossplay",`Play with friends on ${w.join(w.some(x=>x.includes("only"))?", and ":" and ")} <a class="src" href="https://en.wikipedia.org/wiki/List_of_video_games_that_support_cross-platform_play" target="_blank" rel="noopener">(Wikipedia)</a>`]);}
+  const oc=ocFact(g);
+  if(oc)rows.push(["Critics",oc]);
   const rt=ratingOf(g);
   if(rt)rows.push(["Rated",`<span class="crt big">${esc(rt.label)}</span> ${rt.full!==rt.label?esc(rt.full):""}${rt.desc.length?`<span class="rdesc">${rt.desc.map(esc).join(", ")}</span>`:""}`]);
   const t=[["Main story",g.h],["Story and extras",g.x],["Completionist",g.c]].filter(x=>x[1]);

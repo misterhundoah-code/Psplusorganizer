@@ -208,7 +208,7 @@ The "Import from my PlayStation account" button (in Your data) explains a three-
 
 `tools/fetch_opencritic.py` (run daily by `.github/workflows/opencritic.yml`) looks up OpenCritic's Top Critic Average, % recommended and tier through OpenCritic's official API on RapidAPI. It needs the repository secret `OPENCRITIC_KEY` (or `RAPIDAPI_KEY`). Each run spends at most 25 requests (change it with "Run workflow"), matching new games first, retrying misses after 90 days and refreshing scores every 30. Use the probe box in "Run workflow" to see what the API returns for one title.
 
-OpenCritic's API terms require: a do-follow link to OpenCritic on any page that shows its data, to the game's own OpenCritic page where there is one; OpenCritic's name or full logo next to any Top Critic Average, linked to the game page; no competing aggregator and no re-offering the data through an API; and deleting all OpenCritic data within 60 days if they ask. All of it lives in `data/opencritic.json`, so deleting that file and rebuilding removes it.
+OpenCritic's API terms require: a do-follow link to OpenCritic on any page that shows its data, to the game's own OpenCritic page where there is one; OpenCritic's name or full logo next to any Top Critic Average, linked to the game page; no competing aggregator and no re-offering the data through an API; and deleting all OpenCritic data within 60 days if they ask. The site shows one figure, the % of critics who recommend a game, as "99% recommend it on OpenCritic" with "OpenCritic" linked to the game's page: in the game pop-up's details and on the list cards. All of it lives in `data/opencritic.json`, so deleting that file and rebuilding removes it.
 
 ## Featured picks and write-ups
 

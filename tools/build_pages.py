@@ -284,6 +284,30 @@ def coop_line(g, kind):
     return f"Online, {'up to ' if n > 2 else ''}{n} players"
 
 
+OC = json.loads((ROOT / "data" / "opencritic.json").read_text(encoding="utf-8")) if (ROOT / "data" / "opencritic.json").exists() else {}
+
+
+def oc_bit(g):
+    """'99% recommend it on OpenCritic', linked to the game's OpenCritic page as their terms ask."""
+    o = OC.get(g["id"]) or {}
+    if not o.get("u"):
+        return ""
+    a = f'<a href="{esc(o["u"])}" rel="noopener">OpenCritic</a>'
+    return f'{o["r"]}% recommend it on {a}' if o.get("r") is not None else (f'{o["s"]} on {a}' if o.get("s") is not None else "")
+
+
+def meta_html(bits, g):
+    """The card's meta line, with the OpenCritic figure right after the Metascore."""
+    out = [esc(b) for b in bits]
+    o, oc = OC.get(g["id"]) or {}, oc_bit(g)
+    if oc and o.get("r") is not None:
+        oc = f'{o["r"]}% recommend on <a href="{esc(o["u"])}" rel="noopener">OpenCritic</a>'
+    if oc:
+        at = next((i + 1 for i, b in enumerate(bits) if b.startswith("Metascore")), len(out))
+        out.insert(at, oc)
+    return " · ".join(out)
+
+
 def picks(chosen, cp):
     """The featured cards at the top of a list: art, write-up and links for each chosen game."""
     out = []
@@ -306,7 +330,7 @@ def picks(chosen, cp):
                  f'<a href="{esc(yt_url(g))}" rel="noopener">Trailers on YouTube</a>',
                  f'<a href="/?q={urllib.parse.quote(g["t"])}">Open on the wall</a>']
         out.append(f'<article class="pick"><div class="{cls}">{art}<span class="rank">{i}</span></div><div class="pbody">'
-                   f'<h2>{esc(g["t"])}</h2>{leave}<p class="meta">{esc(" · ".join(bits))}</p><p>{esc(text)}</p>'
+                   f'<h2>{esc(g["t"])}</h2>{leave}<p class="meta">{meta_html(bits, g)}</p><p>{esc(text)}</p>'
                    f'<p class="plinks">{"".join(l for l in links if l)}</p></div></article>')
     return '<div class="picks">' + "".join(out) + "</div>"
 
