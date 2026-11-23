@@ -143,5 +143,50 @@
    ]
   ],
   "featured": 0
+ },
+ "short-ps-plus-games": {
+  "title": "The 10 best short games on PS Plus you can finish in a weekend ({month})",
+  "h1": "The best short games on PS Plus",
+  "desc": "Great PS Plus Extra games you can finish in under 10 hours, from Celeste to Shadow of the Colossus, with how long each one takes.",
+  "intro": "Not every great game asks for 100 hours. These are our ten favourite games on PS Plus that you can finish in a weekend or less, from a two-hour story to a tough-but-fair platformer. Each one says roughly how long it takes, based on HowLongToBeat's averages, so you can fit one into the time you have. The full list of games under 10 hours follows.",
+  "picks": [
+   "celeste",
+   "undertale",
+   "shadow-of-the-colossus",
+   "sword-of-the-sea",
+   "neva",
+   "indika",
+   "hotline-miami",
+   "gris",
+   "venba",
+   "bramble-the-mountain-king"
+  ],
+  "featured": 10,
+  "faq": [
+   [
+    "What's the best short game on PS Plus?",
+    "Celeste and Undertale are two of the highest-rated games on the whole service, and both take under 10 hours. For something you can finish in an evening, Sword of the Sea takes about 3 hours."
+   ],
+   [
+    "What can I finish in one sitting?",
+    "Venba takes about an hour and a half, and Sword of the Sea, GRIS and Indika each take around 3 to 4 hours."
+   ],
+   [
+    "Where do the times come from?",
+    "They're HowLongToBeat's averages for finishing the main story. Your own time will vary, especially in tougher games like Celeste."
+   ],
+   [
+    "What are good short games for a beginner?",
+    "GRIS has no way to fail, and Venba is a relaxed story about cooking. Celeste is tough, but its Assist Mode lets anyone see it through."
+   ],
+   [
+    "Are there short horror games on PS Plus?",
+    "Yes. Bramble: The Mountain King is on this list, and Crow Country takes around 5 hours too. Our <a href=\"/lists/ps-plus-horror-games\">horror list</a> has more."
+   ],
+   [
+    "How do I find more short games?",
+    "The full list below covers every game on PS Plus under 10 hours. On the <a href=\"/?src=plus&amp;tlen=0-10&amp;sort=m\">wall</a>, you can filter by length and hide what you've already played."
+   ]
+  ]
  }
 }
