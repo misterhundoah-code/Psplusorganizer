@@ -123,3 +123,4 @@ table.prose{border-collapse:collapse;width:100%;background:var(--case);font-size
 table.prose th,table.prose td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
 table.prose th{background:var(--chip)}
 table.prose td:first-child{font-weight:600}
+.sign .home img{display:block;width:150px;height:auto;margin:-4px 0 -2px -4px}

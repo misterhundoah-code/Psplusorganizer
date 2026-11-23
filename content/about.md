@@ -1,4 +1,4 @@
-# About PS Plus and the Rental Wall
+# About PS Plus and Wall of PS Plus
 
 ## What is PS Plus?
 
@@ -50,11 +50,11 @@ Sony runs PS Plus on a steady monthly rhythm, all announced on the PlayStation B
 
 November 2026 is a good example of the new staggered catalogue: the lineup was announced on 10 November, and in the US and UK the games arrived on 11, 17 and 24 November, while most other countries got nearly all of them on 17 November. ([Fandomwire](https://fandomwire.com/playstation-reveals-ps-plus-game-catalog-november-2026-all-games/), [Push Square](https://www.pushsquare.com/news/2022/07/when-will-new-ps-plus-extra-ps-plus-premium-games-be-announced))
 
-The Rental Wall follows all of this for you: the This month panel shows the current monthly games with their claim-by date, the games about to leave and what Sony has announced is coming, and you can add any of those dates to your calendar.
+The Wall follows all of this for you: the This month panel shows the current monthly games with their claim-by date, the games about to leave and what Sony has announced is coming, and you can add any of those dates to your calendar.
 
-## How to use the Rental Wall
+## How to use the Wall
 
-The Rental Wall shows every game in the PS Plus Game Catalog, the Classics Catalog and the monthly games, on one wall you can sort and filter. Sony's own browser makes it hard to answer simple questions like "what's a short co-op game I haven't played?", so this site tries to make that easy.
+Wall of PS Plus shows every game in the PS Plus Game Catalog, the Classics Catalog and the monthly games, on one wall you can sort and filter. Sony's own browser makes it hard to answer simple questions like "what's a short co-op game I haven't played?", so this site tries to make that easy.
 
 **Find something to play.** Use the filters to narrow the wall by PS Plus tier, style, length, number of players, platform, camera perspective, original system and age rating, then sort by Metascore, completion time, release year, title or a priority score tuned to your own ratings. Search covers titles, styles and your own notes. Each game shows its Metascore and its HowLongToBeat time, so you can see at a glance how good it is and how long it will take.
 
