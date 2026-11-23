@@ -270,7 +270,7 @@ def picks(chosen, cp):
         else:
             art, cls = "", "art none"
         plat = " / ".join(g.get("p") or [])
-        bits = [b for b in (coop_line(g, cp["coop"]) if cp.get("coop") else "", plat, f"Metascore {g['m']}" if g.get("m") else "", f"about {hours(g.get('h'))} main story" if g.get("h") else "") if b]
+        bits = [b for b in ((cp.get("notes") or {}).get(g["id"], ""), coop_line(g, cp["coop"]) if cp.get("coop") else "", plat, f"Metascore {g['m']}" if g.get("m") else "", f"about {hours(g.get('h'))} main story" if g.get("h") else "") if b]
         lv = LEAVING.get(g["id"])
         leave = f'<span class="leave">Leaving {esc(short_date(lv))}</span>' if lv else ""
         text = (cp.get("writeups") or {}).get(g["id"]) or WRITEUPS.get(g["id"]) or g.get("d") or ""
