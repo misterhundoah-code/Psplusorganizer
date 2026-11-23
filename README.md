@@ -204,6 +204,12 @@ The "Import from my PlayStation account" button (in Your data) explains a three-
 
 `about.html` and `faq.html` are built by `tools/build_pages.py` from `content/about.md` and `content/faq.md`. The Markdown is deliberately simple: `#`, `##` and `###` headings, paragraphs, `**bold**`, `[links](url)` and pipe tables. In the FAQ, each `###` heading is a question and the paragraph after it is the answer; the build also writes them as FAQPage structured data. `lists/ps-plus-monthly-games-history` lists every game with an `e` month in `data/games.json`, newest month first.
 
+## OpenCritic scores
+
+`tools/fetch_opencritic.py` (run daily by `.github/workflows/opencritic.yml`) looks up OpenCritic's Top Critic Average, % recommended and tier through OpenCritic's official API on RapidAPI. It needs the repository secret `OPENCRITIC_KEY` (or `RAPIDAPI_KEY`). Each run spends at most 25 requests (change it with "Run workflow"), matching new games first, retrying misses after 90 days and refreshing scores every 30. Use the probe box in "Run workflow" to see what the API returns for one title.
+
+OpenCritic's API terms require: a do-follow link to OpenCritic on any page that shows its data, to the game's own OpenCritic page where there is one; OpenCritic's name or full logo next to any Top Critic Average, linked to the game page; no competing aggregator and no re-offering the data through an API; and deleting all OpenCritic data within 60 days if they ask. All of it lives in `data/opencritic.json`, so deleting that file and rebuilding removes it.
+
 ## Featured picks and write-ups
 
 A list in `data/list-copy.json` gets a hand-written page: title and description (with `{month}`, `{count}`, `{top}` filled in each build), an intro, the top N games as cards, and a FAQ with FAQPage structured data. Each card shows the game's write-up from `data/writeups.json` (one per game, reused on every list it appears in; games without one fall back to the short synopsis), its wide key art from `art/wide/` (fetched from the PlayStation Store by `tools/fetch_wide_art.py` in the artwork workflow, for every game with a write-up; the square cover is used otherwise), and links to the PlayStation Store, Metacritic, YouTube trailers and the wall. These lists show one entry per game across editions.

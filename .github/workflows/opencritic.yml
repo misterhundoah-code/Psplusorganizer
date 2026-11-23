@@ -1,0 +1,57 @@
+name: Fetch OpenCritic scores
+
+# Looks up OpenCritic scores through OpenCritic's API (RapidAPI) a few at a time,
+# within the plan's daily allowance, and commits data/opencritic.json.
+# Needs the repository secret OPENCRITIC_KEY (or RAPIDAPI_KEY): the RapidAPI key.
+on:
+  workflow_dispatch:
+    inputs:
+      budget:
+        description: "Most API requests to spend on this run"
+        type: number
+        default: 25
+      probe:
+        description: "Debug only: print what the API returns for this title, save nothing"
+        type: string
+        default: ""
+  schedule:
+    - cron: "41 7 * * *"
+  push:
+    branches: [main]
+    paths: ["tools/fetch_opencritic.py", ".github/workflows/opencritic.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: opencritic
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      OPENCRITIC_KEY: ${{ secrets.OPENCRITIC_KEY || secrets.RAPIDAPI_KEY }}
+      OC_BUDGET: ${{ inputs.budget || 25 }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - if: inputs.probe != '' && inputs.probe != null
+        run: python tools/fetch_opencritic.py --probe "$PROBE"
+        env:
+          PROBE: ${{ inputs.probe }}
+      - if: inputs.probe == '' || inputs.probe == null
+        run: python -u tools/fetch_opencritic.py
+      - name: Commit the scores
+        if: inputs.probe == '' || inputs.probe == null
+        run: |
+          git add data/opencritic.json
+          if git diff --cached --quiet; then echo "No changes."; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update OpenCritic scores"
+          git pull --rebase -q && git push
