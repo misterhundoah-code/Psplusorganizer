@@ -200,6 +200,10 @@ The "Import from my PlayStation account" button (in Your data) explains a three-
 
 `python3 tools/predict/preview.py` builds a standalone preview from the local output.
 
+## About, FAQ and the monthly games history
+
+`about.html` and `faq.html` are built by `tools/build_pages.py` from `content/about.md` and `content/faq.md`. The Markdown is deliberately simple: `#`, `##` and `###` headings, paragraphs, `**bold**`, `[links](url)` and pipe tables. In the FAQ, each `###` heading is a question and the paragraph after it is the answer; the build also writes them as FAQPage structured data. `lists/ps-plus-monthly-games-history` lists every game with an `e` month in `data/games.json`, newest month first.
+
 ## Featured picks and write-ups
 
 A list in `data/list-copy.json` gets a hand-written page: title and description (with `{month}`, `{count}`, `{top}` filled in each build), an intro, the top N games as cards, and a FAQ with FAQPage structured data. Each card shows the game's write-up from `data/writeups.json` (one per game, reused on every list it appears in; games without one fall back to the short synopsis), its wide key art from `art/wide/` (fetched from the PlayStation Store by `tools/fetch_wide_art.py` in the artwork workflow, for every game with a write-up; the square cover is used otherwise), and links to the PlayStation Store, Metacritic, YouTube trailers and the wall. These lists show one entry per game across editions.

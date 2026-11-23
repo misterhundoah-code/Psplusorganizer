@@ -100,3 +100,26 @@ td.num,th.num{text-align:center;white-space:nowrap}
 .sitenav a[aria-current=page]{color:#fff;border-bottom-color:#FFC925}
 .sitenav a:focus-visible{outline:2px solid #FFC925;outline-offset:-2px}
 @media (max-width:720px){.sitenav::after{content:"";position:absolute;top:0;right:0;bottom:0;width:28px;background:linear-gradient(90deg,rgba(14,22,54,0),#0E1636);pointer-events:none}.sitenav a{font-size:13.5px;padding:10px 10px 8px}}
+/* Monthly games history */
+.yjump{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 8px}
+.yjump a{font-weight:700;text-decoration:none;color:var(--ink);background:var(--case);border:2px solid var(--line);padding:4px 10px}
+.yjump a:hover{border-color:var(--blue)}
+section[id^="y"]{scroll-margin-top:64px}
+section[id^="y"] h2 .cnt{font:600 15px var(--body);color:var(--muted);margin-left:8px}
+.mon h3{margin:18px 0 8px}
+.mgrid{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px}
+.mgrid li{display:flex;align-items:center;gap:10px;background:var(--case);border:1px solid var(--line);padding:6px 10px 6px 6px}
+.mgrid img,.mgrid .nocover{width:48px;height:60px;flex:none;object-fit:cover}
+.mgrid div{flex:1;min-width:0}.mgrid b{display:block;line-height:1.25}
+.mgrid .meta{display:block;color:var(--muted);font-size:13px}
+.mgrid .now{display:inline-block;margin-top:3px;font-size:12px;font-weight:700;color:#fff;background:var(--blue);padding:1px 6px}
+.mgrid .ms{flex:none;font-weight:700;font-size:15px;min-width:2ch;text-align:right}
+/* About and FAQ */
+.prosepage{max-width:76ch}
+.prosepage h3{margin:22px 0 4px;font-size:18px}
+.prosepage h3+p{margin-top:0}
+.tw{overflow-x:auto;margin:12px 0}
+table.prose{border-collapse:collapse;width:100%;background:var(--case);font-size:15px}
+table.prose th,table.prose td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+table.prose th{background:var(--chip)}
+table.prose td:first-child{font-weight:600}

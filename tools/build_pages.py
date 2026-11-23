@@ -176,7 +176,9 @@ NAV = [("", "/", "The wall"), ("coming-to-ps-plus", "/lists/coming-to-ps-plus", 
        ("leaving-ps-plus", "/lists/leaving-ps-plus", "Leaving soon"), ("new-on-ps-plus", "/lists/new-on-ps-plus", "New this month"),
        ("best-ps-plus-extra-games", "/lists/best-ps-plus-extra-games", "Best of Extra"),
        ("ps-plus-co-op-games", "/lists/ps-plus-co-op-games", "Co-op"), ("short-ps-plus-games", "/lists/short-ps-plus-games", "Short games"),
-       ("ps-plus-horror-games", "/lists/ps-plus-horror-games", "Horror"), ("lists", "/lists/", "All lists")]
+       ("ps-plus-horror-games", "/lists/ps-plus-horror-games", "Horror"),
+       ("ps-plus-monthly-games-history", "/lists/ps-plus-monthly-games-history", "Every monthly game"),
+       ("lists", "/lists/", "All lists"), ("about", "/about", "About"), ("faq", "/faq", "FAQ")]
 COOP_SLUGS = {"ps-plus-co-op-games", "ps-plus-couch-co-op-games", "ps-plus-online-co-op-games"}
 
 
@@ -214,7 +216,7 @@ def page(slug, title, desc, body, canonical):
 PlayStation and PS Plus are trademarks of Sony Interactive Entertainment. Metascores are from Metacritic, completion times from
 HowLongToBeat, age ratings and availability from the PlayStation Store, and game modes and crossplay from Wikidata and Wikipedia.
 Cover art belongs to Sony and the games' publishers. The short synopses were drafted with Claude and haven't all been checked by hand.</p>
-<p><a href="/">Open the wall</a> · <a href="/lists/">All lists</a> · <a href="/privacy.html">Privacy</a> ·
+<p><a href="/">Open the wall</a> · <a href="/lists/">All lists</a> · <a href="/about">About</a> · <a href="/faq">FAQ</a> · <a href="/privacy.html">Privacy</a> ·
 <a href="https://github.com/misterhundoah-code/Psplusorganizer/issues/new/choose" rel="noopener">Report a problem</a></p>
 </footer>
 {ANALYTICS}
@@ -328,7 +330,8 @@ def list_nav(current=None):
     pr = (f'<li><a href="/lists/coming-to-ps-plus"{" aria-current=page" if current == "coming-to-ps-plus" else ""}>Likely to join PS Plus next: predictions</a></li>'
           if PREDICT else "")
     nw = f'<li><a href="/lists/new-on-ps-plus"{" aria-current=page" if current == "new-on-ps-plus" else ""}>New on PS Plus: coming soon</a></li>'
-    return f'<ul class="lists">{nw}{lv}{pr}{items}</ul>'
+    hi = f'<li><a href="/lists/ps-plus-monthly-games-history"{" aria-current=page" if current == "ps-plus-monthly-games-history" else ""}>Every PS Plus monthly game since 2013</a></li>'
+    return f'<ul class="lists">{nw}{lv}{pr}{hi}{items}</ul>'
 
 
 def predict_page():
@@ -384,6 +387,95 @@ that we could match, {hit} ({round(hit / max(tot, 1) * 100)}%) were in that mont
 <h2>More PS Plus lists</h2>{list_nav("coming-to-ps-plus")}
 <script src="/lists/predict.js" defer></script>"""
     return page("coming-to-ps-plus", title, desc, body, f"{SITE}/lists/coming-to-ps-plus")
+
+
+def monthly_history_page():
+    """Every PS4 and PS5 monthly game since November 2013, newest month first, from games.json's `e` field."""
+    slug = "ps-plus-monthly-games-history"
+    gs = [g for g in GAMES if g.get("e")]
+    by_month = {}
+    for g in gs:
+        by_month.setdefault(g["e"], []).append(g)
+    months = sorted(by_month, reverse=True)
+    years = sorted({m[:4] for m in months}, reverse=True)
+    first = date.fromisoformat(months[-1] + "-01").strftime("%B %Y")
+    secs = []
+    for y in years:
+        ms = [m for m in months if m.startswith(y)]
+        blocks = []
+        for m in ms:
+            cards = []
+            for g in sorted(by_month[m], key=lambda g: (-(g.get("m") or 0), g["t"].lower())):
+                cover = (f'<img src="/art/{g["id"]}.webp" alt="" width="48" height="60" loading="lazy" decoding="async">'
+                         if g["id"] in ART else '<span class="nocover" aria-hidden="true"></span>')
+                plat = " / ".join(g.get("p") or [])
+                now = '<span class="now">In Extra now</span>' if g.get("cat") else ""
+                score = f'<span class="ms" title="Metascore" aria-label="Metascore {g.get("m")}">{g["m"]}</span>' if g.get("m") else ""
+                cards.append(f'<li>{cover}<div><b>{esc(g["t"])}</b><span class="meta">{esc(plat)}</span>{now}</div>{score}</li>')
+            label = date.fromisoformat(m + "-01").strftime("%B")
+            blocks.append(f'<div class="mon" id="m{m}"><h3>{label} {y}</h3><ul class="mgrid">{"".join(cards)}</ul></div>')
+        n = sum(len(by_month[m]) for m in ms)
+        secs.append(f'<section id="y{y}"><h2>{y} <span class="cnt">{n} game{"s" if n != 1 else ""}</span></h2>{"".join(blocks)}</section>')
+    jump = "".join(f'<a href="#y{y}">{y}</a>' for y in years)
+    title = "Every PS Plus monthly game ever, month by month"
+    desc = (f"All {len(gs)} PS4 and PS5 games given away with PS Plus since {first}, newest first, with Metascores and "
+            "which ones you can still play in the Game Catalog.")
+    body = f"""<h1>Every PS Plus monthly game</h1>
+<p class="intro">All {len(gs)} PS4 and PS5 monthly games Sony has given PS Plus members since the PS4 launched in {first}, newest first.
+These are the North American lineups. Each month's games could only be claimed during that month, so if you were a member then and
+claimed them, they're still in your library to play while you subscribe. Games marked In Extra now are back in the Game Catalog, so
+Extra and Premium members can play them even if they missed the month.</p>
+<p class="small">The PS3 and PS Vita games Sony also gave away until 2019 aren't listed. A game offered twice appears under its most recent month.
+Spot a gap? <a href="https://github.com/misterhundoah-code/Psplusorganizer/issues/new/choose" rel="noopener">Let us know</a>.</p>
+<nav class="yjump" aria-label="Jump to a year">{jump}</nav>
+{"".join(secs)}
+<h2>More PS Plus lists</h2>{list_nav(slug)}"""
+    return slug, page(slug, title, desc, body, f"{SITE}/lists/{slug}")
+
+
+def inline_md(t):
+    t = esc(t)
+    t = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", t)
+    def link(m):
+        u = m.group(2)
+        ext = u.startswith("http")
+        rel = ' rel="noopener"' if ext else ""
+        return f'<a href="{u}"{rel}>{m.group(1)}</a>'
+    return re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", link, t)
+
+
+def md_html(text):
+    """Just enough Markdown for content/*.md: #, ##, ### headings, paragraphs, **bold**, [links](url) and pipe tables."""
+    out, faq, q = [], [], None
+    for block in text.strip().split("\n\n"):
+        b = block.strip()
+        if b.startswith("### "):
+            q = b[4:].strip(); out.append(f"<h3>{inline_md(q)}</h3>")
+        elif b.startswith("## "):
+            out.append(f"<h2>{inline_md(b[3:].strip())}</h2>")
+        elif b.startswith("# "):
+            out.append(f"<h1>{inline_md(b[2:].strip())}</h1>")
+        elif b.startswith("|"):
+            rows = [[c.strip() for c in r.strip().strip("|").split("|")] for r in b.splitlines() if not re.match(r"^\|[\s|:-]+\|$", r.strip())]
+            head = "".join(f"<th>{inline_md(c)}</th>" for c in rows[0])
+            body = "".join("<tr>" + "".join(f"<td>{inline_md(c)}</td>" for c in r) + "</tr>" for r in rows[1:])
+            out.append(f'<div class="tw"><table class="prose"><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>')
+        else:
+            out.append(f"<p>{inline_md(b)}</p>")
+            if q:
+                faq.append((q, re.sub(r"\s*\(\[.*\)\)$", "", b)))
+                q = None
+    return "\n".join(out), faq
+
+
+def content_page(slug, title, desc):
+    html, faq = md_html((ROOT / "content" / f"{slug}.md").read_text(encoding="utf-8"))
+    ld = ""
+    if faq:
+        plain = lambda t: re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", t).replace("**", "")
+        ld = ('<script type="application/ld+json">' + json.dumps({"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
+            {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": plain(a)}} for q, a in faq]}, ensure_ascii=False) + "</script>")
+    return page(slug, title, desc, f'<div class="prosepage">{html}</div>{ld}', f"{SITE}/{slug}")
 
 
 def leaving_games():
@@ -476,6 +568,8 @@ def build():
 
     if PREDICT:
         written["coming-to-ps-plus"] = predict_page()
+    hs, htext = monthly_history_page()
+    written[hs] = htext
 
     body = ('<h1>PS Plus lists</h1><p class="intro">Ready-made lists from the PS Plus Rental Wall, updated whenever the catalogue '
             'changes. Each one opens on the interactive wall, where you can filter further and keep track of what you\'ve played.</p>'
@@ -483,6 +577,13 @@ def build():
     written["index"] = page("index", "PS Plus lists", "Ready-made lists of PS Plus Extra and Premium games: best-rated, co-op, crossplay, short, for kids, leaving soon and more.",
                             body, f"{SITE}/lists/")
 
+    for slug, title, desc in (("about", "About PS Plus and the Rental Wall",
+                               "What PS Plus is, how PS Now became part of it, what each tier includes, when games are announced and arrive, and how to use the PS Plus Rental Wall."),
+                              ("faq", "PS Plus FAQ", "Answers to common PlayStation Plus questions: tiers and prices, monthly games, the Game Catalog, streaming, sharing and billing.")):
+        text = content_page(slug, title, desc)
+        p = ROOT / f"{slug}.html"
+        if not p.exists() or p.read_text(encoding="utf-8") != text:
+            p.write_text(text, encoding="utf-8")
     for slug, text in written.items():
         p = ROOT / "lists" / f"{slug}.html"
         if not p.exists() or p.read_text(encoding="utf-8") != text:
@@ -492,7 +593,7 @@ def build():
             old.unlink()
 
     update_index(lv, when_txt)
-    urls = [f"{SITE}/", f"{SITE}/lists/", f"{SITE}/lists/new-on-ps-plus", f"{SITE}/lists/leaving-ps-plus"] + ([f"{SITE}/lists/coming-to-ps-plus"] if PREDICT else []) + [f"{SITE}/lists/{s}" for s, *_ in LISTS]
+    urls = [f"{SITE}/", f"{SITE}/lists/", f"{SITE}/lists/new-on-ps-plus", f"{SITE}/lists/leaving-ps-plus"] + ([f"{SITE}/lists/coming-to-ps-plus"] if PREDICT else []) + [f"{SITE}/lists/ps-plus-monthly-games-history", f"{SITE}/about", f"{SITE}/faq"] + [f"{SITE}/lists/{s}" for s, *_ in LISTS]
     sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     sm += [f"  <url><loc>{u}</loc><changefreq>weekly</changefreq></url>" for u in urls]
     sm += [f"  <url><loc>{SITE}/{p}</loc><changefreq>yearly</changefreq></url>" for p in ("privacy.html", "terms.html")]
