@@ -2,7 +2,7 @@ name: Fetch OpenCritic scores
 
 # Looks up OpenCritic scores through OpenCritic's API (RapidAPI) a few at a time,
 # within the plan's daily allowance, and commits data/opencritic.json.
-# Needs the repository secret OPENCRITIC_KEY (or RAPIDAPI_KEY): the RapidAPI key.
+# Needs the repository secret OPENCRITIC_KEY (or RAPIDAPI_KEY): the RapidAPI key for the OpenCritic API.
 on:
   workflow_dispatch:
     inputs:
