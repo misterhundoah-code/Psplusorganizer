@@ -19,7 +19,7 @@ import html
 import json
 import re
 import urllib.parse
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -46,6 +46,7 @@ COOP = load("coop.json", {}) or {}               # id -> {"couch": players on on
 WIDE = {p.stem for p in (ROOT / "art" / "wide").glob("*.webp")} if (ROOT / "art" / "wide").exists() else set()     # from tools/predict/model.py; the page is skipped until it exists
 RATINGS = (load("ratings/en-ca.json", {}) or {}).get("games", {})
 ART = set(load("art.json", []) or [])
+ABOUT = load("about.json", {}) or {}            # id -> {"x": Wikipedia's description, "w": article title}
 LEAVING = CAT.get("leaving", {}) or {}
 COMING = load("coming.json", {}) or {}
 TODAY = date.today()
@@ -354,8 +355,9 @@ def list_nav(current=None):
     pr = (f'<li><a href="/lists/coming-to-ps-plus"{" aria-current=page" if current == "coming-to-ps-plus" else ""}>Likely to join PS Plus next: predictions</a></li>'
           if PREDICT else "")
     nw = f'<li><a href="/lists/new-on-ps-plus"{" aria-current=page" if current == "new-on-ps-plus" else ""}>New on PS Plus: coming soon</a></li>'
+    mo = f'<li><a href="/lists/ps-plus-monthly-games"{" aria-current=page" if current == "ps-plus-monthly-games" else ""}>This month\'s PS Plus monthly games</a></li>'
     hi = f'<li><a href="/lists/ps-plus-monthly-games-history"{" aria-current=page" if current == "ps-plus-monthly-games-history" else ""}>Every PS Plus monthly game since 2013</a></li>'
-    return f'<ul class="lists">{nw}{lv}{pr}{hi}{items}</ul>'
+    return f'<ul class="lists">{mo}{nw}{lv}{pr}{hi}{items}</ul>'
 
 
 def predict_page():
@@ -411,6 +413,104 @@ that we could match, {hit} ({round(hit / max(tot, 1) * 100)}%) were in that mont
 <h2>More PS Plus lists</h2>{list_nav("coming-to-ps-plus")}
 <script src="/lists/predict.js" defer></script>"""
     return page("coming-to-ps-plus", title, desc, body, f"{SITE}/lists/coming-to-ps-plus")
+
+
+def first_tuesday(y, m):
+    d = date(y, m, 1)
+    return d + timedelta(days=(1 - d.weekday()) % 7)
+
+
+def blurb(g):
+    """One or two sentences about a game: our own write-up if there is one, else the start of Wikipedia's description."""
+    if g and WRITEUPS.get(g["id"]):
+        t = WRITEUPS[g["id"]]
+    else:
+        t = ((ABOUT.get(g["id"]) or {}).get("x") or "").split("\n")[0] if g else ""
+        t = " ".join(re.split(r"(?<=[.!?])\s+", t)[:2])
+    return t
+
+
+def monthly_card(x, g, when):
+    """A monthly game: cover, name, platforms, scores, length, a sentence or two, and a link to it on the wall."""
+    gid = (g or {}).get("id")
+    if gid and gid in ART:
+        cover = f'<img src="/art/{gid}.webp" alt="" width="120" height="150" loading="lazy" decoding="async">'
+    elif x.get("img"):
+        cover = f'<img class="wide" src="{esc(x["img"])}" alt="" width="240" height="135" loading="lazy" decoding="async">'
+    else:
+        cover = '<span class="nocover" aria-hidden="true"></span>'
+    bits = [esc(" and ".join(x.get("p") or (g or {}).get("p") or []))]
+    if g and g.get("m"):
+        bits.append(f'Metascore {g["m"]}')
+    oc = oc_bit(g) if g else ""
+    if oc and (OC.get(gid) or {}).get("r") is not None:
+        oc = f'{OC[gid]["r"]}% recommend on <a href="{esc(OC[gid]["u"])}" rel="noopener">OpenCritic</a>'
+    if oc:
+        bits.append(oc)
+    if g and g.get("h") is not None:
+        bits.append(f"about {esc(hours(g['h']))} main story")
+    text = blurb(g)
+    wall = f'<a href="/?q={urllib.parse.quote(x["t"])}">Find it on the wall</a>' if g else ""
+    return (f'<li class="mcard">{cover}<div><h3>{esc(x["t"])}</h3><p class="meta">{" · ".join(b for b in bits if b)}</p>'
+            f'{f"<p>{esc(text)}</p>" if text else ""}{f"<p class=small>{wall}</p>" if wall else ""}</div></li>')
+
+
+def monthly_page():
+    """This month's monthly games (Essential): the ones to claim now, and next month's once Sony announces them.
+    Built from data/coming.json (Sony's PlayStation Blog posts), so it updates itself each month."""
+    slug = "ps-plus-monthly-games"
+    byid = {g["id"]: g for g in GAMES}
+    today = TODAY.isoformat()
+    cur = COMING.get("monthly") or {}
+    nxt = [x for x in COMING.get("games", []) if x.get("tier") == "Essential" and (x.get("date") or "") > today]
+    nxt_post = next((p for p in COMING.get("posts", []) if p.get("kind") == "monthly" and nxt and p.get("month") == nxt[0]["date"][:7]), None)
+    if cur.get("games"):
+        cy, cm = map(int, cur["month"].split("-"))
+        swap = date.fromisoformat(nxt[0]["date"]) if nxt else first_tuesday(cy + cm // 12, cm % 12 + 1)
+        last_day = cur.get("until") or (swap - timedelta(days=1)).isoformat()
+        cur_name = date(cy, cm, 1).strftime("%B %Y")
+    else:
+        cur_name, last_day, swap = "", None, None
+    nxt_name = date.fromisoformat(nxt[0]["date"]).strftime("%B %Y") if nxt else ""
+    head = nxt_name or cur_name or TODAY.strftime("%B %Y")
+    names = [x["t"] for x in (nxt or cur.get("games") or [])]
+    title = f"PS Plus monthly games for {head}" + (f": {', '.join(names[:-1])} and {names[-1]}" if len(names) > 1 else (f": {names[0]}" if names else ""))
+    desc = (f"The PS Plus monthly games for {head}, free to claim with every tier, including Essential: "
+            + (", ".join(names) if names else "the lineup") + ", with Metascores, completion times and claim dates.")
+    o = [f'<h1>PS Plus monthly games for {esc(head)}</h1>']
+    if nxt:
+        arrive = date.fromisoformat(nxt[0]["date"])
+        o.append(f'<p class="intro">Sony has announced the monthly games for {esc(nxt_name)}. They\'re free to claim with any PS Plus tier, '
+                 f'including Essential, from {esc(arrive.strftime("%A"))} {esc(nice_date(nxt[0]["date"]))}'
+                 + (f'. Until then you can still claim {esc(cur_name.split()[0])}\'s games, below' if cur.get("games") else "")
+                 + '.</p>')
+        o.append(f'<h2>Coming {esc(arrive.strftime("%A"))} {esc(nice_date(nxt[0]["date"]))}</h2><ul class="mlist">'
+                 + "".join(monthly_card(x, byid.get(x.get("id") or ""), "next") for x in nxt) + "</ul>")
+    if cur.get("games"):
+        ld = date.fromisoformat(last_day)
+        left = (ld - TODAY).days
+        o.append(f'<h2>{"Claim now" if nxt else "Free to claim now"}: {esc(cur_name.split()[0])}\'s games</h2>'
+                 f'<p class="intro">Claim these by {esc(ld.strftime("%A"))} {esc(nice_date(last_day))}'
+                 + (f" ({left} day{'s' if left != 1 else ''} left)" if 0 <= left <= 31 else "")
+                 + '. Once claimed, they\'re yours to play for as long as you\'re a PS Plus member, on any tier. '
+                 'Adding them to your library is enough; you don\'t need to download them.</p>'
+                 + '<ul class="mlist">' + "".join(monthly_card(x, byid.get(x.get("id") or ""), "now") for x in cur["games"]) + "</ul>")
+    if not nxt:
+        if swap:
+            ann = swap - timedelta(days=(swap.weekday() - 2) % 7 or 7)
+            o.append(f'<p class="note">Sony usually announces the next month\'s games on the last Wednesday before they arrive, so expect '
+                     f'{esc(date(swap.year, swap.month, 1).strftime("%B"))}\'s lineup on Wednesday {esc(nice_date(ann.isoformat()))}, '
+                     f'free to claim from Tuesday {esc(nice_date(swap.isoformat()))}. This page updates the same day.</p>')
+    srcs = [p for p in ([nxt_post] if nxt_post else []) if p] 
+    links = "".join(f'<li><a href="{esc(p["url"])}" rel="noopener">{esc(p["title"])}</a></li>' for p in srcs)
+    if cur.get("url"):
+        links += f'<li><a href="{esc(cur["url"])}" rel="noopener">Sony\'s announcement of {esc(cur_name.split()[0])}\'s games</a></li>'
+    if links:
+        o.append(f"<h2>Sony's announcements</h2><ul>{links}</ul>")
+    o.append('<p>Missed a month? See <a href="/lists/ps-plus-monthly-games-history">every PS Plus monthly game since 2013</a>. '
+             'For how claiming works, see the <a href="/faq">PS Plus FAQ</a>.</p>')
+    o.append(f"<h2>More PS Plus lists</h2>{list_nav(slug)}")
+    return slug, page(slug, title, desc, "".join(o), f"{SITE}/lists/{slug}")
 
 
 def monthly_history_page():
@@ -592,6 +692,8 @@ def build():
 
     if PREDICT:
         written["coming-to-ps-plus"] = predict_page()
+    ms, mtext = monthly_page()
+    written[ms] = mtext
     hs, htext = monthly_history_page()
     written[hs] = htext
 
@@ -617,7 +719,7 @@ def build():
             old.unlink()
 
     update_index(lv, when_txt)
-    urls = [f"{SITE}/", f"{SITE}/lists/", f"{SITE}/lists/new-on-ps-plus", f"{SITE}/lists/leaving-ps-plus"] + ([f"{SITE}/lists/coming-to-ps-plus"] if PREDICT else []) + [f"{SITE}/lists/ps-plus-monthly-games-history", f"{SITE}/about", f"{SITE}/faq"] + [f"{SITE}/lists/{s}" for s, *_ in LISTS]
+    urls = [f"{SITE}/", f"{SITE}/lists/", f"{SITE}/lists/new-on-ps-plus", f"{SITE}/lists/leaving-ps-plus"] + ([f"{SITE}/lists/coming-to-ps-plus"] if PREDICT else []) + [f"{SITE}/lists/ps-plus-monthly-games", f"{SITE}/lists/ps-plus-monthly-games-history", f"{SITE}/about", f"{SITE}/faq"] + [f"{SITE}/lists/{s}" for s, *_ in LISTS]
     sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     sm += [f"  <url><loc>{u}</loc><changefreq>weekly</changefreq></url>" for u in urls]
     sm += [f"  <url><loc>{SITE}/{p}</loc><changefreq>yearly</changefreq></url>" for p in ("privacy.html", "terms.html")]

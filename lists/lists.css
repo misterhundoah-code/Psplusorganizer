@@ -124,3 +124,11 @@ table.prose th,table.prose td{border:1px solid var(--line);padding:8px 10px;text
 table.prose th{background:var(--chip)}
 table.prose td:first-child{font-weight:600}
 .sign .home img{display:block;width:150px;height:auto;margin:-4px 0 -2px -4px}
+/* This month's monthly games */
+.mlist{list-style:none;padding:0;margin:12px 0 24px;display:grid;gap:14px}
+.mcard{display:flex;gap:16px;align-items:flex-start;background:var(--case);border:2px solid var(--line);padding:12px}
+.mcard img,.mcard .nocover{flex:none;width:120px;height:150px;object-fit:cover}
+.mcard img.wide{width:200px;height:auto;aspect-ratio:16/9}
+.mcard h3{margin:0 0 4px;font-size:20px}.mcard p{margin:4px 0}.mcard .meta{color:var(--muted);font-size:14px}
+.mcard .meta a{color:inherit}
+@media (max-width:560px){.mcard{flex-direction:column}.mcard img.wide{width:100%}}

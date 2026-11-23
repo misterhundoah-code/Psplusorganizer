@@ -7,6 +7,8 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "17 16,22 * * *"
+    # Sony posts the monthly games on Wednesdays, usually around 16:30 UTC: catch them within the hour
+    - cron: "47 16,17 * * 3"
   push:
     branches: [main]
     paths: ["tools/fetch_coming.py", "data/coming-manual.json"]
