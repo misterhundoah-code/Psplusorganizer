@@ -1,0 +1,36 @@
+name: Record Steam player counts
+
+# Once a day, at the same time, records how many people are playing each PS4 and PS5 game on Steam
+# (tools/steam_players.py), so the predictions can later spot multiplayer games whose communities are fading.
+# Steam's player-count API is public and needs no key.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "29 20 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: steam-players
+  cancel-in-progress: false
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - run: python -u tools/steam_players.py
+      - name: Commit any changes
+        run: |
+          git add data/steam-players
+          if git diff --cached --quiet; then echo "No changes."; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Steam player counts"
+          for i in 1 2 3; do git pull --rebase -X theirs origin main && git push && break; sleep 5; done

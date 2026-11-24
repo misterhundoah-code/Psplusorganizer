@@ -10,7 +10,7 @@ on:
     - cron: "41 13 * * *"
   push:
     branches: [main]
-    paths: ["data/**", "tools/build_pages.py", "lists/lists.css"]
+    paths: ["data/**", "!data/steam-players/**", "tools/build_pages.py", "lists/lists.css"]
   workflow_run:
     workflows: ["Fetch artwork", "Fetch coming soon", "Fetch crossplay list", "Fetch regional catalogues", "Fetch Wikipedia descriptions and covers", "Update PS Plus predictions", "Fetch OpenCritic scores"]
     types: [completed]
