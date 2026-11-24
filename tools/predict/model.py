@@ -9,7 +9,7 @@ next. The last 12 months are held out first to check the model on months it hasn
 
 Writes data/predict.json for the preview page.
 """
-import json, math, re, sys, datetime, collections
+import json, math, os, re, sys, datetime, collections, functools
 from pathlib import Path
 import numpy as np
 from sklearn.linear_model import LogisticRegression
@@ -53,7 +53,7 @@ for g in wd:
          "dev": [d for d in g["dev"] if not re.fullmatch(r"Q\d+", d)], "ser": [s for s in g["ser"] if not re.fullmatch(r"Q\d+", s)],
          "plats": sorted(plats), "src": "wd", "free": any(FREE.search(x) for x in g["gen"] + g["mode"]),
          "multi": any(re.search(r"multiplayer|online|co-op|cooperative", x, re.I) for x in g["mode"]),
-         "mc": g.get("mc"), "mcid": g.get("mcid")})
+         "mc": g.get("mc"), "mcid": g.get("mcid"), "gen": list(g["gen"])})
 for g in wl:
     if dupe_key(g["t"]) in seen:
         p = pool[seen[dupe_key(g["t"])]]
@@ -63,7 +63,7 @@ for g in wl:
         if not p["dev"]: p["dev"] = g["dev"]
         continue
     add({"t": g["t"], "w": g.get("w"), "rel": g.get("rel"), "pub": sorted({normpub(x) for x in g["pub"]}), "dev": g["dev"], "ser": [],
-         "plats": ["PlayStation 5" if p == "PS5" else "PlayStation 4" for p in g["p"]], "free": False, "multi": False})
+         "plats": ["PlayStation 5" if p == "PS5" else "PlayStation 4" for p in g["p"]], "free": False, "multi": False, "gen": list(g.get("g") or [])})
 # The wall's own PS4/PS5 games, so past additions that neither list has still count.
 F = load("facts.json"); AB = load("about.json"); _pre = Linker(list(pool))
 for g in load("games.json"):
@@ -73,7 +73,7 @@ for g in load("games.json"):
     add({"t": g["t"], "w": (AB.get(g["id"]) or {}).get("w"), "rel": f"{g['y']}-06-30" if g.get("y") else None,
          "pub": sorted({normpub(x) for x in f.get("pub", [])}), "dev": f.get("dev", []), "ser": [f["ser"]] if f.get("ser") else [],
          "plats": ["PlayStation 5" if p == "PS5" else "PlayStation 4" for p in g["p"] if p in ("PS4", "PS5")],
-         "free": False, "multi": "m" in f.get("modes", "") or "c" in f.get("modes", "")})
+         "free": False, "multi": "m" in f.get("modes", "") or "c" in f.get("modes", ""), "gen": list(g.get("g") or [])})
 # Sony's own studios: their games are Sony's, whoever Wikidata names as publisher.
 SONY_STUDIOS = re.compile(r"^(sucker punch|insomniac|naughty dog|santa monica studio|guerrilla|bend studio|sie bend|media molecule|polyphony|"
                           r"bluepoint|housemarque|firesprite|haven|team asobi|japan studio|nixxes|valkyrie entertainment|"
@@ -124,6 +124,65 @@ FEATS = ["day one", "under 6 months old", "6 to 12 months old", "1 to 2 years ol
          "developer track record", "sequel or follow-up due soon", "was a monthly game", "already on Extra", "multiplayer", "PS5 game",
          "big new release", "publisher's other track record"]
 
+# Experimental signals, switched on by name for backtesting: PREDICT_EXTRA="series,season,recentpub,metascore".
+EXTRA = [x for x in os.environ.get("PREDICT_EXTRA", "").split(",") if x]
+XFEATS = {"series": ["series has joined before", "series rhythm"], "season": ["time of year"],
+          "recentpub": ["publisher's last 12 months"], "metascore": ["Metascore", "has a Metascore"]}
+for x in EXTRA: FEATS += XFEATS[x]
+GROUPS = {"sports": re.compile(r"sport|football|soccer|basketball|racing|golf|tennis|hockey|baseball|wrestl|skateboard|cricket|rugby|boxing", re.I),
+          "horror": re.compile(r"horror", re.I),
+          "family": re.compile(r"platform|party|family|kart|children|educational|rhythm", re.I)}
+for g in pool:
+    g["grp"] = {k for k, rx in GROUPS.items() if any(rx.search(x) for x in g.get("gen") or [])}
+
+def series_x(i, m, adds):
+    """Has an earlier game in the series joined this tier, and did one join at about this game's age now?"""
+    g = pool[i]; joined = rhythm = False
+    if g["rm"] is None: return 0.0, 0.0
+    for j in by_series.get(g["skey"], []):
+        h = pool[j]
+        if j == i or h["rm"] is None or h["rm"] >= g["rm"]: continue
+        a = adds.get(j)
+        if a is None or a >= m: continue
+        joined = True
+        if abs((a - h["rm"]) - (m - g["rm"])) <= 2: rhythm = True
+    return float(joined), float(rhythm)
+
+@functools.lru_cache(maxsize=None)
+def _season_stats(m, kind):
+    adds = extra_add if kind == "extra" else ess_add
+    past = [(mm, j) for j, mm in adds.items() if mm < m]
+    seen_months = {mm for mm, _ in past}
+    n_cm = sum(1 for mm in seen_months if mm % 12 == m % 12); N = max(1, len(seen_months))
+    out = {}
+    for grp in GROUPS:
+        hits = [mm for mm, j in past if grp in pool[j]["grp"]]
+        if hits:
+            e = len(hits) * n_cm / N; h = sum(1 for mm in hits if mm % 12 == m % 12)
+            out[grp] = math.log((h + 2) / (e + 2))
+    return out
+
+def season_x(i, m, kind):
+    """How much more (or less) often games of this kind (sports, horror, family) have joined in this calendar month."""
+    st = _season_stats(m, kind)
+    vals = [st[k] for k in pool[i]["grp"] if k in st]
+    return max(vals, key=abs) if vals else 0.0
+
+@functools.lru_cache(maxsize=None)
+def _recent(m, kind):
+    adds = extra_add if kind == "extra" else ess_add
+    c = collections.Counter()
+    for j, mm in adds.items():
+        if m - 12 <= mm < m:
+            for n in ({"Sony"} if pool[j]["sony"] else set(pool[j]["pub"])): c[n] += 1
+    return c
+
+def recentpub_x(i, m, kind):
+    """How many of the publisher's games joined this tier in the last 12 months (log scale)."""
+    g = pool[i]; c = _recent(m, kind)
+    names = {"Sony"} if g["sony"] else set(g["pub"])
+    return max((math.log1p(c[n]) for n in names), default=0.0)
+
 def track(kind_adds, m, which=None):
     """For each publisher and developer: games added before month m, out of their games released at least 6 months before."""
     tot_p, hit_p, tot_d, hit_d = collections.Counter(), collections.Counter(), collections.Counter(), collections.Counter()
@@ -171,6 +230,12 @@ def row(i, m, tr, kind):
          g["sony"], g["sony"] and 12 <= age <= 36, g["excl"], math.log1p(g["views"]) / 10,
          pl[0], dl[0], sq is not None, ess_add.get(i, 10**9) < m, in_extra, g["multi"], g["ps5"],
          (age <= 12) * max(0.0, math.log10(max(g["views"], 1)) - 4.5), pl2[0]]
+    adds = extra_add if kind == "extra" else ess_add
+    for e in EXTRA:
+        if e == "series": x += list(series_x(i, m, adds))
+        elif e == "season": x.append(season_x(i, m, kind))
+        elif e == "recentpub": x.append(recentpub_x(i, m, kind))
+        elif e == "metascore": x += [((g["mc"] or 75) - 75) / 10, bool(g["mc"])]
     return [float(v) for v in x], {"pub": pl, "dev": dl, "seq": sq, "age": age}
 
 def cands(m, kind):

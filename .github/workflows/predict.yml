@@ -6,6 +6,11 @@ name: Update PS Plus predictions
 # is rebuilt by the Build list pages workflow when this finishes.
 on:
   workflow_dispatch:
+    inputs:
+      experiments:
+        description: "Backtest only: versions of the model to compare, separated by ; (e.g. base;series;season). Commits nothing."
+        type: string
+        default: ""
   schedule:
     - cron: "17 15 * * 4"
   push:
@@ -31,16 +36,20 @@ jobs:
       - run: pip install requests pillow mwparserfromhell numpy scikit-learn
       - run: python -u tools/predict/fetch_raw.py
       - run: python -u tools/predict/history.py
-      - run: python -u tools/predict/model.py
-      # The raw inputs, kept for a week so the model can be tried out and backtested elsewhere
-      - uses: actions/upload-artifact@v4
-        with:
-          name: predict-raw
-          path: |
-            data/predict-raw/
-            data/predict-pool.json
-          retention-days: 7
+      - if: ${{ !inputs.experiments }}
+        run: python -u tools/predict/model.py
+      - if: ${{ inputs.experiments }}
+        env:
+          EXPERIMENTS: ${{ inputs.experiments }}
+        run: |
+          IFS=';' read -ra VS <<< "$EXPERIMENTS"
+          for v in "${VS[@]}"; do
+            v="$(echo "$v" | xargs)"; [ "$v" = "base" ] && x="" || x="$v"
+            echo "=================== EXPERIMENT ${v} ==================="
+            PREDICT_EXTRA="$x" python -u tools/predict/model.py --eval 2>&1 | grep -E "held-out|^   20|weights"
+          done
       - name: Commit any changes
+        if: ${{ !inputs.experiments }}
         run: |
           git add data/predict-page.json data/predict-history.json data/predict-snapshot.json
           if git diff --cached --quiet; then echo "No changes."; else
