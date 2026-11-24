@@ -584,5 +584,360 @@
     "Premium can stream a separate set of PS3 games in some countries, including Canada and the US. They aren't on this list."
    ]
   ]
+ },
+ "ps-plus-ps5-games": {
+  "title": "The 10 best PS5 games on PS Plus ({month})",
+  "h1": "The best PS5 games on PS Plus",
+  "desc": "The best PS5-only games in PS Plus Extra, from Demon's Souls to Ratchet & Clank: Rift Apart, with what each one does best and how long it takes.",
+  "intro": "If you've got a PS5, PS Plus Extra is the cheapest way to see what it can do. These are our ten favourite games in the catalogue that you can only play on PS5, from Sony's biggest exclusives to a couple of smaller games you might have missed. Each one says what it's like and roughly how long the main story takes. The full list of PS5-only games follows.",
+  "about_h": "What counts as a PS5 game",
+  "nouns": "PS5-only game",
+  "about": [
+   "This list counts games in the Extra catalogue that you can only play on PS5. Games that also come in a PS4 version are left out, even if the PS5 version runs better, so everything here is built for the newer console, often with fast loading and the DualSense controller's haptics and adaptive triggers.",
+   "Some of these games are also on PC, but on PlayStation they're PS5 only. The full list includes every PS5-only game in the catalogue."
+  ],
+  "picks": [
+   "demon-s-souls",
+   "marvel-s-spider-man-2",
+   "the-last-of-us-part-i",
+   "ratchet-clank-rift-apart",
+   "blue-prince",
+   "death-stranding-2-on-the-beach",
+   "returnal",
+   "final-fantasy-vii-remake-intergrade",
+   "helldivers-2",
+   "sword-of-the-sea"
+  ],
+  "featured": 10,
+  "notes": {
+   "demon-s-souls": "Action RPG",
+   "marvel-s-spider-man-2": "Open-world action",
+   "the-last-of-us-part-i": "Survival action",
+   "ratchet-clank-rift-apart": "Platformer shooter",
+   "blue-prince": "Puzzle adventure",
+   "death-stranding-2-on-the-beach": "Open-world adventure",
+   "returnal": "Roguelike shooter",
+   "final-fantasy-vii-remake-intergrade": "Action RPG",
+   "helldivers-2": "Co-op shooter",
+   "sword-of-the-sea": "Exploration adventure"
+  },
+  "writeups": {
+   "demon-s-souls": "A from-the-ground-up remake of the game that started the Souls series, and one of the best-looking games on the console. It's tough and atmospheric, and its haunted kingdom of Boletaria rewards patience.",
+   "marvel-s-spider-man-2": "Peter Parker and Miles Morales share the suit in a bigger New York, up against Kraven and the Venom symbiote. Swinging and gliding across the city at speed is the best showcase for the PS5's fast loading.",
+   "the-last-of-us-part-i": "A full PS5 remake of Joel and Ellie's journey across a ruined America. It's one of the great game stories, rebuilt with new animation and detail, and still devastating.",
+   "ratchet-clank-rift-apart": "Ratchet and a new hero, Rivet, jump between dimensions in an instant, whole worlds swapping in a blink. It's bright, funny and packed with daft weapons, and a great game to play with kids watching.",
+   "blue-prince": "You inherit a mansion whose rooms change every day: each time you open a door, you choose what room lies behind it. Working out its secrets is one of the most satisfying puzzles in years.",
+   "death-stranding-2-on-the-beach": "Sam Porter Bridges sets out across Mexico and Australia to reconnect a broken world one delivery at a time. Hideo Kojima's strange, ambitious sequel is one of the most striking games on the console.",
+   "returnal": "A space pilot crash-lands on a hostile alien planet and relives the same run every time she dies. It's a fast, intense shooter where the controller's feedback does a lot of the talking, and every run teaches you something.",
+   "final-fantasy-vii-remake-intergrade": "A lavish reimagining of the most famous Final Fantasy, set entirely in the city of Midgar, with combat that mixes real-time action and tactical pauses. This version adds a bonus chapter starring Yuffie.",
+   "helldivers-2": "You and up to three friends drop onto alien planets to spread “managed democracy” for Super Earth, with friendly fire always on and orbital strikes on call. It's chaotic, very funny and best with a squad.",
+   "sword-of-the-sea": "You surf a hoverboard across sand that turns to water as you bring a dead world back to life. It's short, gorgeous and pure joy to move through, from the makers of Journey and Abzû."
+  },
+  "faq": [
+   [
+    "What's the best PS5 game on PS Plus?",
+    "Among PS5-only games, Demon's Souls and Blue Prince share the top Metascore at 92. For something that shows off the console, Ratchet & Clank: Rift Apart or Marvel's Spider-Man 2."
+   ],
+   [
+    "Do I need PS Plus Extra for these?",
+    "Yes. They're in the Extra catalogue, which also comes with Premium. Essential only includes the monthly games."
+   ],
+   [
+    "Why isn't God of War Ragnarök on this list?",
+    "It's in the catalogue, but it also has a PS4 version, so it's not PS5-only. It's still one of the best games on PS Plus."
+   ],
+   [
+    "Can I play PS4 games from PS Plus on PS5?",
+    "Yes, almost all PS4 games in the catalogue play on PS5."
+   ],
+   [
+    "Are there short PS5 games on PS Plus?",
+    "Sword of the Sea takes about 3 hours, and Ratchet & Clank: Rift Apart about 11. Our <a href=\"/lists/short-ps-plus-games\">short games list</a> has more."
+   ]
+  ]
+ },
+ "ps-plus-shooters": {
+  "title": "The 10 best shooters on PS Plus ({month})",
+  "h1": "The best shooters on PS Plus",
+  "desc": "The best shooters on PS Plus, from DOOM Eternal to Uncharted 4 and Helldivers 2, with what kind of shooter each one is and how long it takes.",
+  "intro": "PS Plus has shooters of every kind, from fast, gory first-person blasters to cinematic adventures, co-op chaos and a couple of PS2 favourites. These are our ten favourites right now. Each one says what kind of shooter it is and roughly how long the main story takes. The full list of shooters follows.",
+  "about_h": "What counts as a shooter",
+  "nouns": "shooter",
+  "about": [
+   "A shooter is any game where aiming and shooting is the heart of the action. That covers first-person shooters, where you see through your character's eyes, third-person shooters where you see them on screen, and top-down and arcade shooters.",
+   "The full list includes every game on PS Plus tagged as a shooter, which takes in some adventure and RPG games where gunplay is a big part, like Uncharted and Fallout."
+  ],
+  "picks": [
+   "doom-eternal",
+   "uncharted-4-a-thief-s-end",
+   "wolfenstein-ii-the-new-colossus",
+   "helldivers-2",
+   "returnal",
+   "far-cry-3-classic-edition",
+   "metro-2033-redux",
+   "timesplitters-2",
+   "abiotic-factor",
+   "hotline-miami"
+  ],
+  "featured": 10,
+  "notes": {
+   "doom-eternal": "First-person shooter",
+   "uncharted-4-a-thief-s-end": "Third-person action adventure",
+   "wolfenstein-ii-the-new-colossus": "First-person shooter",
+   "helldivers-2": "Co-op third-person shooter",
+   "returnal": "Roguelike third-person shooter",
+   "far-cry-3-classic-edition": "Open-world first-person shooter",
+   "metro-2033-redux": "Survival horror shooter",
+   "timesplitters-2": "PS2 first-person shooter",
+   "abiotic-factor": "Co-op survival shooter",
+   "hotline-miami": "Top-down shooter"
+  },
+  "writeups": {
+   "doom-eternal": "The Doom Slayer takes on the forces of Hell on a ruined Earth, and the game never stops moving. It's a fast, loud and brilliantly designed combat puzzle where you're always juggling weapons and ammo.",
+   "uncharted-4-a-thief-s-end": "Nathan Drake is pulled out of retirement for one last treasure hunt, following a lost pirate colony across the world. It's an action movie you play, with big set pieces, great characters and gunfights that flow into climbing and chases.",
+   "wolfenstein-ii-the-new-colossus": "B.J. Blazkowicz leads a resistance against the Nazi regime ruling an alternate 1960s America. It's a brutal shooter with a surprisingly funny, emotional story and some of the strangest scenes in the genre.",
+   "helldivers-2": "You and up to three friends drop onto alien planets to spread “managed democracy” for Super Earth, with friendly fire always on and orbital strikes on call. It's chaotic, very funny and best with a squad.",
+   "returnal": "A space pilot crash-lands on a hostile alien planet and relives the same run every time she dies. The bullet-hell combat is intense and precise, and each run teaches you something new.",
+   "far-cry-3-classic-edition": "Jason Brody's holiday goes horribly wrong when pirates take his friends captive on an island run by the unforgettable Vaas. It set the open-world template the series has followed ever since.",
+   "metro-2033-redux": "The survivors of a nuclear war live in Moscow's metro tunnels, and you're sent out into the dark to save them. It's tense and atmospheric, with scarce ammo and gas-mask filters running out.",
+   "timesplitters-2": "A time-travelling shooter from former GoldenEye developers, with fast story levels and some of the best split-screen multiplayer ever made.",
+   "abiotic-factor": "An experiment goes wrong at an underground research lab, and a team of scientists has to survive the monsters, soldiers and portal creatures that pour in. It's a funny co-op survival game with a 1990s sci-fi shooter feel.",
+   "hotline-miami": "A masked hitman clears 1980s Miami buildings room by room in a top-down blur of violence and neon. One hit kills you and one hit kills them, and the soundtrack is superb."
+  },
+  "faq": [
+   [
+    "What's the best shooter on PS Plus?",
+    "By Metascore, The Last of Us Part II Remastered and Uncharted 4, both at 93. For pure first-person shooting, DOOM Eternal."
+   ],
+   [
+    "What are the best co-op shooters on PS Plus?",
+    "Helldivers 2 and Abiotic Factor are built for co-op, and Back 4 Blood and World War Z are four-player zombie shooters. Our <a href=\"/lists/ps-plus-online-co-op-games\">online co-op list</a> has more."
+   ],
+   [
+    "Are there Call of Duty games on PS Plus?",
+    "Some have been in the catalogue. They come and go, so check the wall for what's there now."
+   ],
+   [
+    "What's a good shooter for beginners?",
+    "Uncharted 4 has gentle difficulty options and is easy to follow, and Ratchet & Clank: Rift Apart is a friendly, colourful shooter for all ages."
+   ],
+   [
+    "Are there classic shooters on PS Plus Premium?",
+    "Yes, including TimeSplitters 2, Syphon Filter, Metro 2033 Redux and DOOM 3. Our <a href=\"/lists/best-ps-plus-premium-classics\">Premium classics list</a> has more."
+   ]
+  ]
+ },
+ "long-ps-plus-games": {
+  "title": "The 10 best long games on PS Plus: 40 hours and up ({month})",
+  "h1": "The best long games on PS Plus",
+  "desc": "The best long games on PS Plus, from Persona 5 Royal to Crusader Kings III and Elite Dangerous, with what makes each one worth the time.",
+  "intro": "Some games are worth settling into for months. These are our ten favourite long games on PS Plus right now, each with a main story of 40 hours or more, from huge RPGs to strategy and sandbox games you can play forever. Each one says what kind of game it is and roughly how long it takes. The full list of long games follows.",
+  "about_h": "What counts as long",
+  "nouns": "long game",
+  "about": [
+   "A game counts as long here if HowLongToBeat's players take 40 hours or more on average to finish its main story. That's the time to see the credits at a normal pace, so doing everything will usually take far longer.",
+   "For games without a story ending, like strategy and sandbox games, it's the average time players put in. The full list includes every game on PS Plus with a 40-hour average or more."
+  ],
+  "picks": [
+   "persona-5-royal",
+   "crusader-kings-iii",
+   "kingdom-come-deliverance-ii",
+   "like-a-dragon-infinite-wealth",
+   "terraria",
+   "elite-dangerous",
+   "abiotic-factor",
+   "two-point-museum",
+   "coral-island",
+   "assassin-s-creed-valhalla"
+  ],
+  "featured": 10,
+  "notes": {
+   "persona-5-royal": "JRPG",
+   "crusader-kings-iii": "Grand strategy",
+   "kingdom-come-deliverance-ii": "Realistic open-world RPG",
+   "like-a-dragon-infinite-wealth": "Turn-based RPG",
+   "terraria": "Sandbox adventure",
+   "elite-dangerous": "Space sim",
+   "abiotic-factor": "Co-op survival shooter",
+   "two-point-museum": "Management sim",
+   "coral-island": "Farming sim",
+   "assassin-s-creed-valhalla": "Open-world action RPG"
+  },
+  "writeups": {
+   "persona-5-royal": "By day you're a transfer student in Tokyo, juggling classes and friendships. By night you and your friends become the Phantom Thieves, stealing the hearts of corrupt adults. Every hour of it is stylish, and it has one of the best soundtracks in games.",
+   "crusader-kings-iii": "You guide a medieval dynasty through marriages, plots, wars and murders, one ruler after another. It's a strategy game that tells stories, and no two playthroughs go the same way.",
+   "kingdom-come-deliverance-ii": "Henry, a blacksmith's son caught up in a civil war, makes his way across a lovingly recreated medieval Bohemia. It's a huge, realistic RPG where the world reacts to everything you do.",
+   "like-a-dragon-infinite-wealth": "Ichiban Kasuga heads to Hawaii in search of his long-lost mother, teaming up with Kazuma Kiryu along the way. It's big-hearted and very funny, with endless side stories and a full island-resort mode.",
+   "terraria": "You dig, build, fight and explore a world made of blocks, in 2D. It starts simple and opens up into a huge game of crafting and boss fights, and it's even better with friends.",
+   "elite-dangerous": "The whole Milky Way, at full scale, is yours to explore as a trader, explorer, miner or pilot for hire. It's slow, deep and endlessly calming once you're in the cockpit.",
+   "abiotic-factor": "An experiment goes wrong at an underground research lab, and a team of scientists has to survive what comes through. It's a funny co-op survival game with a lot to build and discover.",
+   "two-point-museum": "You build and run museums, send experts on expeditions to dig up exhibits, and keep visitors (and ghosts) happy. It's charming and very easy to play for “one more expedition”.",
+   "coral-island": "You move to a tropical island to farm, fish, make friends and help restore its coral reef. It's a big, relaxed farming game with plenty to do every season.",
+   "assassin-s-creed-valhalla": "Eivor leads a Viking clan from Norway to settle in ninth-century England, raiding monasteries and building a home. It's enormous, and the settlement you grow along the way ties it together."
+  },
+  "faq": [
+   [
+    "What's the longest game on PS Plus?",
+    "Elite Dangerous and Persona 5 Royal both take over 100 hours on average. Sandbox and strategy games like Crusader Kings III can go on as long as you like."
+   ],
+   [
+    "Are there long games that aren't RPGs?",
+    "Plenty. Crusader Kings III, Two Point Museum, Elite Dangerous and Terraria are strategy, management, space and sandbox games."
+   ],
+   [
+    "What's a good long game to play with friends?",
+    "Terraria and Abiotic Factor are both great in co-op. Our <a href=\"/lists/ps-plus-online-co-op-games\">online co-op list</a> has more."
+   ],
+   [
+    "Are there long classics on PS Plus Premium?",
+    "Yes. Harvest Moon: Back to Nature, Dark Cloud 2, The Legend of Dragoon and Grandia all take 40 hours or more."
+   ],
+   [
+    "What if I want something shorter?",
+    "Our <a href=\"/lists/short-ps-plus-games\">short games list</a> has games you can finish in under 10 hours."
+   ]
+  ]
+ },
+ "ps-plus-crossplay-games": {
+  "title": "The best PS Plus games with Xbox and PC crossplay ({month})",
+  "h1": "The best PS Plus games with crossplay",
+  "desc": "PS Plus games you can play with friends on Xbox and PC, from Helldivers 2 to Overcooked and Tetris Effect, with which platforms each one connects to.",
+  "intro": "Your friends don't all need a PlayStation. These PS Plus games let you play with people on Xbox, PC or both, so you can join the same match or squad wherever they play. These are our ten favourites, and each one says which platforms it connects with. The full list of crossplay games follows.",
+  "about_h": "What counts as crossplay",
+  "nouns": "crossplay game",
+  "about": [
+   "Crossplay means playing online with people on other platforms in the same game, rather than only with other PlayStation players. This list counts games in PS Plus that support crossplay with Xbox, PC or both, based on Wikipedia's list of cross-platform games, checked against the catalogue.",
+   "You'll need PS Plus to play online on PlayStation, and your friends need the game on their own platform. Some games ask you to link an account, such as an EA or Epic account, to play across platforms."
+  ],
+  "picks": [
+   "helldivers-2",
+   "overcooked-all-you-can-eat",
+   "tetris-effect-connected",
+   "mortal-kombat-1",
+   "back-4-blood",
+   "dead-by-daylight",
+   "insurgency-sandstorm",
+   "world-war-z",
+   "assetto-corsa-competizione",
+   "chess-ultra"
+  ],
+  "featured": 10,
+  "notes": {
+   "helldivers-2": "Co-op shooter, crossplay with Xbox and PC",
+   "overcooked-all-you-can-eat": "Co-op party game, crossplay with Xbox and PC",
+   "tetris-effect-connected": "Puzzle, crossplay with Xbox and PC",
+   "mortal-kombat-1": "Fighting game, crossplay with Xbox and PC",
+   "back-4-blood": "Co-op shooter, crossplay with Xbox and PC",
+   "dead-by-daylight": "Asymmetric horror, crossplay with Xbox and PC",
+   "insurgency-sandstorm": "Tactical shooter, crossplay with Xbox and PC",
+   "world-war-z": "Co-op shooter, crossplay with Xbox and PC",
+   "assetto-corsa-competizione": "Racing sim, crossplay with Xbox on PS5",
+   "chess-ultra": "Chess, crossplay with PC"
+  },
+  "writeups": {
+   "helldivers-2": "You and up to three friends drop onto alien planets to spread “managed democracy” for Super Earth, with friendly fire always on. It's chaotic and very funny, and best with a full squad.",
+   "overcooked-all-you-can-eat": "Up to four chefs try to run a kitchen that keeps falling apart, shouting orders at each other. This edition has both games and all their extras, and works online across platforms as well as on the couch.",
+   "tetris-effect-connected": "Tetris set to gorgeous music and visuals that swell as you play, plus a mode where three players team up against a boss. It's the best version of Tetris there is.",
+   "mortal-kombat-1": "A fresh start for the series, with a new timeline, a big cast and Kameo fighters you call in mid-combo. It's as gory and over the top as ever.",
+   "back-4-blood": "Four survivors fight through hordes of the infected, from the makers of Left 4 Dead, with a card system that changes each run.",
+   "dead-by-daylight": "Four survivors try to repair generators and escape while a fifth player hunts them as the killer, including horror icons from film and games. It's tense, funny and endlessly replayable.",
+   "insurgency-sandstorm": "A tough, realistic team shooter where a few shots will kill you and teamwork wins the day. It's for players who want something slower and more tactical than Call of Duty.",
+   "world-war-z": "Four players fight off swarms of hundreds of zombies at once, pouring over walls and each other. It's simple, loud fun.",
+   "assetto-corsa-competizione": "The official game of the GT World Challenge, with real cars and circuits and very serious handling. It's a racing sim for people who want to learn every corner.",
+   "chess-ultra": "A good-looking chess game with lessons, puzzles and online play against PC players."
+  },
+  "faq": [
+   [
+    "Which PS Plus games have crossplay?",
+    "The ones on this page. Helldivers 2, Overcooked! All You Can Eat, Tetris Effect: Connected and Mortal Kombat 1 are the highest rated."
+   ],
+   [
+    "Do my friends need PS Plus to crossplay?",
+    "Only PlayStation players need PS Plus. Friends on Xbox or PC need whatever their platform requires for online play."
+   ],
+   [
+    "Can I crossplay with someone on PS4 if I'm on PS5?",
+    "In most games, yes. Some, like Helldivers 2 and Mortal Kombat 1, are PS5 only."
+   ],
+   [
+    "What are the best crossplay games to play with friends?",
+    "Helldivers 2 and Overcooked! All You Can Eat. Our <a href=\"/lists/ps-plus-online-co-op-games\">online co-op list</a> has more games to play together."
+   ],
+   [
+    "Can I turn crossplay off?",
+    "Most games have a setting to play only with PlayStation players, usually in the online or network menu."
+   ]
+  ]
+ },
+ "ps-plus-games-for-kids": {
+  "title": "The 10 best PS Plus games for kids and families ({month})",
+  "h1": "The best PS Plus games for kids and families",
+  "desc": "The best family-friendly games on PS Plus, from Sackboy to Rayman Legends and Overcooked, with age ratings and which ones you can play together.",
+  "intro": "PS Plus has plenty for younger players, and some of the best are just as much fun for the grown-ups. These are our ten favourites right now, with something for different ages and plenty you can play together on the couch. Each one says the age it's rated for, whether you can play together, and roughly how long it takes. The full list of family games follows.",
+  "about_h": "What counts as family-friendly",
+  "nouns": "family game",
+  "about": [
+   "This list counts games rated for ages 10 and under: Everyone or Everyone 10+ in Canada and the US. We use Sony's rating for Canada where it has one, and the ESRB rating otherwise.",
+   "A rating tells you about content, not difficulty, so some games on the full list are tough for young kids even if they're perfectly suitable. Our picks lean towards games that are easy to pick up and fun to play together."
+  ],
+  "picks": [
+   "sackboy-a-big-adventure",
+   "rayman-legends",
+   "overcooked-all-you-can-eat",
+   "ratchet-clank-rift-apart",
+   "untitled-goose-game",
+   "tearaway-unfolded",
+   "lego-city-undercover",
+   "cat-quest-iii",
+   "ape-escape",
+   "bluey-the-videogame"
+  ],
+  "featured": 10,
+  "notes": {
+   "sackboy-a-big-adventure": "Ages 6 and up, co-op for up to 4",
+   "rayman-legends": "Ages 10 and up, couch co-op for up to 4",
+   "overcooked-all-you-can-eat": "Ages 6 and up, co-op for up to 4",
+   "ratchet-clank-rift-apart": "Ages 10 and up, single player",
+   "untitled-goose-game": "Ages 6 and up, couch co-op for 2",
+   "tearaway-unfolded": "Ages 6 and up, single player",
+   "lego-city-undercover": "Ages 10 and up, couch co-op for 2",
+   "cat-quest-iii": "Ages 10 and up, couch co-op for 2",
+   "ape-escape": "Ages 6 and up, single player",
+   "bluey-the-videogame": "Ages 6 and up, couch co-op for up to 4"
+  },
+  "writeups": {
+   "sackboy-a-big-adventure": "Sackboy, the knitted hero of LittleBigPlanet, bounces through bright, crafty worlds to save Craftworld. Up to four people can play together, and the levels set to pop songs are a highlight.",
+   "rayman-legends": "A gorgeous, inventive platformer where Rayman and friends run, jump and punch through storybook worlds. The musical levels, where you jump in time to the beat, are pure joy.",
+   "overcooked-all-you-can-eat": "Up to four chefs try to run a kitchen that keeps falling apart, passing plates and putting out fires. It's chaotic, very funny and a great test of family teamwork.",
+   "ratchet-clank-rift-apart": "Ratchet and a new hero, Rivet, jump between colourful worlds with a huge arsenal of silly weapons. It's like playing a Pixar film.",
+   "untitled-goose-game": "You're a horrible goose loose in an English village, stealing hats, ringing bells and ruining everyone's day. It's short, very funny, and a second player can join as another goose.",
+   "tearaway-unfolded": "A messenger made of paper travels through a world of papercraft to deliver a message to you, the player. It's charming, gentle and full of creative little touches.",
+   "lego-city-undercover": "Undercover cop Chase McCain hunts a crook across a big LEGO city full of cars, disguises and silly jokes. It's an easy-going open world with a second player able to join on the couch.",
+   "cat-quest-iii": "A purr-ate cat sails a sea full of islands, treasure and puns in a light, colourful action RPG. It's a lovely first RPG, and a second player can join on the couch.",
+   "ape-escape": "You catch escaped monkeys with a net, using gadgets on the controller's sticks. It's an inventive, funny PS1 classic that still feels fresh.",
+   "bluey-the-videogame": "Bluey, Bingo and their family play games around the house and the neighbourhood in four short episodes. It's made for the youngest fans, and up to four can play together."
+  },
+  "faq": [
+   [
+    "What's the best PS Plus game for young kids?",
+    "Sackboy: A Big Adventure is easy to pick up and great with a parent. For preschoolers, Bluey: The Videogame or one of the PAW Patrol games."
+   ],
+   [
+    "What are the best PS Plus games to play as a family?",
+    "Overcooked! All You Can Eat, Sackboy and Rayman Legends all let up to four people play together on one console. Our <a href=\"/lists/ps-plus-couch-co-op-games\">couch co-op list</a> has more."
+   ],
+   [
+    "Are there LEGO games on PS Plus?",
+    "Several, including LEGO City Undercover, LEGO Horizon Adventures and LEGO Star Wars II in Premium. They come and go, so check the wall for what's there now."
+   ],
+   [
+    "How do you decide a game is family-friendly?",
+    "By its age rating: Everyone or Everyone 10+. That covers content, not difficulty, so some games on the full list are hard for young kids."
+   ],
+   [
+    "Are there kids' games in PS Plus Premium?",
+    "Yes, including Ape Escape, LocoRoco, Jak and Daxter and Sly Cooper, from the PS1, PS2 and PSP."
+   ]
+  ]
  }
 }

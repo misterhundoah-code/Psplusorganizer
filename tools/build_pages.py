@@ -58,6 +58,16 @@ def modes(g):
     return (FACTS.get(g["id"]) or {}).get("modes", "")
 
 
+_PS4_KEYS = None
+def ps5_only(g):
+    """In the Extra catalogue with no PS4 version there: not on PS5 with a PS4 edition, and not a game whose
+    other edition in the catalogue (Persona 5 Royal, The Last of Us Part II) is on PS4."""
+    global _PS4_KEYS
+    if _PS4_KEYS is None:
+        _PS4_KEYS = {edition_key(x["t"]) for x in GAMES if x.get("cat") and "PS4" in (x.get("p") or [])}
+    return bool(g.get("cat")) and (g.get("p") or []) == ["PS5"] and edition_key(g["t"]) not in _PS4_KEYS
+
+
 def available(g):
     """In the Game Catalogue (Extra) or the Classics (Premium) for Canada and the US."""
     return bool(g.get("cat") or g.get("cl"))
@@ -136,7 +146,7 @@ LISTS = [
     ("ps-plus-ps5-games", "The best PS5 games on PS Plus",
      "The highest-rated PS5 games in the PS Plus Extra Game Catalogue, ranked by Metascore.",
      "The best-rated PS5 games in the PS Plus Game Catalogue.",
-     lambda g: g.get("cat") and "PS5" in (g.get("p") or []), "src=c&plat=PS5&sort=m", 60),
+     ps5_only, "src=c&plat=only5&sort=m", 60),
     ("ps-plus-rpgs", "The best RPGs on PS Plus", "The best role-playing games in PS Plus Extra and Premium, ranked by Metascore.",
      "Role-playing games in PS Plus Extra and Premium, best-rated first.",
      lambda g: available(g) and "RPG" in (g.get("g") or []), "src=plus&styles=RPG&sort=m", 60),
