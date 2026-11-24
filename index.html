@@ -1113,7 +1113,7 @@ dialog.dlgbox#madedlg{width:min(720px,calc(100vw - 32px));max-height:calc(100vh 
     <div class="dlg mcheck"><button type="button" class="dlgx" id="mcheckx" aria-label="Close">✕</button>
       <h2 id="mcheckttl">Check my monthly games</h2>
       <p>A past monthly game is only yours to play if you claimed it in its month. Tell the wall which ones you claimed, and it can show you what you can really play. Games that are back in the Game Catalogue aren't listed: Extra and Premium can play them either way, and they're marked <b>Monthly + Extra</b> on the wall.</p>
-      <p class="small">Quickest: <button type="button" class="lnk" id="mcheckpsn">import from your PlayStation account</button>, which tags every game you claimed in one go. <span id="mchecksince"></span></p>
+      <p class="small">Prefer to go month by month with covers? Use <a href="/lists/ps-plus-monthly-games-history">every PS Plus monthly game</a>; it shares these tags. <span id="mchecksince"></span></p>
       <div class="seg" id="mchecktabs" role="group" aria-label="Show">
         <button type="button" data-v="ask" aria-pressed="true">To check <b id="mc-ask">0</b></button>
         <button type="button" data-v="yes" aria-pressed="false">Claimed <b id="mc-yes">0</b></button>
@@ -2816,7 +2816,6 @@ function renderMcheck(){
 function openMcheck(){MCTAB=mcheckCount()?"ask":"yes";renderMcheck();const d=$("mcheckdlg");if(!d.open)d.showModal();}
 $("mcheckbtn").addEventListener("click",()=>{myMenu(false);openMcheck();});
 $("mcheckx").addEventListener("click",()=>$("mcheckdlg").close());
-$("mcheckpsn").addEventListener("click",()=>{$("mcheckdlg").close();$("psnbtn").click();});
 $("mchecktabs").addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b)return;MCTAB=b.dataset.v;renderMcheck();});
 $("mchecklist").addEventListener("click",e=>{const b=e.target.closest("button[data-mc]");if(!b)return;const id=b.dataset.mc,v=+b.dataset.lv;
   if(LIB[id]===v)delete LIB[id];else LIB[id]=v;saveMarks();
@@ -2932,11 +2931,18 @@ $("psncheck").addEventListener("click",async()=>{
   const played=new Map(),now=Date.now();
   j.played.slice(0,5000).forEach(x=>{if(!x||typeof x.n!=="string")return;const id=psnMatch(x)||(buys[ownKey(x)]&&!buys[ownKey(x)].id?"buy-"+ownKey(x):null);if(!id)return;
     const ts=Date.parse(x.last)||0;if(!played.has(id)||ts>played.get(id))played.set(id,ts);});
-  const toLib=[...owned].filter(id=>LIB[id]!==1),toMark=[...played].filter(([id])=>!MARKS[id]);
+  /* Sony's list marks a monthly game you claimed and a Game Catalogue game you added (even one that has since left)
+     the same way, "PS Plus", with no date, so it can't tell us what you claimed. Monthly games are only tagged from it
+     if you bought them; the rest are left for you to confirm in Check my monthly games or on the monthly games page. */
+  const plusOnly=new Set(Object.values(buys).filter(o=>o.id&&o.plus).map(o=>o.id));
+  const viaPlus=id=>{const g=BYID.get(id);return plusOnly.has(id)&&g&&g.e;};
+  const skipped=[...owned].filter(id=>viaPlus(id)&&!LIB[id]).length;
+  const toLib=[...owned].filter(id=>LIB[id]!==1&&!viaPlus(id)),toMark=[...played].filter(([id])=>!MARKS[id]);
   const recent=toMark.filter(([,ts])=>now-ts<30*864e5).length;
   PSNPLAN={toLib,toMark,buys};
   out.innerHTML=`<p>Found <b>${j.owned.length}</b> bought or claimed games and <b>${j.played.length}</b> played games on your account. <b>${owned.size}</b> of the games you own are on the wall.</p>
-    <label class="check"><input type="checkbox" id="psnlib" ${toLib.length?"checked":"disabled"}> Tag ${toLib.length} PS Plus ${toLib.length===1?"game":"games"} you own or claimed as in your library</label>
+    <label class="check"><input type="checkbox" id="psnlib" ${toLib.length?"checked":"disabled"}> Tag ${toLib.length} ${toLib.length===1?"game":"games"} from your PlayStation library as in your library</label>
+    ${skipped?`<p class="hint">${skipped} past monthly ${skipped===1?"game is":"games are"} in your library through PS Plus. Sony's list doesn't say whether you claimed ${skipped===1?"it":"them"} in ${skipped===1?"its":"their"} month or added ${skipped===1?"it":"them"} from the Game Catalogue, so ${skipped===1?"it isn't":"they aren't"} tagged. Confirm what you claimed in Check my monthly games or on <a href="/lists/ps-plus-monthly-games-history" target="_blank">every PS Plus monthly game</a>.</p>`:""}
     <label class="check"><input type="checkbox" id="psnbuy" ${others?"checked":"disabled"}> Add your ${others} other ${others===1?"purchase":"purchases"} to My library as private listings, with Sony's cover art</label>
     <label class="check"><input type="checkbox" id="psnplay" ${toMark.length?"checked":"disabled"}> Mark ${toMark.length} played ${toMark.length===1?"game":"games"}: ${recent} as Playing (played in the last 30 days), ${toMark.length-recent} as Played</label>
     ${ACCT?`<label class="check consent"><input type="checkbox" id="psnsync"> Also keep my purchases in my account, so they sync to my other devices</label>

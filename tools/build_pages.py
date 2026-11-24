@@ -513,6 +513,33 @@ def monthly_page():
     return slug, page(slug, title, desc, "".join(o), f"{SITE}/lists/{slug}")
 
 
+# Claim tags on the monthly games history page. They live in the same browser storage as the wall's
+# ("psplus-lib": game id -> 1 claimed, -1 didn't claim), so the wall sees them, and an account syncs them
+# the next time the wall opens (its three-way merge keeps changes made here).
+CLAIM_JS = """<script>
+(()=>{const K="psplus-lib";let L={},O={};
+try{L=JSON.parse(localStorage.getItem(K)||"{}")||{};O=JSON.parse(localStorage.getItem("psplus-owned")||"{}")||{};}catch(e){return;}
+const bought=new Set(Object.values(O).filter(o=>o&&o.id&&!o.plus).map(o=>o.id));
+const items=[...document.querySelectorAll(".mgrid li[data-id]")],hide=document.getElementById("claimhide");
+const sum=()=>{const n=items.filter(li=>L[li.dataset.id]||bought.has(li.dataset.id)).length;
+  document.getElementById("claimsum").innerHTML="<b>Did you claim these?</b> Tap Claimed or Didn't claim on each game, so the wall knows which past monthly games you can still play. You've tagged <b>"+n+"</b> of "+items.length+".";};
+const paint=li=>{const id=li.dataset.id,v=L[id];li.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.v===v)));
+  li.classList.toggle("tagged",!!v||bought.has(id));li.hidden=hide.checked&&(!!v||bought.has(id));};
+items.forEach(li=>{const id=li.dataset.id,box=document.createElement("span");box.className="libset";
+  if(bought.has(id)){box.innerHTML='<span class="bought">Bought</span>';}
+  else{box.setAttribute("role","group");box.setAttribute("aria-label","Did you claim "+li.querySelector("b").textContent+"?");
+    box.innerHTML='<button type="button" class="yes" data-v="1">\u2713 Claimed</button><button type="button" class="no" data-v="-1">\\u2715 Didn\\u2019t claim</button>';}
+  li.querySelector("div").appendChild(box);paint(li);});
+document.querySelector(".mgrid")&&document.addEventListener("click",e=>{const b=e.target.closest(".mgrid button[data-v]");if(!b)return;
+  const li=b.closest("li"),id=li.dataset.id,v=+b.dataset.v;
+  try{L=JSON.parse(localStorage.getItem(K)||"{}")||{};}catch(x){}
+  if(L[id]===v)delete L[id];else L[id]=v;try{localStorage.setItem(K,JSON.stringify(L));}catch(x){}
+  const keep=hide.checked;hide.checked=false;paint(li);hide.checked=keep;sum();});
+hide.addEventListener("change",()=>{items.forEach(paint);document.querySelectorAll(".mon").forEach(m=>{m.hidden=![...m.querySelectorAll("li")].some(li=>!li.hidden);});});
+document.getElementById("claimbar").hidden=false;sum();})();
+</script>"""
+
+
 def monthly_history_page():
     """Every PS4 and PS5 monthly game since November 2013, newest month first, from games.json's `e` field."""
     slug = "ps-plus-monthly-games-history"
@@ -535,7 +562,7 @@ def monthly_history_page():
                 plat = " / ".join(g.get("p") or [])
                 now = '<span class="now">In Extra now</span>' if g.get("cat") else ""
                 score = f'<span class="ms" title="Metascore" aria-label="Metascore {g.get("m")}">{g["m"]}</span>' if g.get("m") else ""
-                cards.append(f'<li>{cover}<div><b>{esc(g["t"])}</b><span class="meta">{esc(plat)}</span>{now}</div>{score}</li>')
+                cards.append(f'<li data-id="{esc(g["id"])}">{cover}<div><b>{esc(g["t"])}</b><span class="meta">{esc(plat)}</span>{now}</div>{score}</li>')
             label = date.fromisoformat(m + "-01").strftime("%B")
             blocks.append(f'<div class="mon" id="m{m}"><h3>{label} {y}</h3><ul class="mgrid">{"".join(cards)}</ul></div>')
         n = sum(len(by_month[m]) for m in ms)
@@ -551,9 +578,12 @@ claimed them, they're still in your library to play while you subscribe. Games m
 Extra and Premium members can play them even if they missed the month.</p>
 <p class="small">The PS3 and PS Vita games Sony also gave away until 2019 aren't listed. A game offered twice appears under its most recent month.
 Spot a gap? <a href="https://github.com/misterhundoah-code/Psplusorganizer/issues/new/choose" rel="noopener">Let us know</a>.</p>
+<div class="claimbar" id="claimbar" hidden><p id="claimsum"></p>
+<label class="check"><input type="checkbox" id="claimhide"> Hide games I've already tagged</label>
+<p class="small">Tags are saved in this browser and shared with the wall. If you have an account, they sync the next time you open the wall.</p></div>
 <nav class="yjump" aria-label="Jump to a year">{jump}</nav>
 {"".join(secs)}
-<h2>More PS Plus lists</h2>{list_nav(slug)}"""
+<h2>More PS Plus lists</h2>{list_nav(slug)}{CLAIM_JS}"""
     return slug, page(slug, title, desc, body, f"{SITE}/lists/{slug}")
 
 

@@ -132,3 +132,12 @@ table.prose td:first-child{font-weight:600}
 .mcard h3{margin:0 0 4px;font-size:20px}.mcard p{margin:4px 0}.mcard .meta{color:var(--muted);font-size:14px}
 .mcard .meta a{color:inherit}
 @media (max-width:560px){.mcard{flex-direction:column}.mcard img.wide{width:100%}}
+/* Claim tags on the monthly games history */
+.claimbar{background:var(--case);border:2px solid var(--line);padding:10px 14px;margin:14px 0}
+.claimbar p{margin:4px 0}
+.mgrid .libset{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.mgrid .libset button{font:600 12px var(--body);color:var(--muted);background:transparent;border:1.5px solid var(--line);padding:2px 8px;cursor:pointer}
+.mgrid .libset button.yes[aria-pressed="true"]{background:#1F7A3E;border-color:#1F7A3E;color:#fff}
+.mgrid .libset button.no[aria-pressed="true"]{background:#B3261E;border-color:#B3261E;color:#fff}
+.mgrid .libset .bought{font-size:12px;font-weight:700;color:#1F7A3E}
+.mgrid li.tagged{opacity:.85}
