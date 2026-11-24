@@ -861,12 +861,13 @@ dialog.dlgbox#madedlg{width:min(720px,calc(100vw - 32px));max-height:calc(100vh 
           <span class="hint" id="leavenote"></span>
         </div>
         <div class="grp">
-          <span class="lab">Where it comes from</span>
+          <span class="lab">Pick as many as you like</span>
           <div class="seg" id="src" role="group" aria-label="Source">
             <button type="button" data-v="all">Everything</button>
             <button type="button" data-v="c">Game Catalogue</button>
             <button type="button" data-v="e">Monthly games</button>
             <button type="button" data-v="cl">Classics</button>
+            <button type="button" data-v="s3">PS3 streaming</button>
             <button type="button" data-v="mine">Added by me</button>
             <button type="button" data-v="buy" title="Games from your PlayStation import that aren't part of PS Plus">My purchases</button>
           </div>
@@ -1208,7 +1209,7 @@ try{const s=JSON.parse(localStorage.getItem("psplus-sorter")||"null");if(s&&type
    query is then removed from the address bar so a reload doesn't undo later changes. Unknown keys and
    values are ignored. */
 {const P=new URLSearchParams(location.search),one=a=>v=>a.includes(v)?v:undefined,list=v=>v.split(",").map(x=>x.trim()).filter(x=>x&&x.length<40).slice(0,6);
-  const LINK={src:one(["all","c","e","cl","plus","buy"]),players:one(["all","c","m","s1","xp"]),age:one(["all","7","12","16"]),
+  const LINK={src:v=>{const a=v.split(",").filter(x=>["all","c","e","cl","s3","plus","buy"].includes(x));return a.length?a.join(","):undefined;},players:one(["all","c","m","s1","xp"]),age:one(["all","7","12","16"]),
     tlen:v=>/^\d{1,4}-\d{1,4}$/.test(v)?v:undefined,tmode:one(["h","x","c"]),sort:one(["m","time","p","g","t","y"]),
     desc:v=>v==="0"?false:v==="1"?true:undefined,minm:v=>/^\d{1,2}$/.test(v)?+v:undefined,styles:list,pv:list,
     plat:one(["all","PS5","PS4","only5"]),sys:one(["all","PS1","PS2","PSP","PS3","PS4 remaster","Arcade"]),
@@ -1606,8 +1607,8 @@ function pass(g){
   if(S.age!=="all"){const a=ageOf(g);if(a==null||a>+S.age)return false;}
   if(S.players==="xp"){if(!XPLAY[g.id])return false;}
   else if(S.players!=="all"){const m=(FACTS[g.id]||{}).modes||"";if(S.players==="s1"?!(m.includes("s")&&!m.includes("m")):!m.includes(S.players))return false;}
-  if(g.buy&&S.view!=="l"&&S.src!=="buy"&&!CTX.ser)return false;   // purchases: only in My library and My purchases
-  if(S.src==="buy"&&!g.buy)return false;
+  const SS=srcSet();
+  if(g.buy&&S.view!=="l"&&!(SS&&SS.has("buy"))&&!CTX.ser)return false;   // purchases: only in My library and My purchases
   if(CTX.ser){/* a series view shows every entry, whatever its mark */}
   else if(S.view==="n"){if(LIB[g.id]!==-1)return false;}
   else if(S.view==="l"){if(LIB[g.id]!==1&&!g.buy)return false;}
@@ -1619,11 +1620,7 @@ function pass(g){
     if(S.hidew&&mk==="w")return false;
     if(S.hidelib&&g.e&&!g.cat&&LIB[g.id]!==1)return false;
   } else if(mk!==S.view) return false;
-  if(S.src==="c"&&!g.cat)return false;
-  if(S.src==="e"&&!g.e)return false;
-  if(S.src==="mine"&&!g.own)return false;
-  if(S.src==="cl"&&!g.cl)return false;
-  if(S.src==="plus"&&!(g.cat||g.cl))return false;   // link-only: everything Extra and Premium include right now
+  if(SS&&!((SS.has("c")&&g.cat)||(SS.has("e")&&g.e)||(SS.has("cl")&&g.cl&&!g.s3)||(SS.has("s3")&&g.s3)||(SS.has("mine")&&g.own)||(SS.has("buy")&&g.buy)))return false;
   if(S.sys!=="all"&&g.sys!==S.sys)return false;
   if(S.q&&!qhit(g,qterms(S.q)))return false;
   if(S.pv.length&&!S.pv.includes(g.pv)&&!(g.pv==="First or third person"&&(S.pv.includes("First-person")||S.pv.includes("Third-person"))))return false;
@@ -2036,7 +2033,7 @@ function render(animate){
   $("dir").title=asc?"Ascending. Click to reverse.":"Descending. Click to reverse.";
   const press=(sel,v)=>document.querySelectorAll(sel).forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===v));
   syncQuick();
-  press("#plat button",S.plat);press("#players button",S.players);press("#agef button",S.age);press("#sysf button",S.sys);press("#tlen button",S.tlen);press("#src button",S.src);
+  press("#plat button",S.plat);press("#players button",S.players);press("#agef button",S.age);press("#sysf button",S.sys);press("#tlen button",S.tlen);{const SS=srcSet();document.querySelectorAll("#src button").forEach(b=>b.setAttribute("aria-pressed",SS?SS.has(b.dataset.v):b.dataset.v==="all"));}
   document.querySelectorAll("#styles button").forEach(b=>b.setAttribute("aria-pressed",S.styles.includes(b.dataset.v)));
   document.querySelectorAll("#tabs button[data-v]").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===S.view));
   {const inMenu=document.querySelector(`#mylist button[data-v="${S.view}"]`);$("mybtn").classList.toggle("on",!!inMenu);$("mybtn").style.setProperty("--c",inMenu?getComputedStyle(inMenu).getPropertyValue("--c"):"");
@@ -2577,7 +2574,7 @@ function shelfTabs(fresh){
 $("shelftabs").addEventListener("click",e=>{const t=e.target.closest("button");if(!t)return;SHELF=t.dataset.pane;try{sessionStorage.setItem("psplus-shelf",SHELF);}catch(x){}shelfTabs();});
 $("shelftabs").addEventListener("keydown",e=>{if(e.key!=="ArrowRight"&&e.key!=="ArrowLeft")return;const ts=[...document.querySelectorAll("#shelftabs button:not([hidden])")],i=ts.indexOf(document.activeElement);if(i<0)return;
   const n=ts[(i+(e.key==="ArrowRight"?1:ts.length-1))%ts.length];n.click();n.focus();});
-segClick("plat","plat");segClick("players","players");segClick("agef","age");segClick("sysf","sys");segClick("tlen","tlen");segClick("src","src");$("tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(b){myMenu(false);CTX={ser:null,like:null};S.view=b.dataset.v;soon(render);}});
+segClick("plat","plat");segClick("players","players");segClick("agef","age");segClick("sysf","sys");segClick("tlen","tlen");$("tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(b){myMenu(false);CTX={ser:null,like:null};S.view=b.dataset.v;soon(render);}});
 $("styles").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const v=b.dataset.v;S.styles=S.styles.includes(v)?S.styles.filter(s=>s!==v):S.styles.concat(v);soon(render);});
 $("bulkno").addEventListener("click",e=>{const b=e.currentTarget;
   if(!b.dataset.armed){b.dataset.armed="1";b.textContent=`Click again to confirm: ${b.dataset.n} games will be tagged`;setTimeout(()=>{delete b.dataset.armed;renderHero();},5000);return;}
@@ -2662,6 +2659,14 @@ $("aadd").addEventListener("click",()=>{
 });
 /* Quick filters: one-tap shortcuts for the commonest filters. Each sets the same setting as its control in
    Filters and sorting, so they stay in step; tapping a lit one turns it back off. */
+/* Source: any mix of these, or "all". Stored as a comma list in S.src, so old single values ("c", "cl")
+   and wall links still work; "plus" (from the list pages) means the Catalogue, Classics and PS3 streaming. */
+function srcAll(){return ["c","e","cl","s3","mine","buy"];}
+function srcSet(){const v=S.src||"all";if(v==="all")return null;const s=new Set(),ok=srcAll();
+  v.split(",").forEach(x=>{if(x==="plus"){s.add("c");s.add("cl");s.add("s3");}else if(ok.includes(x))s.add(x);});return s.size?s:null;}
+$("src").addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b)return;const v=b.dataset.v;
+  if(v==="all"){S.src="all";}else{const s=srcSet()||new Set();s.has(v)?s.delete(v):s.add(v);S.src=s.size?srcAll().filter(x=>s.has(x)).join(","):"all";}
+  soon(render);});
 const QUICK={short:["tlen","0-10"],top:["minm",85],coop:["players","c"],ps5:["plat","PS5"],mon:["src","e"]};
 function syncQuick(){document.querySelectorAll("#quick button").forEach(b=>{const [k,v]=QUICK[b.dataset.k];b.setAttribute("aria-pressed",S[k]===v);});}
 $("quick").addEventListener("click",e=>{const b=e.target.closest("button[data-k]");if(!b)return;const [k,v]=QUICK[b.dataset.k];
