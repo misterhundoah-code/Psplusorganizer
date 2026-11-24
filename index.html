@@ -350,6 +350,15 @@ tr.game:hover .score:not(.n){transform:rotate(-2deg) scale(1.06)}
 .stars button.on{color:#F2A900}
 .stars button:hover{transform:scale(1.2);color:#F2A900}
 .libset{display:inline-flex;gap:4px;margin-left:6px;vertical-align:1px}
+.cclaim{display:inline-block;margin-left:6px;font-size:11.5px;font-weight:700;padding:0 5px;border:1.5px solid currentColor;white-space:nowrap}
+.cclaim.ccat{color:var(--accent)}.cclaim.cyes{color:var(--played)}.cclaim.cno{color:var(--bad)}.cclaim.cask{color:var(--paused)}
+.flag.cat{--fc:var(--played)}
+.mcheckbtn{display:flex;justify-content:space-between;gap:12px;width:100%;margin-top:6px;border-top:1px solid var(--line)!important}
+.mcheck .seg{margin:12px 0 4px}
+.mchecklist h3{margin:16px 0 6px;font-size:15px}
+.mrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)}
+.mrow .mt{display:flex;flex-direction:column;min-width:0}.mrow .libset{flex:none;margin:0}
+dialog.dlgbox#mcheckdlg{width:min(640px,calc(100vw - 32px));max-height:calc(100vh - 48px);overflow:auto}
 .libset button,.why button{--c:var(--played);font:inherit;font-size:12px;font-weight:600;line-height:1.5;color:var(--muted);background:transparent;border:1.5px solid var(--line);border-radius:2px;padding:0 7px;cursor:pointer;white-space:nowrap}
 .libset button.no{--c:var(--bad)}
 .why button{--c:var(--bounced)}
@@ -961,6 +970,7 @@ dialog.dlgbox#madedlg{width:min(720px,calc(100vw - 32px));max-height:calc(100vh 
         <button type="button" data-k="top" aria-pressed="false">Metascore 85+</button>
         <button type="button" data-k="coop" aria-pressed="false">Co-op</button>
         <button type="button" data-k="ps5" aria-pressed="false">PS5</button>
+        <button type="button" data-k="mon" aria-pressed="false">Monthly games</button>
       </div>
       <div class="qelse" id="qelse" aria-live="polite" hidden></div>
       <button class="btn" id="addopen" type="button" aria-expanded="false">＋ Add a game that isn't listed</button>
@@ -999,6 +1009,7 @@ dialog.dlgbox#madedlg{width:min(720px,calc(100vw - 32px));max-height:calc(100vh 
             <button type="button" role="tab" data-v="x">✕ Not interested<b id="nx">0</b></button>
             <button type="button" role="tab" data-v="l">My library<b id="nl">0</b></button>
             <button type="button" role="tab" data-v="n">Not in library<b id="nn">0</b></button>
+            <button type="button" class="mcheckbtn" id="mcheckbtn">Check my monthly games<b id="nmc">0</b></button>
           </div>
         </div>
       </div>
@@ -1096,6 +1107,20 @@ dialog.dlgbox#madedlg{width:min(720px,calc(100vw - 32px));max-height:calc(100vh 
       <div id="psnresult" hidden></div>
       <p class="hint">The bookmark only talks to Sony, using the sign-in you already have there: it never sees your password, and <a href="psn-import.js" target="_blank">its code is public</a>. Your list is matched here in your browser and isn't sent anywhere, except in your encrypted account if you use one. It relies on how Sony's site works today, so it may stop working if Sony changes it.</p>
       <form method="dialog" class="row"><button class="btn">Close</button></form>
+    </div>
+  </dialog>
+  <dialog class="dlgbox" id="mcheckdlg" aria-labelledby="mcheckttl">
+    <div class="dlg mcheck"><button type="button" class="dlgx" id="mcheckx" aria-label="Close">✕</button>
+      <h2 id="mcheckttl">Check my monthly games</h2>
+      <p>A past monthly game is only yours to play if you claimed it in its month. Tell the wall which ones you claimed, and it can show you what you can really play. Games that are back in the Game Catalogue aren't listed: Extra and Premium can play them either way, and they're marked <b>Monthly + Extra</b> on the wall.</p>
+      <p class="small">Quickest: <button type="button" class="lnk" id="mcheckpsn">import from your PlayStation account</button>, which tags every game you claimed in one go. <span id="mchecksince"></span></p>
+      <div class="seg" id="mchecktabs" role="group" aria-label="Show">
+        <button type="button" data-v="ask" aria-pressed="true">To check <b id="mc-ask">0</b></button>
+        <button type="button" data-v="yes" aria-pressed="false">Claimed <b id="mc-yes">0</b></button>
+        <button type="button" data-v="no" aria-pressed="false">Not claimed <b id="mc-no">0</b></button>
+      </div>
+      <div id="mchecklist" class="mchecklist" aria-live="polite"></div>
+      <form method="dialog" class="row"><button class="btn primary">Done</button></form>
     </div>
   </dialog>
   <dialog class="dlgbox" id="madedlg" aria-labelledby="madettl">
@@ -1622,7 +1647,7 @@ function row(g,i){
   const pl=g.pk==="Elsewhere"?"":g.p.map(p=>`<span class="${p==="PS5"?"p5":""}">${p}</span>`).join("");
   const lv=LIB[g.id]||0;
   const hideBtn=g.buy?`<button type="button" class="buyhide" data-buyhide="${esc(g.okey)}" title="Hide this from my library">Hide</button>`:"";
-  const flags=hideBtn+(retry(g.id)?`<span class="flag" style="--fc:var(--paused)" title="You bounced off this but might give it another go">Might try again</span>`:"")+(g.own?`<span class="flag own">Added by me</span>`:"")+(g.buy?`<span class="flag own">My purchase</span>`:boughtIds().has(g.id)?`<span class="flag own" title="You bought this game, so it stays yours without PS Plus">Bought</span>`:"")+(g.cl?`<span class="flag cl" title="PS Plus Premium Classic, originally ${esc(g.sys==="PS4 remaster"?"a PS4 remaster or port":g.sys==="Arcade"?"an arcade game":"a "+g.sys+" game")}">Classic · ${esc(g.sys==="PS4 remaster"?"PS4":g.sys)}</span>`:"")+(g.s3&&g.cl?`<span class="flag stream" title="Streamed from the cloud with PS Plus Premium; it can't be downloaded${g.rg==="na"?". Offered in the US and Canada only":""}">Streaming only</span>`:"")+(g.new?`<span class="flag new">New ${esc(g.new.split(" ")[0])}</span>`:"")+(g.e?`<span class="flag mon" title="PS Plus Essential monthly game, ${esc(g.el)}${g.cat?". Also in the Game Catalogue, so you can play it either way.":""}">Monthly ${esc(g.el)}</span><span class="libset" role="group" aria-label="Is it in my library?"><button type="button" class="yes" data-lib="${esc(g.id)}" data-lv="1" aria-pressed="${lv===1}" title="I claimed this one">✓ In my library</button><button type="button" class="no" data-lib="${esc(g.id)}" data-lv="-1" aria-pressed="${lv===-1}" title="I never claimed this one">✕ Not in my library</button></span>`:"");
+  const flags=hideBtn+(retry(g.id)?`<span class="flag" style="--fc:var(--paused)" title="You bounced off this but might give it another go">Might try again</span>`:"")+(g.own?`<span class="flag own">Added by me</span>`:"")+(g.buy?`<span class="flag own">My purchase</span>`:boughtIds().has(g.id)?`<span class="flag own" title="You bought this game, so it stays yours without PS Plus">Bought</span>`:"")+(g.cl?`<span class="flag cl" title="PS Plus Premium Classic, originally ${esc(g.sys==="PS4 remaster"?"a PS4 remaster or port":g.sys==="Arcade"?"an arcade game":"a "+g.sys+" game")}">Classic · ${esc(g.sys==="PS4 remaster"?"PS4":g.sys)}</span>`:"")+(g.s3&&g.cl?`<span class="flag stream" title="Streamed from the cloud with PS Plus Premium; it can't be downloaded${g.rg==="na"?". Offered in the US and Canada only":""}">Streaming only</span>`:"")+(g.new?`<span class="flag new">New ${esc(g.new.split(" ")[0])}</span>`:"")+(g.e?`<span class="flag mon" title="PS Plus Essential monthly game, ${esc(g.el)}${g.cat?". Also in the Game Catalogue, so you can play it either way.":""}">Monthly ${esc(g.el)}</span>${g.cat&&!g.gone?`<span class="flag cat" title="Back in the Game Catalogue, so Extra and Premium can play it whether or not you claimed it">In Extra too</span>`:""}<span class="libset" role="group" aria-label="Is it in my library?"><button type="button" class="yes" data-lib="${esc(g.id)}" data-lv="1" aria-pressed="${lv===1}" title="I claimed this one">✓ In my library</button><button type="button" class="no" data-lib="${esc(g.id)}" data-lv="-1" aria-pressed="${lv===-1}" title="I never claimed this one">✕ Not in my library</button></span>`:"");
   let fy;
   if(mk==="p"){const r=RATE[g.id]||0;fy=`<span class="stars" role="group" aria-label="My rating">${[1,2,3,4,5].map(n=>`<button type="button" class="${n<=r?"on":""}" data-rate="${n}" data-id="${esc(g.id)}" aria-label="${n} ${n===1?"star":"stars"}" aria-pressed="${n===r}" title="${n===r?"Click to clear":"Rate "+n+" out of 5"}">★</button>`).join("")}</span>`;}
   else if(mk==="b"||mk==="x"){fy='<span class="time est">–</span>';}
@@ -1663,7 +1688,7 @@ function renderHero(){
   $("lg").textContent=c.g;$("ng").textContent=c.g;$("lu").textContent=c.u;$("nu").textContent=c.u;$("lw").textContent=c.w;$("lp").textContent=c.p;$("lb").textContent=c.b;$("lx").textContent=c.x;
   $("nw").textContent=c.w;$("np").textContent=c.p;$("nb").textContent=c.b;$("nx").textContent=c.x;
   const nolib=GAMES.filter(g=>LIB[g.id]===-1).length,untag=GAMES.filter(g=>g.e&&!g.cat&&!LIB[g.id]&&inScope(g)).length;
-  $("nn").textContent=nolib;$("nl").textContent=GAMES.filter(g=>LIB[g.id]===1||g.buy).length;
+  $("nn").textContent=nolib;$("nmc").textContent=mcheckCount();$("nl").textContent=GAMES.filter(g=>LIB[g.id]===1||g.buy).length;
   const bb=$("bulkno");bb.dataset.n=untag;bb.disabled=!untag;if(!bb.dataset.armed)bb.textContent=untag?`Tag all ${untag} untagged monthly games as not in my library`:"Every monthly game is tagged";
   const pv=g=>priority(g)[0]??-1;
   const byScore=(a,b)=>pv(b)-pv(a)||a.st.localeCompare(b.st);
@@ -1873,10 +1898,21 @@ const MKICON={g:"▶",u:"‖",w:"★",p:"✓",b:"↩",x:"✕"},MKNAME={g:"Playin
 /* "Show on each game" switches. Each is stored as a hide flag (default false: everything shown) and sets a
    class on <body>; the CSS below does the hiding, so nothing has to re-render. */
 const HIDE_KEYS=["nosc","notime","noage","noplat","nodue","notags"];
+/* Past monthly games: say on the case whether you can play it. One that's back in the Game Catalogue is playable
+   with Extra whether or not you claimed it; otherwise it depends on whether you claimed it in its month. */
+var BIDS=null,BIDT=0;function bids(){const n=Date.now();if(!BIDS||n-BIDT>250){BIDS=boughtIds();BIDT=n;}return BIDS;}
+function claimState(g){if(!g.e||g.cl)return "";if(g.cat&&!g.gone)return "cat";
+  if(LIB[g.id]===1||g.buy||bids().has(g.id))return "yes";if(LIB[g.id]===-1)return "no";return "ask";}
+function claimTag(g){const st=claimState(g);if(!st)return "";
+  const T={cat:["Monthly + Extra","Was a monthly game, and it's in the Game Catalogue now, so Extra and Premium can play it whether or not you claimed it"],
+    yes:["✓ Claimed","You claimed this monthly game, so it's yours to play while you're a member"],
+    no:["Not claimed","You didn't claim this monthly game in its month, so you can't play it unless it returns to PS Plus"],
+    ask:["Claimed?","A past monthly game: you can only play it if you claimed it in its month. Use Check my monthly games to tag it"]}[st];
+  return `<span class="cclaim c${st}" title="${esc(T[1])}">${T[0]}</span>`;}
 function caseHTML(g,i){
   const mk=MARKS[g.id]||"",[t]=timeOf(g),r=RATE[g.id];
   const kind=g.cl?(g.s3?"PS3 stream":"Classic"):g.e&&!g.cat?"Monthly "+g.el.replace(/ \d{2}(\d{2})$/," '$1"):(g.p.includes("PS5")?"PS5":g.p[0]||"");
-  const sub=[kind?`<span class="ckind">${esc(kind)}</span>`:"",t!=null?`<span class="ctm">${fmtT(t)}</span>`:""].filter(Boolean).join("")+ratingChip(g);
+  const sub=[kind?`<span class="ckind">${esc(kind)}</span>`:"",t!=null?`<span class="ctm">${fmtT(t)}</span>`:""].filter(Boolean).join("")+ratingChip(g)+claimTag(g);
   return `<button type="button" class="card case${mk?" is-"+mk:""}" data-open="${esc(g.id)}" aria-label="${esc(g.t)}${g.m!=null?", Metascore "+g.m:""}${mk?", "+MKNAME[mk]:""}">`
     +tile(g)+(g.m!=null?`<span class="cstick">${scoreHTML(g.m)}</span>`:"")
     +(mk?`<span class="cmark m${mk}" title="${MKNAME[mk]}">${MKICON[mk]}${mk==="p"&&r?" "+"★".repeat(r):""}</span>`:"")
@@ -2621,7 +2657,7 @@ $("aadd").addEventListener("click",()=>{
 });
 /* Quick filters: one-tap shortcuts for the commonest filters. Each sets the same setting as its control in
    Filters and sorting, so they stay in step; tapping a lit one turns it back off. */
-const QUICK={short:["tlen","0-10"],top:["minm",85],coop:["players","c"],ps5:["plat","PS5"]};
+const QUICK={short:["tlen","0-10"],top:["minm",85],coop:["players","c"],ps5:["plat","PS5"],mon:["src","e"]};
 function syncQuick(){document.querySelectorAll("#quick button").forEach(b=>{const [k,v]=QUICK[b.dataset.k];b.setAttribute("aria-pressed",S[k]===v);});}
 $("quick").addEventListener("click",e=>{const b=e.target.closest("button[data-k]");if(!b)return;const [k,v]=QUICK[b.dataset.k];
   S[k]=S[k]===v?DEF[k]:v;render();});
@@ -2758,6 +2794,35 @@ $("shownotice").addEventListener("click",showNotice);
 })();
 if(!seen("psplus-notice"))showNotice();
 $("madebtn").addEventListener("click",()=>$("madedlg").showModal());
+/* Check my monthly games: one list of the past monthly games whose availability depends on whether you claimed them,
+   grouped by month, newest first, to tag as claimed or not. */
+var MCTAB="ask";
+function mcheckGames(){return GAMES.filter(g=>{const st=claimState(g);return st&&st!=="cat"&&regionOK(g)&&!preJoin(g);});}
+function mcheckCount(){return mcheckGames().filter(g=>claimState(g)==="ask").length;}
+function renderMcheck(){
+  const all=mcheckGames(),by={ask:[],yes:[],no:[]};all.forEach(g=>by[claimState(g)].push(g));
+  ["ask","yes","no"].forEach(k=>{$("mc-"+k).textContent=by[k].length;});
+  document.querySelectorAll("#mchecktabs button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===MCTAB)));
+  $("mchecksince").textContent=S.since?"Games from before you joined are left out.":"";
+  const gs=by[MCTAB].slice().sort((a,b)=>b.e.localeCompare(a.e)||a.st.localeCompare(b.st));
+  if(!gs.length){$("mchecklist").innerHTML=`<p class="hint">${MCTAB==="ask"?"All done: every past monthly game is tagged.":"Nothing here yet."}</p>`;return;}
+  let out="",cur="";
+  gs.forEach(g=>{if(g.e!==cur){cur=g.e;out+=`<h3>${esc(g.el)}</h3>`;}
+    const lv=LIB[g.id];
+    out+=`<div class="mrow"><span class="mt"><b>${esc(g.t)}</b><span class="hint">${esc((g.p||[]).join(", "))}${g.m!=null?" · Metascore "+g.m:""}</span></span>`
+      +(g.buy||bids().has(g.id)?`<span class="hint">Bought</span>`:`<span class="libset" role="group" aria-label="Did you claim ${esc(g.t)}?"><button type="button" class="yes" data-mc="${esc(g.id)}" data-lv="1" aria-pressed="${lv===1}">✓ Claimed</button><button type="button" class="no" data-mc="${esc(g.id)}" data-lv="-1" aria-pressed="${lv===-1}">✕ Didn't claim</button></span>`)
+      +`</div>`;});
+  $("mchecklist").innerHTML=out;}
+function openMcheck(){MCTAB=mcheckCount()?"ask":"yes";renderMcheck();const d=$("mcheckdlg");if(!d.open)d.showModal();}
+$("mcheckbtn").addEventListener("click",()=>{myMenu(false);openMcheck();});
+$("mcheckx").addEventListener("click",()=>$("mcheckdlg").close());
+$("mcheckpsn").addEventListener("click",()=>{$("mcheckdlg").close();$("psnbtn").click();});
+$("mchecktabs").addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b)return;MCTAB=b.dataset.v;renderMcheck();});
+$("mchecklist").addEventListener("click",e=>{const b=e.target.closest("button[data-mc]");if(!b)return;const id=b.dataset.mc,v=+b.dataset.lv;
+  if(LIB[id]===v)delete LIB[id];else LIB[id]=v;saveMarks();
+  b.parentNode.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(+x.dataset.lv===LIB[id])));
+  ["ask","yes","no"].forEach(k=>{$("mc-"+k).textContent=mcheckGames().filter(g=>claimState(g)===k).length;});
+  renderHero();render(false);});
 /* ---- Import from PlayStation (see psn-import.js, the bookmark's code) ----
    The pasted list holds "owned" (bought or claimed, with Sony's concept and title ids) and "played" (PS4/PS5
    games with the last time they were played). Games are matched by Sony's ids (data/psn-ids.json, from
