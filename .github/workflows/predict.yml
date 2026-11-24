@@ -46,7 +46,8 @@ jobs:
           for v in "${VS[@]}"; do
             v="$(echo "$v" | xargs)"; [ "$v" = "base" ] && x="" || x="$v"
             echo "=================== EXPERIMENT ${v} ==================="
-            PREDICT_EXTRA="$x" python -u tools/predict/model.py --eval 2>&1 | grep -E "held-out|^   20|weights"
+            PREDICT_EXTRA="$x" python -u tools/predict/model.py --eval > out.txt 2>&1 || echo "(exited with $?)"
+            grep -E "held-out|^ +20[0-9]{2}-|weights|Error|Traceback|line [0-9]+" out.txt || tail -n 30 out.txt
           done
       - name: Commit any changes
         if: ${{ !inputs.experiments }}
