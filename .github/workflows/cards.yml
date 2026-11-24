@@ -1,0 +1,44 @@
+name: Monthly game cards
+
+# Renders shareable cards (Metascore, HowLongToBeat, OpenCritic) for the month's PS Plus games into
+# share-cards/. Runs after the monthly games are picked up, when data/cards.json (a hand-made list for the
+# hour after an announcement) changes, or by hand from the Actions tab.
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Fetch coming soon"]
+    types: [completed]
+  push:
+    branches: [main]
+    paths: ["data/cards.json", "tools/share/monthly_cards.py"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cards
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install playwright && python -m playwright install --with-deps chromium
+      - name: Render
+        run: |
+          # data/cards.json (hand-made) only when it's what changed; otherwise the lineup from data/coming.json
+          if [ "${{ github.event_name }}" = "push" ] && [ -f data/cards.json ]; then python tools/share/monthly_cards.py data/cards.json --force
+          else python tools/share/monthly_cards.py; fi
+      - name: Commit any changes
+        run: |
+          git add share-cards
+          if git diff --cached --quiet; then echo "No new cards"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Monthly game cards"
+          for i in 1 2 3; do git pull --rebase -X theirs origin main && git push && break; sleep 5; done
