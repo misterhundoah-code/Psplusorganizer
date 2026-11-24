@@ -125,6 +125,33 @@ for k in range(0, len(titles), 50):
 (OUT / "views.json").write_text(json.dumps(views, ensure_ascii=False), encoding="utf-8")
 print("views", len(views))
 
+# Metascores from each article's review table (Wikidata has very few): 50 articles' text per request.
+from metacritic import score as mc_score
+mc = {}
+for k in range(0, len(titles), 50):
+    batch = titles[k:k + 50]
+    for attempt in range(3):
+        try:
+            j = S.get(API, params={"action": "query", "prop": "revisions", "rvprop": "content", "rvslots": "main",
+                                   "titles": "|".join(batch), "redirects": 1, "format": "json", "formatversion": 2}, timeout=90).json()
+            break
+        except Exception as e:
+            print("retry", e); time.sleep(5)
+    else:
+        continue
+    q = j.get("query", {})
+    back = {}
+    for n in q.get("normalized", []): back[n["to"]] = n["from"]
+    for r in q.get("redirects", []): back[r["to"]] = back.get(r["from"], r["from"])
+    for pg in q.get("pages", []):
+        revs = pg.get("revisions") or []
+        v = mc_score(((revs[0].get("slots") or {}).get("main") or {}).get("content", "")) if revs else None
+        if v is not None:
+            mc[back.get(pg["title"], pg["title"])] = v
+    time.sleep(0.5)
+(OUT / "metacritic.json").write_text(json.dumps(mc, ensure_ascii=False), encoding="utf-8")
+print("metascores from Wikipedia", len(mc))
+
 # Blog archive: WordPress feeds page back with ?paged=N.
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
 # The first run reads the whole archive; after that the history is kept in data/predict-history.json

@@ -38,6 +38,7 @@ NEVER = {norm(t) for t in ["Fortnite", "Roblox", "Apex Legends", "Genshin Impact
 # Minecraft, GTA V and RDR2: always among the best sellers and kept off subscriptions by their makers; listed so they don't swamp the top.
 
 V = json.loads((RAW / "views.json").read_text(encoding="utf-8"))
+MCW = json.loads((RAW / "metacritic.json").read_text(encoding="utf-8")) if (RAW / "metacritic.json").exists() else {}   # Metascores from Wikipedia
 wd = json.loads(WDFILE.read_text(encoding="utf-8"))
 wl = load("predict-pool.json")
 pool, seen = [], {}
@@ -79,6 +80,7 @@ SONY_STUDIOS = re.compile(r"^(sucker punch|insomniac|naughty dog|santa monica st
                           r"(sie |sony )?san diego studio|(sie |sony )?london studio|pixelopus|playstation studios|sony interactive)", re.I)
 for g in pool:
     g["views"] = V.get(g["w"] or "", 0) or V.get(g["t"], 0)
+    if not g.get("mc"): g["mc"] = MCW.get(g["w"] or "") or MCW.get(g["t"])
     if any(SONY_STUDIOS.search(d) for d in g["dev"]) and "Sony" not in g["pub"]:
         g["pub"] = sorted(set(g["pub"]) | {"Sony"})
     g["sony"] = "Sony" in g["pub"]
