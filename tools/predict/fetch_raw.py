@@ -101,29 +101,46 @@ pool = json.loads((ROOT / "data" / "predict-pool.json").read_text(encoding="utf-
 pool += [{"w": g["w"]} for g in games if g.get("w")]
 extra = json.loads((ROOT / "data" / "about.json").read_text(encoding="utf-8"))
 titles = sorted({g["w"] for g in pool if g.get("w")} | {v["w"] for v in extra.values() if isinstance(v, dict) and v.get("w")})
+def fetch_views(batch):
+    """60 days of views for up to 50 articles, following the API's continuation (it can return some pages'
+    views only on a later request) and redirects back to the title we asked for."""
+    out, cont = {}, {}
+    for _ in range(10):
+        for attempt in range(4):
+            try:
+                r = S.get(API, params={"action": "query", "prop": "pageviews", "pvipdays": 60, "titles": "|".join(batch),
+                                       "redirects": 1, "format": "json", "formatversion": 2, **cont}, timeout=60)
+                j = r.json()
+                if "error" not in j: break
+                print("views error", j["error"].get("code")); time.sleep(10 * (attempt + 1))
+            except Exception as e:
+                print("retry", e); time.sleep(10 * (attempt + 1))
+        else:
+            return out
+        q = j.get("query", {})
+        back = {}
+        for n in q.get("normalized", []): back[n["to"]] = n["from"]
+        for rd in q.get("redirects", []): back[rd["to"]] = back.get(rd["from"], rd["from"])
+        for pg in q.get("pages", []):
+            if pg.get("pageviews") is None: continue          # not filled in yet: comes back on a continuation
+            v = sum(x or 0 for x in pg["pageviews"].values())
+            out[back.get(pg["title"], pg["title"])] = v
+            out.setdefault(pg["title"], v)
+        if "continue" not in j: return out
+        cont = j["continue"]; time.sleep(1)
+    return out
+
 views = {}
 for k in range(0, len(titles), 50):
-    batch = titles[k:k + 50]
-    for attempt in range(3):
-        try:
-            j = S.get(API, params={"action": "query", "prop": "pageviews", "pvipdays": 60, "titles": "|".join(batch),
-                                   "redirects": 1, "format": "json", "formatversion": 2}, timeout=60).json()
-            break
-        except Exception as e:
-            print("retry", e); time.sleep(5)
-    else:
-        continue
-    q = j.get("query", {})
-    back = {}
-    for n in q.get("normalized", []): back[n["to"]] = n["from"]
-    for r in q.get("redirects", []): back[r["to"]] = back.get(r["from"], r["from"])
-    for pg in q.get("pages", []):
-        v = sum(x or 0 for x in (pg.get("pageviews") or {}).values())
-        views[back.get(pg["title"], pg["title"])] = v
-        views.setdefault(pg["title"], v)
-    time.sleep(0.5)
+    views.update(fetch_views(titles[k:k + 50]))
+    time.sleep(1)
+# Wikipedia sometimes throttles these lookups and hands back empty counts. Popularity is the model's strongest
+# signal, so a run that lost most of it would reshuffle the page: stop here instead, and the page keeps the last good run.
+seen = sum(1 for v in views.values() if v)
+print("views", len(views), "with any", seen)
+if seen < 0.6 * len(titles):
+    sys.exit(f"::error::Only {seen} of {len(titles)} articles came back with page views; not publishing this run.")
 (OUT / "views.json").write_text(json.dumps(views, ensure_ascii=False), encoding="utf-8")
-print("views", len(views))
 
 # Metascores from each article's review table (Wikidata has very few): 50 articles' text per request.
 from metacritic import score as mc_score
