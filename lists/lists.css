@@ -149,3 +149,6 @@ details.fulllist>summary{cursor:pointer;padding:12px 16px;font-weight:700;font-s
 details.fulllist[open]>summary{border-bottom:2px solid var(--line)}
 details.fulllist>:not(summary){margin-left:16px;margin-right:16px}
 details.fulllist>table{margin:16px 0 0;width:100%;border:0;border-top:2px solid var(--line)}
+.tiert{display:flex;flex-wrap:wrap;gap:8px;margin:14px 16px 0}
+.tiert .btn{background:var(--case);color:var(--ink);border:2px solid var(--line);box-shadow:none;font-size:15px;padding:8px 12px}
+.tiert .btn[aria-pressed=true]{background:var(--blue);border-color:var(--blue);color:#fff}

@@ -237,7 +237,7 @@ def table(gs, numbered=True, show_leave=True):
         leave = f'<span class="leave">Leaving {esc(short_date(lv))}</span>' if lv and show_leave else ""
         synopsis = f'<span class="d">{esc(g["d"])}</span>' if g.get("d") else ""
         rows.append(
-            f'<tr><td class="n">{i if numbered else ""}</td><td class="cv">{cover}</td>'
+            f'<tr data-tier="{"x" if g.get("cat") else "p"}"><td class="n">{i if numbered else ""}</td><td class="cv">{cover}</td>'
             f'<td class="t"><b>{esc(g["t"])}</b>{leave}<span class="meta">{esc(" · ".join(bits))}</span>{synopsis}</td>'
             f'<td class="m">{g.get("m") or "–"}</td><td class="h">{hours(g.get("h")) or "–"}</td></tr>')
     return ('<table><thead><tr><th class="n"><span class="vh">Rank</span></th><th class="cv"><span class="vh">Cover</span></th>'
@@ -322,7 +322,7 @@ def picks(chosen, cp):
         else:
             art, cls = "", "art none"
         plat = " / ".join(g.get("p") or [])
-        bits = [b for b in ((cp.get("notes") or {}).get(g["id"], ""), coop_line(g, cp["coop"]) if cp.get("coop") else "", plat, f"Metascore {g['m']}" if g.get("m") else "", f"about {hours(g.get('h'))} main story" if g.get("h") else "") if b]
+        bits = [b for b in ((cp.get("notes") or {}).get(g["id"], ""), coop_line(g, cp["coop"]) if cp.get("coop") else "", plat, "Needs Premium" if not g.get("cat") else "", f"Metascore {g['m']}" if g.get("m") else "", f"about {hours(g.get('h'))} main story" if g.get("h") else "") if b]
         lv = LEAVING.get(g["id"])
         leave = f'<span class="leave">Leaving {esc(short_date(lv))}</span>' if lv else ""
         text = (cp.get("writeups") or {}).get(g["id"]) or WRITEUPS.get(g["id"]) or g.get("d") or ""
@@ -334,6 +334,24 @@ def picks(chosen, cp):
                    f'<h2>{esc(g["t"])}</h2>{leave}<p class="meta">{meta_html(bits, g)}</p><p>{esc(text)}</p>'
                    f'<p class="plinks">{"".join(l for l in links if l)}</p></div></article>')
     return '<div class="picks">' + "".join(out) + "</div>"
+
+
+TIER_JS = """<script>(function(){var me=document.currentScript,tb=me.previousElementSibling,box=tb.previousElementSibling;if(!box||!box.classList.contains("tiert"))return;
+function set(t){box.querySelectorAll("button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.t===t)});
+var n=0;tb.querySelectorAll("tbody tr").forEach(function(r){var on=t==="all"||r.dataset.tier==="x";r.hidden=!on;if(on){var c=r.querySelector("td.n");if(c)c.textContent=++n;}});}
+box.addEventListener("click",function(e){var b=e.target.closest("button");if(b)set(b.dataset.t)});
+try{var s=JSON.parse(localStorage.getItem("psplus-sorter")||"null");if(s&&(s.tier==="extra"||s.tier==="essential"))set("x");}catch(e){}})();</script>"""
+
+
+def tier_toggle(gs):
+    """Extra members can hide the Premium-only games from the full list. Starts on Extra only when the
+    visitor told the wall they have Essential or Extra; the page itself (and what Google sees) lists everything."""
+    x = sum(1 for g in gs if g.get("cat"))
+    if x in (0, len(gs)):
+        return ""
+    return (f'<div class="tiert" role="group" aria-label="Which games to show">'
+            f'<button type="button" class="btn" data-t="all" aria-pressed="true">Extra and Premium ({len(gs)})</button>'
+            f'<button type="button" class="btn" data-t="x" aria-pressed="false">Extra only ({x})</button></div>')
 
 
 def fill(text, vals):
@@ -667,7 +685,7 @@ def build():
                     f'<p class="intro">All {total}, best-rated first, as of {esc(asof)}. Availability is for Canada and the US;'
                     f' <a href="/?{q}">open the wall</a> to pick your own country and hide what you\'ve played.</p>'
                     f'<p><a class="btn" href="/?{q}">Open these on the wall</a></p>'
-                    + table(gs) + "</details>"
+                    + tier_toggle(gs) + table(gs) + TIER_JS + "</details>"
                     + (faq_html(cp["faq"], vals) if cp.get("faq") else "") + f'<h2>More PS Plus lists</h2>{list_nav(slug)}')
             written[slug] = page(slug, fill(cp.get("title", title), vals), fill(cp.get("desc", desc), vals), body, f"{SITE}/lists/{slug}")
             continue
