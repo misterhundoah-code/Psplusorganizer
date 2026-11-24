@@ -111,13 +111,23 @@ def main():
     for c in re.findall(rf'/{LOC}/category/([0-9a-f-]{{36}})', home):
         if c not in [x for x, _ in cats]:
             cats.append((c, ""))
+    # The Deals page is mostly drawn by script, so also take any category-like ID in its embedded data,
+    # with a little context for the log, plus the store's long-standing "all deals" category.
+    for m in re.finditer(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', home):
+        c = m.group(0)
+        if c not in [x for x, _ in cats]:
+            ctx = re.sub(r"\s+", " ", home[max(0, m.start() - 90):m.end() + 60])
+            cats.append((c, "ctx: " + ctx[:160]))
+    for c in ("3f772501-f6f8-49b7-abac-874a88ca4897",):
+        if c not in [x for x, _ in cats]:
+            cats.append((c, "known all-deals ID"))
     log(f"Deals page: {len(home)} bytes, {len(cats)} categories linked")
     for c, label in cats[:30]:
         log("  category", c, label)
 
     # Size each category from its first page; the biggest is taken as "all deals".
     sized = []
-    for c, label in cats[:12]:
+    for c, label in cats[:20]:
         html = get(f"https://store.playstation.com/{LOC}/category/{c}/1")
         ps, nd = products(html)
         tot = total_of(nd)
