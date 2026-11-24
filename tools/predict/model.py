@@ -51,7 +51,8 @@ for g in wd:
     add({"t": g["t"], "w": g.get("w"), "rel": g.get("rel"), "pub": sorted({normpub(p) for p in g["pub"] if not re.fullmatch(r"Q\d+", p)}),
          "dev": [d for d in g["dev"] if not re.fullmatch(r"Q\d+", d)], "ser": [s for s in g["ser"] if not re.fullmatch(r"Q\d+", s)],
          "plats": sorted(plats), "src": "wd", "free": any(FREE.search(x) for x in g["gen"] + g["mode"]),
-         "multi": any(re.search(r"multiplayer|online|co-op|cooperative", x, re.I) for x in g["mode"])})
+         "multi": any(re.search(r"multiplayer|online|co-op|cooperative", x, re.I) for x in g["mode"]),
+         "mc": g.get("mc"), "mcid": g.get("mcid")})
 for g in wl:
     if dupe_key(g["t"]) in seen:
         p = pool[seen[dupe_key(g["t"])]]
@@ -303,7 +304,8 @@ for kind, start in (("extra", "2022-07"), ("essential", "2019-01")):
         if m0 - g["rm"] < 12 and g["views"] > cap:
             why.insert(0, [-1, f"A huge new release: nothing this big has joined {where} in its first year"])
         rows.append({"why": why, "t": g["t"], "w": g["w"], "rel": g["rel"], "pub": g["pub"], "p": round(p3, 4),
-                     "curve": [round(v * 10000) for v in curve], "views": g["views"]})
+                     "curve": [round(v * 10000) for v in curve], "views": g["views"],
+                     "x": {k: v for k, v in (("m", g.get("mc")), ("mc", g.get("mcid"))) if v}})
     rows.sort(key=lambda r: -r["p"])
     for n, r in enumerate(rows): r["rank"] = n + 1
     print("   top 15 for", ms(m0), ":", [(r["t"], r["p"]) for r in rows[:15]])
@@ -321,14 +323,15 @@ for kind, start in (("extra", "2022-07"), ("essential", "2019-01")):
 if "--eval" not in sys.argv:
     for k in SNAP: SNAP[k] = dict(sorted(SNAP[k].items())[-24:])
     SNAPF.write_text(json.dumps(SNAP, ensure_ascii=False, indent=1), encoding="utf-8")
-    # The compact file the site's page reads: [title, 3-month chance, year, publisher, reasons, monthly curve in basis points]
+    # The compact file the site's page reads: [title, 3-month chance, year, publisher, reasons, monthly curve in basis points,
+    # extras: {"m": Metascore, "mc": Metacritic id} when Wikidata has them]
     page = {"asof": out["asof"], "stats": {"pool": len(pool), "views": sum(1 for g in pool if g["views"]), "wikidata": len(wd),
              "extra_linked": len(extra_add), "monthly_linked": len(ess_add), "catalogue_now": len(in_cat_now)}}
     for k in ("extra", "essential"):
         o = out[k]
         page[k] = {"n": o["n"], "start": o["start"], "weights": o["weights"], "live": o["live"],
                    "backtest": [{x: r[x] for x in ("month", "added", "top50", "found", "cands")} for r in o["backtest"]],
-                   "rows": [[r["t"], r["p"], (r["rel"] or "")[:4], ", ".join(r["pub"][:2]), r["why"][:5], r["curve"]]
+                   "rows": [[r["t"], r["p"], (r["rel"] or "")[:4], ", ".join(r["pub"][:2]), r["why"][:5], r["curve"]] + ([r["x"]] if r.get("x") else [])
                             for r in o["top"] if r["p"] >= 0.0005 or r["rank"] <= 3000]}
     (ROOT / "data" / "predict-page.json").write_text(json.dumps(page, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 if "--eval" not in sys.argv: (ROOT / "data" / "predict.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")

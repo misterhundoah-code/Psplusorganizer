@@ -388,6 +388,16 @@ def list_nav(current=None):
     return f'<ul class="lists">{mo}{nw}{lv}{pr}{hi}{items}</ul>'
 
 
+def plinks(t, x):
+    """Store, trailer and review links for a game on the predictions page (lists/predict.js builds the same ones). The
+    store link is a search in Canada's store; predict.js switches it to the visitor's own region."""
+    q = urllib.parse.quote(t)
+    rev = f"https://www.metacritic.com/game/{urllib.parse.quote(x['mc'])}/" if x.get("mc") else f"https://www.metacritic.com/search/{q}/"
+    return (f'<p class="plinks"><a class="ps" href="https://store.playstation.com/en-ca/search/{q}" target="_blank" rel="noopener">PlayStation Store</a>'
+            f'<a href="https://www.youtube.com/results?search_query={urllib.parse.quote(t + " trailer")}" target="_blank" rel="noopener">Trailers</a>'
+            f'<a href="{rev}" target="_blank" rel="noopener">Reviews</a></p>')
+
+
 def predict_page():
     """Which games are likely to join PS Plus next (data/predict-page.json, from tools/predict/model.py). The top 25
     Game Catalog picks are in the HTML; lists/predict.js loads the rest, the tabs, search and the month-by-month charts."""
@@ -396,10 +406,14 @@ def predict_page():
     mon = start.strftime("%B %Y")
     pct = lambda p: f"{round(p * 100)}%" if p >= 0.1 else (f"{p * 100:.1f}%" if p >= 0.001 else "<0.1%")
     items = []
-    for n, (t, p, y, pub, why, _) in enumerate(d["rows"][:25], 1):
+    for n, r in enumerate(d["rows"][:25], 1):
+        t, p, y, pub, why = r[:5]
+        x = r[6] if len(r) > 6 else {}
         chips = "".join(f'<li class="{"up" if sg > 0 else "down"}">{esc(w)}</li>' for sg, w in why)
-        items.append(f'<li class="g" data-n="{n}"><span class="n">{n}</span><div class="t"><b>{esc(t)}</b><span class="meta">{esc(" · ".join(b for b in (y, pub) if b))}</span></div>'
-                     f'<div class="pc"><b>{pct(p)}</b><span>1 in {round(1 / p) if p else "–"}</span></div><ul class="why">{chips}</ul></li>')
+        ms = (f' <span class="msw"><span class="msc {"hi" if x["m"] >= 75 else "mid" if x["m"] >= 50 else "lo"}">{x["m"]}</span> Metascore</span>'
+              if x.get("m") else "")
+        items.append(f'<li class="g" data-n="{n}"><span class="n">{n}</span><div class="t"><b>{esc(t)}</b><span class="meta">{esc(" · ".join(b for b in (y, pub) if b))}{ms}</span></div>'
+                     f'<div class="pc"><b>{pct(p)}</b><span>1 in {round(1 / p) if p else "–"}</span></div><ul class="why">{chips}</ul>{plinks(t, x)}</li>')
     top3 = ", ".join(r[0] for r in d["rows"][:3])
     bt = d["backtest"]; tot = sum(r["added"] for r in bt); hit = sum(r["top50"] for r in bt)
     rows = "".join(f'<tr><td>{date.fromisoformat(r["month"] + "-01").strftime("%B %Y")}</td><td class="num">{r["added"]}</td>'

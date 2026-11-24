@@ -11,7 +11,7 @@ Saves, under data/predict-raw/:
   blog-<n>.xml     older pages of the PlayStation Blog's PlayStation Plus RSS feed, for the
                    history of Game Catalog and Monthly Games announcements
 """
-import json, time
+import json, re, time
 from pathlib import Path
 import requests
 
@@ -68,6 +68,24 @@ for qid in ("Q63184502", "Q5014725"):
             g = games.get(b["g"]["value"].rsplit("/", 1)[1])
             if g and b["l"]["value"] not in g[name]: g[name].append(b["l"]["value"])
         time.sleep(3)
+    # Metacritic: the score (review score P444 given by Metacritic, preferring the PS5 or PS4 one when a game
+    # has one per platform) and the game's Metacritic id (P12054) for a link to its reviews.
+    rows = sparql(f"""SELECT ?g ?s ?pl WHERE {{ ?g wdt:P400 wd:{qid} ; p:P444 ?st . ?st ps:P444 ?s ; pq:P447 ?by .
+      ?by rdfs:label "Metacritic"@en . OPTIONAL {{ ?st pq:P400 ?x . BIND(STRAFTER(STR(?x), "entity/") AS ?pl) }} }}""") or []
+    print("metacritic", qid, len(rows))
+    for b in rows:
+        g = games.get(b["g"]["value"].rsplit("/", 1)[1]); m = re.match(r"\s*(\d{1,3})\s*(?:/\s*100)?\s*$", b["s"]["value"])
+        if not g or not m or int(m.group(1)) > 100: continue
+        rank = 2 if b.get("pl", {}).get("value") in ("Q63184502", "Q5014725") else 1
+        if rank >= g.get("_mcr", 0): g["mc"], g["_mcr"] = int(m.group(1)), rank
+    time.sleep(3)
+    rows = sparql(f"""SELECT ?g ?id WHERE {{ ?g wdt:P400 wd:{qid} ; wdt:P12054 ?id }}""") or []
+    print("metacritic ids", qid, len(rows))
+    for b in rows:
+        g = games.get(b["g"]["value"].rsplit("/", 1)[1])
+        if g: g["mcid"] = g.get("mcid") or b["id"]["value"]
+    time.sleep(3)
+for g in games.values(): g.pop("_mcr", None)
 games = [g for g in games.values() if g["t"]]
 (OUT / "wikidata.json").write_text(json.dumps(games, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 print("wikidata saved", len(games))

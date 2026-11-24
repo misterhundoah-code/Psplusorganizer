@@ -152,3 +152,10 @@ details.fulllist>table{margin:16px 0 0;width:100%;border:0;border-top:2px solid 
 .tiert{display:flex;flex-wrap:wrap;gap:8px;margin:14px 16px 0}
 .tiert .btn{background:var(--case);color:var(--ink);border:2px solid var(--line);box-shadow:none;font-size:15px;padding:8px 12px}
 .tiert .btn[aria-pressed=true]{background:var(--blue);border-color:var(--blue);color:#fff}
+/* predictions: store, trailer and review links, and the Metascore */
+.plist .plinks{grid-column:2 / 4;display:flex;flex-wrap:wrap;gap:6px 14px;margin:6px 0 0;font-size:14px;font-weight:700}
+.plist .plinks a,.plist .plinks a:visited{white-space:nowrap;display:inline;border:0;padding:0;margin:0;background:none;box-shadow:none;color:var(--blue);text-decoration:underline;text-underline-offset:3px;font-size:14px;min-height:0}
+.plist .plinks a:hover{text-decoration-thickness:2px}
+.msc{display:inline-block;min-width:28px;text-align:center;font-weight:900;font-size:12.5px;padding:0 4px;border:2px solid var(--ink);color:#0E1636;margin-left:6px}
+.msc.hi{background:#5BC85B}.msc.mid{background:#FFC925}.msc.lo{background:#F06A5A}
+.msw{white-space:nowrap}

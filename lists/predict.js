@@ -1,7 +1,8 @@
 /* The "likely to join PS Plus" page (lists/coming-to-ps-plus.html). The page is generated with the top games
    already in it, for search engines; this script loads the full list from /data/predict-page.json and adds
    the tabs, search, "show more" and a chart of each game's chances month by month.
-   Row format: [title, chance over the next three months, year, publisher, reasons, monthly chances in basis points]. */
+   Row format: [title, chance over the next three months, year, publisher, reasons, monthly chances in basis points,
+   extras ({m: Metascore, mc: Metacritic id}, when known)]. */
 (function () {
   "use strict";
   const $ = id => document.getElementById(id);
@@ -51,11 +52,30 @@
       + `<p class="tipline" aria-live="polite"></p>`;
   }
 
+  // The visitor's PlayStation Store region: the one they picked on the wall, else a guess from the browser.
+  const REGION = (() => {
+    try { const r = (JSON.parse(localStorage.getItem("psplus-sorter") || "{}") || {}).region; if (/^[a-z]{2}-[a-z]{2}$/.test(r || "")) return r; } catch (e) {}
+    const l = (navigator.language || "").toLowerCase();
+    return ["en-us", "en-ca", "fr-ca", "en-gb", "en-au"].includes(l) ? l : "en-us";
+  })();
+  function links(t, x) {
+    const q = encodeURIComponent(t);
+    const rev = x && x.mc ? `https://www.metacritic.com/game/${encodeURIComponent(x.mc)}/` : `https://www.metacritic.com/search/${q}/`;
+    return `<p class="plinks"><a class="ps" href="https://store.playstation.com/${REGION}/search/${q}" target="_blank" rel="noopener">PlayStation Store</a>`
+      + `<a href="https://www.youtube.com/results?search_query=${encodeURIComponent(t + " trailer")}" target="_blank" rel="noopener">Trailers</a>`
+      + `<a href="${rev}" target="_blank" rel="noopener">Reviews</a></p>`;
+  }
+  const tone = m => m >= 75 ? "hi" : m >= 50 ? "mid" : "lo";
+  // The links already in the page (the top 25, for search engines) point at Canada's store until this runs.
+  document.querySelectorAll(".plinks a.ps").forEach(a => { a.href = a.href.replace(/store\.playstation\.com\/[a-z]{2}-[a-z]{2}\//, `store.playstation.com/${REGION}/`); });
+
   function item(r, n, start) {
-    const [t, p, y, pub, why] = r;
-    return `<li class="g" data-n="${n}"><span class="n">${n}</span><div class="t"><b>${esc(t)}</b><span class="meta">${[y, pub].filter(Boolean).map(esc).join(" · ")}</span></div>`
+    const [t, p, y, pub, why] = r, x = r[6] || {};
+    const ms = x.m ? ` <span class="msw"><span class="msc ${tone(x.m)}">${x.m}</span> Metascore</span>` : "";
+    return `<li class="g" data-n="${n}"><span class="n">${n}</span><div class="t"><b>${esc(t)}</b><span class="meta">${[y, pub].filter(Boolean).map(esc).join(" · ")}${ms}</span></div>`
       + `<div class="pc"><b>${pct(p)}</b><span>${odds(p)}</span></div>`
       + `<ul class="why">${why.map(([s, w]) => `<li class="${s > 0 ? "up" : "down"}">${esc(w)}</li>`).join("")}</ul>`
+      + links(t, x)
       + `<details class="month"><summary>Odds month by month</summary><div class="chartbox"></div></details></li>`;
   }
 
