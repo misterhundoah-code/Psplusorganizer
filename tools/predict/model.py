@@ -126,7 +126,7 @@ FEATS = ["day one", "under 6 months old", "6 to 12 months old", "1 to 2 years ol
 
 # Experimental signals, switched on by name for backtesting: PREDICT_EXTRA="series,season,recentpub,metascore".
 EXTRA = [x for x in os.environ.get("PREDICT_EXTRA", "").split(",") if x]
-XFEATS = {"series": ["series has joined before", "series rhythm"], "season": ["time of year"],
+XFEATS = {"seriesfix": [], "series": ["series has joined before", "series rhythm"], "season": ["time of year"],
           "recentpub": ["publisher's last 12 months"], "metascore": ["Metascore", "has a Metascore"]}
 for x in EXTRA: FEATS += XFEATS[x]
 GROUPS = {"sports": re.compile(r"sport|football|soccer|basketball|racing|golf|tennis|hockey|baseball|wrestl|skateboard|cricket|rugby|boxing", re.I),
@@ -134,6 +134,9 @@ GROUPS = {"sports": re.compile(r"sport|football|soccer|basketball|racing|golf|te
           "family": re.compile(r"platform|party|family|kart|children|educational|rhythm", re.I)}
 for g in pool:
     g["grp"] = {k for k, rx in GROUPS.items() if any(rx.search(x) for x in g.get("gen") or [])}
+    # "seriesfix": link yearly 2K games ("NBA 2K25" and "NBA 2K26" are one series), which the title-based key splits
+    if "seriesfix" in EXTRA and not g["ser"]:
+        g["skey"] = re.sub(r"\b2k\d{1,2}\b", "2k", series(g["t"]))
 
 def series_x(i, m, adds):
     """Has an earlier game in the series joined this tier, and did one join at about this game's age now?"""
@@ -327,6 +330,30 @@ def first_open(kind):
     m = mi(TODAY.isoformat()[:7])
     while m in done: m += 1
     return m
+
+if "--rolling" in sys.argv:
+    # Rolling backtest: for each of the last N months with additions, train on every month before it and rank that
+    # month's candidates. Features are built once per month and reused.
+    N = int(sys.argv[sys.argv.index("--rolling") + 1])
+    for kind, start in (("extra", "2022-07"), ("essential", "2019-01")):
+        adds = extra_add if kind == "extra" else ess_add
+        allm = [m for m in months(start, "2026-11") if any(v == m for v in adds.values())]
+        cache = {m: build(kind, [m]) for m in allm}
+        tot = t50 = t100 = 0; ranks = []
+        for t in allm[-N:]:
+            tr = [m for m in allm if m < t]
+            X = np.vstack([cache[m][0] for m in tr]); y = np.concatenate([cache[m][1] for m in tr])
+            clf = make().fit(X, y)
+            Xt, yt, _ = cache[t]
+            if not yt.sum(): continue
+            pr = clf.predict_proba(Xt)[:, 1]
+            pos = np.empty(len(pr), int); pos[np.argsort(-pr)] = np.arange(1, len(pr) + 1)
+            rk = sorted(int(r) for r in pos[yt == 1])
+            ranks += rk; tot += len(rk); t50 += sum(r <= 50 for r in rk); t100 += sum(r <= 100 for r in rk)
+        ranks.sort()
+        print(f"ROLLING {kind}: {N} months, {tot} additions; top 50: {t50} ({t50 / max(1, tot):.0%}); "
+              f"top 100: {t100} ({t100 / max(1, tot):.0%}); median rank {ranks[len(ranks) // 2] if ranks else '-'}")
+    sys.exit(0)
 
 SNAPF = ROOT / "data" / "predict-snapshot.json"
 SNAP = json.loads(SNAPF.read_text(encoding="utf-8")) if SNAPF.exists() else {}
