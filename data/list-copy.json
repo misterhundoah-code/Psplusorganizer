@@ -283,5 +283,306 @@
    "Horror games are built to frighten you. That covers survival horror, where supplies are scarce and the monsters are worth avoiding, psychological horror that gets under your skin, and slow-burn dread where very little happens and that's the point.",
    "The full list counts every game on PS Plus tagged as horror, which includes some action games with a horror setting. Our picks lean towards the ones that are genuinely scary."
   ]
+ },
+ "ps-plus-rpgs": {
+  "title": "The 10 best RPGs on PS Plus ({month})",
+  "h1": "The best RPGs on PS Plus",
+  "desc": "The best RPGs on PS Plus Extra, from Kingdom Come: Deliverance II to Cyberpunk 2077 and Skyrim, with what kind of RPG each one is and how long it takes.",
+  "intro": "RPGs are where PS Plus really earns its keep, with dozens worth a hundred hours of your life. These are our ten favourites right now, from huge open worlds where you make your own hero to tough action RPGs and deep tactical ones. Each one says what kind of RPG it is and roughly how long the main story takes. Looking for Persona or Final Fantasy? They're on our JRPG list. The full list of RPGs follows.",
+  "about_h": "What counts as an RPG",
+  "nouns": "RPG",
+  "about": [
+   "In a role-playing game you play a character who grows as you go: you earn experience, pick skills and gear, and usually make choices that change how the story plays out. The genre ranges from huge open worlds you can lose a hundred hours in to tight, story-led adventures you can finish in a weekend.",
+   "This list counts Western-style RPGs and action RPGs. Japanese RPGs, with their own traditions of party-based battles and anime-inspired storytelling, have a list of their own. The full list includes every game on PS Plus tagged as an RPG."
+  ],
+  "picks": [
+   "kingdom-come-deliverance-ii",
+   "cyberpunk-2077",
+   "bloodborne",
+   "fallout-4",
+   "the-elder-scrolls-v-skyrim-special-edition",
+   "horizon-forbidden-west",
+   "pathfinder-wrath-of-the-righteous-enhanced-edition",
+   "deus-ex-mankind-divided",
+   "citizen-sleeper-2-starward-vector",
+   "the-forgotten-city"
+  ],
+  "featured": 10,
+  "notes": {
+   "kingdom-come-deliverance-ii": "Realistic open-world RPG",
+   "cyberpunk-2077": "First-person open-world RPG",
+   "bloodborne": "Action RPG",
+   "fallout-4": "First-person open-world RPG",
+   "the-elder-scrolls-v-skyrim-special-edition": "First-person open-world RPG",
+   "horizon-forbidden-west": "Open-world action RPG",
+   "pathfinder-wrath-of-the-righteous-enhanced-edition": "Classic party RPG, turn-based or real-time",
+   "deus-ex-mankind-divided": "Stealth and choice RPG",
+   "citizen-sleeper-2-starward-vector": "Narrative dice RPG",
+   "the-forgotten-city": "Mystery RPG with very little combat"
+  },
+  "writeups": {
+   "kingdom-come-deliverance-ii": "It's 1403, and Henry, a blacksmith's son caught up in a civil war, has to make his way across a lovingly recreated medieval Bohemia. There's no magic and no dragons, just sword fights that take real skill, a world that reacts to everything you do, and a story full of humour and heart.",
+   "cyberpunk-2077": "You're V, a mercenary in the neon-soaked megacity of Night City, with a dead rock star's ghost (Keanu Reeves) living in your head. It was overhauled after its rough launch and is now the game it was meant to be, full of brilliant side quests and choices that matter.",
+   "bloodborne": "FromSoftware's gothic nightmare sends you through the plague-ridden city of Yharnam, hunting beasts that get stranger the deeper you go. The combat is fast and rewards aggression rather than hiding behind a shield. It's hard and makes no apologies, but few games feel this rewarding once it clicks.",
+   "fallout-4": "You emerge from a fallout shelter 200 years after the bombs, into the irradiated ruins of Boston, searching for your kidnapped son. Make your character, pick your side and lose yourself for weeks scavenging, building settlements and following strange side stories.",
+   "the-elder-scrolls-v-skyrim-special-edition": "The dragons are back, and you're the only one who can stop them. Skyrim's real magic is the freedom to go anywhere and be anyone, from a thief to an archmage, and to lose hundreds of hours to side quests you never meant to start.",
+   "horizon-forbidden-west": "Aloy heads west into the ruins of the American West Coast, where giant robotic animals roam overgrown cities and deserts. You build her skills and gear as you go, and taking down a towering machine piece by piece with a bow is one of the great sights in games.",
+   "pathfinder-wrath-of-the-righteous-enhanced-edition": "A huge, old-school party RPG based on the Pathfinder tabletop game, where you lead a crusade against an invasion of demons and can grow into an angel, a lich or something stranger. You can fight in real time with pause or switch to turn-based, and the depth is enormous.",
+   "deus-ex-mankind-divided": "Augmented agent Adam Jensen investigates a terrorist attack in a near-future Prague where people with cybernetic implants are treated as second-class citizens. Every problem has several answers, whether you sneak, hack, talk or fight your way through.",
+   "citizen-sleeper-2-starward-vector": "A beautifully written sci-fi RPG played with dice: each day you roll to decide what you can do, as a runaway android and your crew scrape a living across a lawless asteroid belt. It's tense, humane and unlike anything else on the service.",
+   "the-forgotten-city": "You're trapped in a time loop in an underground Roman city where, if anyone sins, everyone dies. Each loop you talk, investigate and use what you've learned to unpick the mystery. It began life as a Skyrim mod and became one of the cleverest stories on PS Plus."
+  },
+  "faq": [
+   [
+    "What's the best RPG on PS Plus?",
+    "By Metascore, Bloodborne at 92, though it's very tough. For a sprawling adventure most people will love, Kingdom Come: Deliverance II and Cyberpunk 2077. For Persona and Final Fantasy, see our <a href=\"/lists/ps-plus-jrpgs\">JRPG list</a>."
+   ],
+   [
+    "What are the best RPGs where I make my own character?",
+    "Fallout 4, Skyrim, Cyberpunk 2077 and Pathfinder: Wrath of the Righteous all let you create your hero and shape who they become."
+   ],
+   [
+    "What's a good RPG for beginners?",
+    "Horizon Forbidden West and Skyrim are easy to get into, and The Forgotten City is short with almost no combat. Bloodborne is not a beginner's game."
+   ],
+   [
+    "Are there short RPGs on PS Plus?",
+    "Most RPGs are long, but Undertale takes about 7 hours and The Forgotten City about 6. Our <a href=\"/lists/short-ps-plus-games\">short games list</a> has more."
+   ],
+   [
+    "Are the classic Fallout and Elder Scrolls games on PS Plus?",
+    "Fallout 4 and Skyrim are in the Extra catalogue. The PS3 versions of Oblivion, Fallout 3 and Fallout: New Vegas are listed for streaming with PS Plus Premium."
+   ],
+   [
+    "What's the difference between an RPG and a JRPG?",
+    "JRPGs are role-playing games from Japanese studios, or made in their style: usually a set hero and party, an anime look and a big story. The RPGs here tend to let you create your own character and roam more freely, or lean on tough action. Our <a href=\"/lists/ps-plus-jrpgs\">JRPG list</a> covers the other side."
+   ]
+  ]
+ },
+ "ps-plus-jrpgs": {
+  "title": "The 10 best JRPGs on PS Plus ({month})",
+  "h1": "The best JRPGs on PS Plus",
+  "desc": "The best Japanese RPGs on PS Plus, from Persona 5 Royal to Final Fantasy VII Remake, with how each one fights and how long it takes.",
+  "intro": "PS Plus is a goldmine for JRPG fans, with big modern hits and a handful of PS1 and PS2 classics in Premium. These are our ten favourites right now. Each one says how its combat works, turn-based or real-time, and roughly how long the main story takes, which for a JRPG is usually a lot. The full list of JRPGs follows.",
+  "about_h": "What counts as a JRPG",
+  "nouns": "JRPG",
+  "about": [
+   "JRPG is short for Japanese role-playing game. They usually follow a party of characters rather than a single hero, tell a long, character-driven story, and build their fights around a battle system you learn and master, whether that's classic turn-based menus or fast real-time action.",
+   "We count games made in Japan in that tradition, and a few from elsewhere that are built the same way. Western-style RPGs have a list of their own. The full list includes every game on PS Plus tagged as a JRPG, including the PS1, PS2 and PSP classics that come with Premium."
+  ],
+  "picks": [
+   "persona-5-royal",
+   "final-fantasy-vii-remake-intergrade",
+   "like-a-dragon-infinite-wealth",
+   "final-fantasy-xvi",
+   "tales-of-arise-beyond-the-dawn-edition",
+   "dragon-quest-iii-hd-2d-remake",
+   "ys-viii-lacrimosa-of-dana",
+   "grandia",
+   "dark-cloud-2",
+   "monster-hunter-stories-2-wings-of-ruin"
+  ],
+  "featured": 10,
+  "notes": {
+   "persona-5-royal": "Turn-based",
+   "final-fantasy-vii-remake-intergrade": "Real-time with tactical pauses",
+   "like-a-dragon-infinite-wealth": "Turn-based",
+   "final-fantasy-xvi": "Real-time action",
+   "tales-of-arise-beyond-the-dawn-edition": "Real-time action",
+   "dragon-quest-iii-hd-2d-remake": "Classic turn-based",
+   "ys-viii-lacrimosa-of-dana": "Real-time action",
+   "grandia": "Turn-based with timing",
+   "dark-cloud-2": "Real-time dungeon crawling",
+   "monster-hunter-stories-2-wings-of-ruin": "Turn-based"
+  },
+  "writeups": {
+   "persona-5-royal": "By day you're a transfer student in Tokyo, juggling classes, part-time jobs and friendships. By night you and your friends become the Phantom Thieves, slipping into the twisted inner worlds of corrupt adults to steal their hearts. It's a long, stylish RPG with one of the best soundtracks around, and Royal is the expanded version with a whole extra semester.",
+   "final-fantasy-vii-remake-intergrade": "A lavish reimagining of the most famous Final Fantasy, set entirely in the city of Midgar. Cloud and his rebel friends take on a power company draining the planet's life, in combat that mixes real-time action with tactical pauses. Intergrade adds a bonus chapter starring Yuffie on PS5.",
+   "like-a-dragon-infinite-wealth": "Ichiban Kasuga, the most optimistic man in Japan, heads to Hawaii in search of his long-lost mother, and teams up with series legend Kazuma Kiryu along the way. It's a big-hearted, very funny RPG, packed with side stories and a full island-resort management mode.",
+   "final-fantasy-xvi": "A darker, more grown-up Final Fantasy that follows Clive Rosfield on a quest for revenge across a war-torn land. The fast, flashy action combat is a big change for the series, and the battles between giant summoned Eikons are some of the most spectacular in games.",
+   "tales-of-arise-beyond-the-dawn-edition": "Two people from warring worlds, a masked slave with no memory and a noblewoman whose touch causes pain, team up to overthrow an empire. It's a polished anime-style RPG with fast, flashy combat that's easy to pick up. This edition includes the Beyond the Dawn epilogue.",
+   "dragon-quest-iii-hd-2d-remake": "A gorgeous remake of the 1988 classic, with the series' charming battles and a party of heroes you recruit and shape yourself. Its pixel-art-meets-3D look is beautiful, and it's a perfect entry point if you've never played a Dragon Quest.",
+   "ys-viii-lacrimosa-of-dana": "Adventurer Adol is shipwrecked on a cursed island and has to gather the other castaways into a village while exploring a wild, dinosaur-filled wilderness. The combat is fast and joyful, and the mystery of the girl Dana from Adol's dreams pulls you along.",
+   "grandia": "The 1997 classic about Justin, a boy who dreams of adventure and sets out to find it. Its battle system, mixing turn-based choices with a timing gauge that lets you interrupt enemies, is still one of the best ever made, and its sense of wonder hasn't aged a day.",
+   "dark-cloud-2": "A PS2 favourite about a young inventor travelling through time to stop an emperor erasing the future. It crams in weapon building, rebuilding towns, taking photos for inventions and even golf, and somehow it all works.",
+   "monster-hunter-stories-2-wings-of-ruin": "Instead of hunting monsters, you hatch them from eggs, raise them and ride them into battle. Its colourful world and rock-paper-scissors combat make it a great, gentle way into the Monster Hunter series."
+  },
+  "faq": [
+   [
+    "What's the best JRPG on PS Plus?",
+    "Persona 5 Royal, with a Metascore of 95, is the highest-rated JRPG on the service and one of the best games on PS Plus, full stop."
+   ],
+   [
+    "What are the best turn-based JRPGs on PS Plus?",
+    "Persona 5 Royal, Like a Dragon: Infinite Wealth, Dragon Quest III HD-2D Remake and Monster Hunter Stories 2 are all turn-based. Grandia, in Premium, mixes turn-based choices with a timing gauge."
+   ],
+   [
+    "What's a good first JRPG?",
+    "Dragon Quest III HD-2D Remake is classic and simple to learn, and Monster Hunter Stories 2 is gentle and colourful. Tales of Arise is an easy way in if you prefer real-time action."
+   ],
+   [
+    "Are there classic JRPGs on PS Plus?",
+    "Yes, in PS Plus Premium: Grandia, Dark Cloud and Dark Cloud 2, Wild Arms 1 to 4, The Legend of Dragoon and Rogue Galaxy, among others. Our <a href=\"/lists/best-ps-plus-premium-classics\">Premium classics list</a> has the best of the rest."
+   ],
+   [
+    "Do I need to play the earlier Final Fantasy VII first?",
+    "No. Final Fantasy VII Remake starts a new trilogy and is the right place to begin. Final Fantasy XVI is a separate story."
+   ],
+   [
+    "What's the difference between an RPG and a JRPG?",
+    "JRPGs are role-playing games from Japanese studios, or made in their style: usually a set hero and party, an anime look and a big story. Western RPGs tend to let you create your own character and roam more freely. Our <a href=\"/lists/ps-plus-rpgs\">RPG list</a> covers the other side."
+   ]
+  ]
+ },
+ "ps-plus-open-world-games": {
+  "title": "The 10 best open-world games on PS Plus ({month})",
+  "h1": "The best open-world games on PS Plus",
+  "desc": "The best open-world games on PS Plus Extra, from Marvel's Spider-Man 2 to Ghost of Tsushima, with where each one is set and how long it takes.",
+  "intro": "Sometimes you just want a big world to get lost in. These are our ten favourite open-world games on PS Plus right now, from swinging over New York to sailing the Aegean in Ancient Greece. Each one says where it's set and roughly how long the main story takes, though you'll probably spend twice that wandering off the path. The full list of open-world games follows.",
+  "about_h": "What counts as open world",
+  "nouns": "open-world game",
+  "about": [
+   "An open-world game gives you a large, connected place to explore at your own pace, rather than leading you from level to level. You can usually go almost anywhere early on, take on side activities in any order, and come back to the main story when you're ready.",
+   "Open world is a way of building a game rather than a genre of its own, so this list mixes action games, RPGs and adventures. We count games whose world is open from early on, not ones that open up only near the end. The full list includes every game on PS Plus tagged as open world."
+  ],
+  "picks": [
+   "marvel-s-spider-man-2",
+   "death-stranding-2-on-the-beach",
+   "horizon-forbidden-west",
+   "ghost-of-tsushima-director-s-cut",
+   "kingdom-come-deliverance-ii",
+   "assassin-s-creed-odyssey",
+   "fallout-4",
+   "hogwarts-legacy",
+   "far-cry-3-classic-edition",
+   "gravity-rush-2"
+  ],
+  "featured": 10,
+  "notes": {
+   "marvel-s-spider-man-2": "New York City",
+   "death-stranding-2-on-the-beach": "Mexico and Australia",
+   "horizon-forbidden-west": "The far-future American West",
+   "ghost-of-tsushima-director-s-cut": "Feudal Japan",
+   "kingdom-come-deliverance-ii": "Medieval Bohemia",
+   "assassin-s-creed-odyssey": "Ancient Greece, 431 BCE",
+   "fallout-4": "Post-apocalyptic Boston",
+   "hogwarts-legacy": "Hogwarts and the Scottish Highlands",
+   "far-cry-3-classic-edition": "A tropical island chain",
+   "gravity-rush-2": "Floating cities in the sky"
+  },
+  "writeups": {
+   "marvel-s-spider-man-2": "Peter Parker and Miles Morales share the suit in a New York that now stretches into Brooklyn and Queens, taking on Kraven the Hunter and the Venom symbiote. Swinging, and now gliding on web wings, across the city never stops feeling amazing.",
+   "death-stranding-2-on-the-beach": "Sam Porter Bridges sets out again, this time across Mexico and Australia, to connect a broken world one delivery at a time. It's Hideo Kojima at his strangest and most ambitious, and planning a route across wild terrain is oddly gripping.",
+   "horizon-forbidden-west": "Aloy heads west into the ruins of the American West Coast, where giant robotic animals roam overgrown cities and deserts. Taking down a towering machine piece by piece with a bow is one of the great sights in games.",
+   "ghost-of-tsushima-director-s-cut": "In 1274, the Mongols invade the island of Tsushima, and samurai Jin Sakai has to bend his code of honour to fight back. The island is one of the most beautiful worlds ever made, and the wind itself guides you to your next goal. This version includes the Iki Island expansion.",
+   "kingdom-come-deliverance-ii": "It's 1403, and Henry, a blacksmith's son caught up in a civil war, has to make his way across a lovingly recreated medieval Bohemia. There's no magic and no dragons, just a world that reacts to everything you do and a story full of humour and heart.",
+   "assassin-s-creed-odyssey": "You're a Spartan mercenary, playing as Kassandra or Alexios, caught up in the war between Athens and Sparta. Ancient Greece is a joy to wander, from marble cities to quiet olive groves, and your own ship carries over the sailing and sea battles that made Black Flag such fun.",
+   "fallout-4": "You emerge from a fallout shelter 200 years after the bombs, into the irradiated ruins of Boston, searching for your kidnapped son. You can lose yourself for weeks scavenging, building settlements and following strange side stories.",
+   "hogwarts-legacy": "You're a new fifth-year student at Hogwarts in the 1800s, with a rare gift for ancient magic. Exploring the castle, flying over the Highlands and learning spells is everything a Harry Potter fan could want.",
+   "far-cry-3-classic-edition": "Jason Brody's holiday goes horribly wrong when pirates take his friends captive on a tropical island run by the unforgettable Vaas. It set the template for every Far Cry since, and its villain is still one of the best.",
+   "gravity-rush-2": "Kat can shift gravity at will, falling sideways and upwards through floating comic-book cities. It's a wonderfully unusual way to explore, and a cult PlayStation favourite that deserves more players."
+  },
+  "faq": [
+   [
+    "What's the best open-world game on PS Plus?",
+    "Marvel's Spider-Man 2 is the highest-rated open-world game in the Extra catalogue, at 90. For something you can sink a hundred hours into, Kingdom Come: Deliverance II or Fallout 4."
+   ],
+   [
+    "What's the biggest open-world game on PS Plus?",
+    "For sheer size and things to do, Kingdom Come: Deliverance II, Fallout 4, Skyrim and Assassin's Creed Odyssey can each take well over 100 hours if you do everything. Our <a href=\"/lists/long-ps-plus-games\">long games list</a> has more."
+   ],
+   [
+    "What's a good open-world game for beginners?",
+    "Marvel's Spider-Man 2 and Hogwarts Legacy are easy to pick up and fun just to move around in. Ghost of Tsushima has gentle difficulty settings and a world that guides you."
+   ],
+   [
+    "Is Red Dead Redemption on PS Plus?",
+    "The original Red Dead Redemption is listed as a PS3 game you can stream with PS Plus Premium. Red Dead Redemption 2 isn't on PS Plus right now."
+   ],
+   [
+    "Are there open-world games I can play with friends?",
+    "Far Cry 5 and Far Cry 4 let a friend join for the whole campaign, and Ghost of Tsushima has a co-op mode. Our <a href=\"/lists/ps-plus-online-co-op-games\">online co-op list</a> has more."
+   ],
+   [
+    "Which Assassin's Creed games are on PS Plus?",
+    "Several, including Black Flag, Origins, Odyssey and Valhalla. Black Flag is the best place to start if you like pirates, and Odyssey if you want a huge RPG."
+   ]
+  ]
+ },
+ "best-ps-plus-premium-classics": {
+  "title": "The 10 best PS1, PS2 and PSP classics on PS Plus Premium",
+  "h1": "The best classics on PS Plus Premium",
+  "desc": "The best PS1, PS2 and PSP games in PS Plus Premium, from Tekken 3 to Jak and Daxter, with what each is like today and how long it takes.",
+  "intro": "PS Plus Premium comes with a back catalogue of PS1, PS2 and PSP games, plus a handful of PS4 remasters, that you can download and play on PS4 or PS5. Plenty of them have aged, but the best still play brilliantly, and a few are hard to find anywhere else. These are our ten favourites, and each one says what it's like to play today. The full list of classics follows.",
+  "about_h": "What counts as a classic",
+  "nouns": "classic",
+  "all_premium": true,
+  "about": [
+   "Sony calls these Premium Classics: games first released on the PS1, PS2 or PSP, emulated so they run on PS4 and PS5, along with a few PS4 remasters of older games. Most get small upgrades like rewind and save states, and some PS1 games come in more than one regional version, so check you've picked the right one.",
+   "This list counts every Premium Classic available in Canada and the US. It leaves out the PS3 games Premium streams from the cloud, which work differently and aren't offered in every country."
+  ],
+  "picks": [
+   "tekken-3",
+   "resident-evil-3-nemesis",
+   "jak-and-daxter-the-precursor-legacy",
+   "ape-escape",
+   "syphon-filter",
+   "timesplitters-2",
+   "grandia",
+   "sly-2-band-of-thieves",
+   "oddworld-abe-s-exoddus",
+   "dark-cloud-2"
+  ],
+  "featured": 10,
+  "notes": {
+   "tekken-3": "PS1 fighting game, 1998",
+   "resident-evil-3-nemesis": "PS1 survival horror, 1999",
+   "jak-and-daxter-the-precursor-legacy": "PS2 platformer, 2001",
+   "ape-escape": "PS1 platformer, 1999",
+   "syphon-filter": "PS1 stealth action, 1999",
+   "timesplitters-2": "PS2 shooter, 2002",
+   "grandia": "PS1 JRPG, 1999",
+   "sly-2-band-of-thieves": "PS2 stealth platformer, 2004",
+   "oddworld-abe-s-exoddus": "PS1 puzzle platformer, 1998",
+   "dark-cloud-2": "PS2 JRPG, 2002"
+  },
+  "writeups": {
+   "tekken-3": "The fighting game many people still rank as the series' best, with a big, varied cast, fast and readable fights, and the daft Tekken Force and Tekken Ball modes on the side. It's perfect for a quick round with a friend on the couch.",
+   "resident-evil-3-nemesis": "Jill Valentine tries to escape Raccoon City while Nemesis, a relentless monster with a rocket launcher, hunts her through the streets. Fixed camera angles and tank controls take a little getting used to, but the tension holds up.",
+   "jak-and-daxter-the-precursor-legacy": "A bright, open platformer from the studio that went on to make Uncharted, with a whole island to explore without loading screens and a wisecracking sidekick turned into a weasel. It's an easy, cheerful game to play through in a few evenings.",
+   "ape-escape": "You catch escaped monkeys with a net, using the right stick for your gadgets in one of the first games built around the DualShock. It's inventive, funny and still feels fresh.",
+   "syphon-filter": "Gabe Logan chases a bioterrorist through a mix of stealth and third-person shooting, complete with the series' famous taser. It's rough around the edges now, but the spy-thriller pace still carries it.",
+   "timesplitters-2": "A time-travelling shooter from former GoldenEye developers, best known for its huge, silly split-screen multiplayer and its fast, tightly made story levels. It's one of the best couch multiplayer games in the catalogue.",
+   "grandia": "A warm, sprawling adventure about a boy who wants to explore the world, with one of the best turn-based battle systems of its era. It takes its time, but it's a lovely, optimistic game to sink into.",
+   "sly-2-band-of-thieves": "Sly Cooper and his gang plan elaborate heists across Europe, swapping between a thief, a tech whizz and a strongman. Its cel-shaded look has aged better than most PS2 games.",
+   "oddworld-abe-s-exoddus": "Abe has to lead his fellow Mudokons to safety through puzzle-filled factories, using chants, possession and a lot of trial and error. It's dark, strange and very funny, and it's tough.",
+   "dark-cloud-2": "A cheerful action RPG where you fight through dungeons, invent weapons, take photos and rebuild towns, all at once. It's huge and gloriously unfocused, and easy to lose a month to."
+  },
+  "faq": [
+   [
+    "What's the best classic on PS Plus Premium?",
+    "By Metascore it's Tekken 3. For a long single-player game, Grandia or Dark Cloud 2."
+   ],
+   [
+    "Can I play PS Plus classics on PS5?",
+    "Yes. Every game on this list runs on PS4 and PS5, and most have extras like rewind and save states."
+   ],
+   [
+    "Are the original Resident Evil games on PS Plus?",
+    "Yes, all three PS1 games are in Premium: Resident Evil Director's Cut, Resident Evil 2 and Resident Evil 3: Nemesis."
+   ],
+   [
+    "Are there classic JRPGs on PS Plus?",
+    "Plenty. Grandia, Dark Cloud 2 and Jeanne d'Arc are the highest rated, and our <a href=\"/lists/ps-plus-jrpgs\">JRPG list</a> has more."
+   ],
+   [
+    "Do classics need PS Plus Premium?",
+    "Yes. These come only with Premium, or Deluxe in countries without Premium. Extra doesn't include them."
+   ],
+   [
+    "Are PS3 games included?",
+    "Premium can stream a separate set of PS3 games in some countries, including Canada and the US. They aren't on this list."
+   ]
+  ]
  }
 }

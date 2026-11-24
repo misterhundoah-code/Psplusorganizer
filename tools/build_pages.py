@@ -107,7 +107,7 @@ LISTS = [
     ("best-ps-plus-premium-classics", "The best PS Plus Premium Classics",
      "The highest-rated PS1, PS2 and PSP Classics and PS4 remasters in PS Plus Premium, ranked by Metascore.",
      "The top-rated PS1, PS2 and PSP Classics and PS4 remasters that come with PS Plus Premium.",
-     lambda g: g.get("cl"), "src=cl&sort=m", 60),
+     lambda g: g.get("cl") and not g.get("s3"), "src=cl&sort=m", 60),
     ("ps-plus-co-op-games", "PS Plus co-op games",
      "PS Plus Extra and Premium games you can play co-op, ranked by Metascore, with completion times.",
      "Games in PS Plus Extra and Premium that support co-op play, from Wikidata's game modes, ranked by Metascore.",
@@ -322,7 +322,7 @@ def picks(chosen, cp):
         else:
             art, cls = "", "art none"
         plat = " / ".join(g.get("p") or [])
-        bits = [b for b in ((cp.get("notes") or {}).get(g["id"], ""), coop_line(g, cp["coop"]) if cp.get("coop") else "", plat, "Needs Premium" if not g.get("cat") else "", f"Metascore {g['m']}" if g.get("m") else "", f"about {hours(g.get('h'))} main story" if g.get("h") else "") if b]
+        bits = [b for b in ((cp.get("notes") or {}).get(g["id"], ""), coop_line(g, cp["coop"]) if cp.get("coop") else "", plat, "Needs Premium" if not g.get("cat") and not cp.get("all_premium") else "", f"Metascore {g['m']}" if g.get("m") else "", f"about {hours(g.get('h'))} main story" if g.get("h") else "") if b]
         lv = LEAVING.get(g["id"])
         leave = f'<span class="leave">Leaving {esc(short_date(lv))}</span>' if lv else ""
         text = (cp.get("writeups") or {}).get(g["id"]) or WRITEUPS.get(g["id"]) or g.get("d") or ""
