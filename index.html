@@ -1590,6 +1590,11 @@ function applyRegion(){
 }
 const regionOK=g=>!g.offhere||!!g.e||!!g.own||!!g.buy||!!MARKS[g.id]||LIB[g.id]===1;
 const inScope=g=>tierOK(g)&&!preJoin(g)&&regionOK(g);
+/* Can you play this without having claimed it? Yes if your tier includes it now (Game Catalogue with Extra, Classics
+   with Premium), if you bought it, or if it's this month's monthly game and can still be claimed. */
+var CLAIMNOW=null,CLAIMT=0;
+function claimNowIds(){const n=Date.now();if(!CLAIMNOW||n-CLAIMT>1000){const M=monthlyNow();CLAIMNOW=new Set(M?M.games.filter(x=>x.g).map(x=>x.g.id):[]);CLAIMT=n;}return CLAIMNOW;}
+function playableAnyway(g){return (g.cat&&!g.gone&&tierAt("extra"))||((g.cl||g.s3)&&tierAt("premium"))||!!g.buy||bids().has(g.id)||claimNowIds().has(g.id);}
 function preJoin(g){return !!(S.since&&g.e&&g.e<S.since&&!(g.cat&&!g.gone)&&!g.cl&&!g.own&&!MARKS[g.id]&&LIB[g.id]!==1);}
 function pass(g){
   if(!inScope(g))return false;
@@ -1607,7 +1612,7 @@ function pass(g){
   else if(S.view==="n"){if(LIB[g.id]!==-1)return false;}
   else if(S.view==="l"){if(LIB[g.id]!==1&&!g.buy)return false;}
   else if(S.view==="browse"){
-    if(LIB[g.id]===-1&&!g.cat)return false;
+    if(LIB[g.id]===-1&&!playableAnyway(g))return false;   // a monthly game you didn't claim, and can't play another way
     if(mk==="x")return false;
     if(S.hidep&&mk==="p")return false;
     if(S.hideb&&mk==="b"&&!retry(g.id))return false;
