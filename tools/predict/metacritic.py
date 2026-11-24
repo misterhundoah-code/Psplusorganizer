@@ -61,7 +61,9 @@ def score(text):
         return None
     raw = _COMMENT.sub("", _REF.sub("", raw))
     raw = re.sub(r"'''?|\[\[(?:[^|\]]*\|)?([^\]]*)\]\]", r"\1", raw)
-    found = re.findall(r"(?:\b(PS5|PS4|PlayStation 5|PlayStation 4|PS|PC|NS|Switch|XSXS|XSX|XONE|XOne|Xbox[^:]*|iOS|Win|NS2)\s*:\s*)?(\d{1,3})\s*/\s*100", raw, re.I)
+    # The platform comes before the score, as "PS5: 92/100" or "(PS5) 92/100"
+    found = re.findall(r"(?:\(?\s*\b(PS5|PS4|PlayStation 5|PlayStation 4|PS|PC|NS2|NS|Switch 2|Switch|XSXS|XSX|XONE|XOne|XB1|Xbox One|Xbox Series X/S|"
+                       r"Xbox Series X|Xbox|iOS|Win|Mac|Stadia)\s*\)?\s*:?\s*)?(\d{1,3})\s*/\s*100", raw, re.I)
     found = [(p.upper().replace("PLAYSTATION ", "PS"), int(v)) for p, v in found if int(v) <= 100]
     if not found:
         return None
@@ -82,6 +84,8 @@ if __name__ == "__main__":
         ("{{Video game reviews\n|MC=PC: 90/100<br>PS4: 86/100\n}}", 86),
         ("{{Video game reviews | MC = [[PlayStation 5|PS5]]: 77/100 }}", 77),
         ("{{Video game reviews\n|MC=PC: 90/100\n}}", None),
+        ("{{Video game reviews | MC = (PC) 90/100<ref name=a>{{cite web|url=x}}</ref>{{efn|Based on 48 reviews}}<br />(PS5) 92/100<ref>y</ref><br />(XSXS) 90/100 | OC = 97% }}", 92),
+        ("{{Video game reviews | MC = (PC) 79/100<ref>z</ref><br>(XSXS) 85/100 | OC = 82% }}", None),
         ("No table here", None),
     ]
     for t, want in tests:
