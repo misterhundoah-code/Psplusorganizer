@@ -1,0 +1,35 @@
+Deals page: 72793 bytes, 15 categories linked
+  category 2eb25762-877f-4140-b341-7c7e14c19f98 ctx: :{"enableOneTrustScript":true,"enableBundling":true},"client":{"webCheckout":{"clientId":"2eb25762-877f-4140-b341-7c7e14c19f98"}}}</script> <link rel="preconnec
+  category 2dec2b13-57dc-4966-8294-6df0d627e109 ctx: ssion":{"isSignedInCookie":"isSignedIn"},"webCheckout":{"name":"embeddedcart","clientId":"2dec2b13-57dc-4966-8294-6df0d627e109","origin":"https://checkout.plays
+  category 2960a8ba-61d3-1874-1893-f67a13311738 ctx: text/javascript" src="/d16g/0iRp/Ikc/RU6/LiJw/zNimpS7rE71w/OmliZFd6PAI/JSQa/eXc3Rn52AQ?v=2960a8ba-61d3-1874-1893-f67a13311738" defer></script></head><body><scri
+  category bbc37930-e800-11f1-8573-f782fb990372 ctx: n52AQ?v=2960a8ba-61d3-1874-1893-f67a13311738" defer></script></head><body><script id="env:bbc37930-e800-11f1-8573-f782fb990372" type="application/json">{"args":
+  category 4f1fe5a6-daf9-11ee-9d6a-d6ec549ae369 ctx: n","country":"CA","region":"SIEA"}}},"navTree":{"items":[{"__typename":"EMSNavItem","id":"4f1fe5a6-daf9-11ee-9d6a-d6ec549ae369","name":"Latest","type":"REGULAR"
+  category 6b85a511-daf9-11ee-9d6a-d6ec549ae369 ctx: test","type":"REGULAR","alias":"latest","slug":"LATEST"},{"__typename":"EMSNavItem","id":"6b85a511-daf9-11ee-9d6a-d6ec549ae369","name":"Collections","type":"REG
+  category 817f6862-daf9-11ee-9d6a-d6ec549ae369 ctx: e":"REGULAR","alias":"collections","slug":"COLLECTIONS"},{"__typename":"EMSNavItem","id":"817f6862-daf9-11ee-9d6a-d6ec549ae369","name":"Deals","type":"REGULAR",
+  category c4c6017c-daf9-11ee-9d6a-d6ec549ae369 ctx: "Deals","type":"REGULAR","alias":"deals","slug":"DEALS"},{"__typename":"EMSNavItem","id":"c4c6017c-daf9-11ee-9d6a-d6ec549ae369","name":"Subscriptions","type":"R
+  category a321f4f0-daf9-11ee-a31f-a2110459ffc0 ctx: REGULAR","alias":"subscriptions","slug":"SUBSCRIPTIONS"},{"__typename":"EMSNavItem","id":"a321f4f0-daf9-11ee-a31f-a2110459ffc0","name":"Browse","type":"REGULAR"
+  category 7d4addff-bfa8-11ee-b375-5e45f4e139ac ctx: 10459ffc0","name":"Browse","type":"REGULAR","alias":"browse","slug":"BROWSE"},"EMSNavTree:7d4addff-bfa8-11ee-b375-5e45f4e139ac:en-ca":{"__typename":"EMSNavTree"
+  category 7bbceafe-bfa8-11ee-b375-5e45f4e139ac ctx: n-ca"},{"__ref":"EMSNavItem:a321f4f0-daf9-11ee-a31f-a2110459ffc0:en-ca"}]},"EMSExperience:7bbceafe-bfa8-11ee-b375-5e45f4e139ac:en-ca:undefined":{"__typename":"E
+  category b6de8d4d-bf9b-11ee-ad2a-aea73dc1ea43 ctx: e139ac:en-ca"}},"ROOT_QUERY":{"__typename":"Query","emsExperienceRetrieve({\"clientId\":\"b6de8d4d-bf9b-11ee-ad2a-aea73dc1ea43\"})":{"__ref":"EMSExperience:7bbc
+  category 0194a27f-57a3-7617-afa7-86ca2a2123a3 ctx: ascript" src="https://cdn.cookielaw.org/scripttemplates/otSDKStub.js" data-domain-script="0194a27f-57a3-7617-afa7-86ca2a2123a3"></script><script type="text/java
+  category f7df5a10-e800-11f1-9570-d7fe05d13098 ctx: /LiJw/i9impS6rE7zpbwN7ak/DFxcZFd6PAI/IkQj/IlkJXRg"></script></body></html><script id="env:f7df5a10-e800-11f1-9570-d7fe05d13098" type="application/json">{"args":
+  category 3f772501-f6f8-49b7-abac-874a88ca4897 known all-deals ID
+  2eb25762-877f-4140-b341-7c7e14c19f98 'ctx: :{"enableOneTrustScript":true,"enableBundling":true},"client":{"webCheckout":{"clientId":"2eb25762-877f-4140-b341-7c7e14c19f98"}}}</script> <link rel="preconnec': page 1 has 0 discounted products, total None
+  2dec2b13-57dc-4966-8294-6df0d627e109 'ctx: ssion":{"isSignedInCookie":"isSignedIn"},"webCheckout":{"name":"embeddedcart","clientId":"2dec2b13-57dc-4966-8294-6df0d627e109","origin":"https://checkout.plays': page 1 has 0 discounted products, total None
+  2960a8ba-61d3-1874-1893-f67a13311738 'ctx: text/javascript" src="/d16g/0iRp/Ikc/RU6/LiJw/zNimpS7rE71w/OmliZFd6PAI/JSQa/eXc3Rn52AQ?v=2960a8ba-61d3-1874-1893-f67a13311738" defer></script></head><body><scri': page 1 has 0 discounted products, total None
+  bbc37930-e800-11f1-8573-f782fb990372 'ctx: n52AQ?v=2960a8ba-61d3-1874-1893-f67a13311738" defer></script></head><body><script id="env:bbc37930-e800-11f1-8573-f782fb990372" type="application/json">{"args":': page 1 has 0 discounted products, total None
+  4f1fe5a6-daf9-11ee-9d6a-d6ec549ae369 'ctx: n","country":"CA","region":"SIEA"}}},"navTree":{"items":[{"__typename":"EMSNavItem","id":"4f1fe5a6-daf9-11ee-9d6a-d6ec549ae369","name":"Latest","type":"REGULAR"': page 1 has 0 discounted products, total None
+  6b85a511-daf9-11ee-9d6a-d6ec549ae369 'ctx: test","type":"REGULAR","alias":"latest","slug":"LATEST"},{"__typename":"EMSNavItem","id":"6b85a511-daf9-11ee-9d6a-d6ec549ae369","name":"Collections","type":"REG': page 1 has 0 discounted products, total None
+  817f6862-daf9-11ee-9d6a-d6ec549ae369 'ctx: e":"REGULAR","alias":"collections","slug":"COLLECTIONS"},{"__typename":"EMSNavItem","id":"817f6862-daf9-11ee-9d6a-d6ec549ae369","name":"Deals","type":"REGULAR",': page 1 has 0 discounted products, total None
+  c4c6017c-daf9-11ee-9d6a-d6ec549ae369 'ctx: "Deals","type":"REGULAR","alias":"deals","slug":"DEALS"},{"__typename":"EMSNavItem","id":"c4c6017c-daf9-11ee-9d6a-d6ec549ae369","name":"Subscriptions","type":"R': page 1 has 0 discounted products, total None
+  a321f4f0-daf9-11ee-a31f-a2110459ffc0 'ctx: REGULAR","alias":"subscriptions","slug":"SUBSCRIPTIONS"},{"__typename":"EMSNavItem","id":"a321f4f0-daf9-11ee-a31f-a2110459ffc0","name":"Browse","type":"REGULAR"': page 1 has 0 discounted products, total None
+  7d4addff-bfa8-11ee-b375-5e45f4e139ac 'ctx: 10459ffc0","name":"Browse","type":"REGULAR","alias":"browse","slug":"BROWSE"},"EMSNavTree:7d4addff-bfa8-11ee-b375-5e45f4e139ac:en-ca":{"__typename":"EMSNavTree"': page 1 has 0 discounted products, total None
+  7bbceafe-bfa8-11ee-b375-5e45f4e139ac 'ctx: n-ca"},{"__ref":"EMSNavItem:a321f4f0-daf9-11ee-a31f-a2110459ffc0:en-ca"}]},"EMSExperience:7bbceafe-bfa8-11ee-b375-5e45f4e139ac:en-ca:undefined":{"__typename":"E': page 1 has 0 discounted products, total None
+  b6de8d4d-bf9b-11ee-ad2a-aea73dc1ea43 'ctx: e139ac:en-ca"}},"ROOT_QUERY":{"__typename":"Query","emsExperienceRetrieve({\"clientId\":\"b6de8d4d-bf9b-11ee-ad2a-aea73dc1ea43\"})":{"__ref":"EMSExperience:7bbc': page 1 has 0 discounted products, total None
+  0194a27f-57a3-7617-afa7-86ca2a2123a3 'ctx: ascript" src="https://cdn.cookielaw.org/scripttemplates/otSDKStub.js" data-domain-script="0194a27f-57a3-7617-afa7-86ca2a2123a3"></script><script type="text/java': page 1 has 0 discounted products, total None
+  f7df5a10-e800-11f1-9570-d7fe05d13098 'ctx: /LiJw/i9impS6rE7zpbwN7ak/DFxcZFd6PAI/IkQj/IlkJXRg"></script></body></html><script id="env:f7df5a10-e800-11f1-9570-d7fe05d13098" type="application/json">{"args":': page 1 has 0 discounted products, total None
+  3f772501-f6f8-49b7-abac-874a88ca4897 'known all-deals ID': page 1 has 0 discounted products, total None
+Using f7df5a10-e800-11f1-9570-d7fe05d13098 'ctx: /LiJw/i9impS6rE7zpbwN7ak/DFxcZFd6PAI/IkQj/IlkJXRg"></script></body></html><script id="env:f7df5a10-e800-11f1-9570-d7fe05d13098" type="application/json">{"args":', about 0 products
+Collected 0 discounted products over 0 pages
+Matched 0 wall games; 0 products not on the wall
+Some unmatched: 
