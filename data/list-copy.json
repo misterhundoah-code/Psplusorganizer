@@ -30,6 +30,12 @@
     "What's a great short game on PS Plus Extra?",
     "Undertale takes about 7 hours and Celeste about 8, and both are among the best-rated games on the service. Our <a href=\"/lists/short-ps-plus-games\">short games list</a> has more."
    ]
+  ],
+  "about_h": "What's in PS Plus Extra",
+  "nouns": "game in PS Plus Extra",
+  "about": [
+   "PS Plus Extra is the tier that adds the Game Catalogue: a library of PS4 and PS5 games you can download and play for as long as you stay subscribed. Sony adds games every month and removes some, so the catalogue is always changing.",
+   "This list only counts games in that catalogue, so everything on it is playable with Extra or Premium today. The PS1, PS2, PSP and PS3 classics that need Premium have a list of their own. Our ten are the highest Metascores, with repeat editions of the same game left out so you get ten different games rather than three versions of one."
   ]
  },
  "ps-plus-couch-co-op-games": {
@@ -79,6 +85,12 @@
     "What about split-screen shooters?",
     "They're rare on PS Plus Extra. PS Plus Premium's classics include a few, like Resident Evil 5 and TimeSplitters 2. Our <a href=\"/lists/ps-plus-online-co-op-games\">online co-op list</a> has the best shooters to play with friends over the internet."
    ]
+  ],
+  "about_h": "What counts as couch co-op",
+  "nouns": "couch co-op game",
+  "about": [
+   "Couch co-op means two or more people playing together on one PS4 or PS5, on a shared or split screen, on the same side. Games where you can only play against each other, like most fighting and sports games, aren't counted here, and neither are games that need a second console.",
+   "We check every game on this list by hand for local co-op and how many players it supports, rather than trusting the box, because “multiplayer” on a store page often means online only."
   ]
  },
  "ps-plus-online-co-op-games": {
@@ -125,6 +137,12 @@
     "Can we play on the same sofa instead?",
     "Most of these are online only. Our <a href=\"/lists/ps-plus-couch-co-op-games\">couch co-op list</a> has the best games to play together on one console."
    ]
+  ],
+  "about_h": "What counts as online co-op",
+  "nouns": "online co-op game",
+  "about": [
+   "Online co-op means playing together over the internet, each on your own console, on the same team. Competitive-only multiplayer isn't counted, and neither are games whose co-op only works on one console.",
+   "Each friend needs the game too, either through their own PS Plus Extra or Premium membership or by buying it, and online play needs PS Plus for everyone. We check each game by hand for online co-op and how many players can join."
   ]
  },
  "ps-plus-co-op-games": {
@@ -142,7 +160,12 @@
     "The best online co-op games"
    ]
   ],
-  "featured": 0
+  "featured": 0,
+  "about_h": "What counts as co-op",
+  "nouns": "co-op game",
+  "about": [
+   "Co-op means playing on the same side as someone else, whether that's on one console or online. Competitive-only games don't count. Every game here has been checked by hand for couch co-op, online co-op or both, along with how many players each supports."
+  ]
  },
  "short-ps-plus-games": {
   "title": "The 10 best short games on PS Plus you can finish in a weekend ({month})",
@@ -187,6 +210,12 @@
     "How do I find more short games?",
     "The full list below covers every game on PS Plus under 10 hours. On the <a href=\"/?src=plus&amp;tlen=0-10&amp;sort=m\">wall</a>, you can filter by length and hide what you've already played."
    ]
+  ],
+  "about_h": "What counts as short",
+  "nouns": "short game",
+  "about": [
+   "A game counts as short here if HowLongToBeat's players finish its main story in under 10 hours on average. That's the time to see the credits at a normal pace, not to find every collectible, so completionists should expect longer.",
+   "Games without an ending, like most multiplayer, sports and endless games, aren't counted, because there's no story to finish. Our picks lean towards games that feel complete rather than cut short."
   ]
  },
  "ps-plus-horror-games": {
@@ -247,6 +276,12 @@
     "Are there short horror games?",
     "Crow Country, Killer Frequency and Still Wakes the Deep each take around 5 hours, and so does Bramble: The Mountain King, a dark fairy tale from our <a href=\"/lists/short-ps-plus-games\">short games list</a>."
    ]
+  ],
+  "about_h": "What counts as horror",
+  "nouns": "horror game",
+  "about": [
+   "Horror games are built to frighten you. That covers survival horror, where supplies are scarce and the monsters are worth avoiding, psychological horror that gets under your skin, and slow-burn dread where very little happens and that's the point.",
+   "The full list counts every game on PS Plus tagged as horror, which includes some action games with a horror setting. Our picks lean towards the ones that are genuinely scary."
   ]
  }
 }

@@ -655,13 +655,20 @@ def build():
             shown = gs[:limit] if limit else gs
             hub = "".join(f'<a class="btn" href="{esc(u)}">{esc(t)}</a> ' for u, t in cp.get("links", []))
             q = esc(query)
+            # "about": what the genre or kind of game is, and what we counted; then the picks; then every
+            # game on the list, folded away, so the page leads with the picks but still has the whole set.
+            about = "".join(f"<p>{esc(fill(t, vals))}</p>" for t in cp.get("about", []))
+            nouns = cp.get("nouns", "game")
             body = (f'<h1>{esc(fill(cp.get("h1", title), vals))}</h1><p class="intro">{esc(fill(cp["intro"], vals))}</p>'
+                    + (f'<section class="about"><h2>{esc(fill(cp.get("about_h", "What counts"), vals))}</h2>{about}</section>' if about else "")
                     + (f'<p class="hub">{hub}</p>' if hub else "")
                     + (picks(chosen, cp) if chosen else "")
-                    + f'<h2>{"The full list" if chosen else "Every game"}</h2><p class="intro">The top {len(shown)} of {total}, as of {esc(asof)}. Availability is for Canada and the US;'
+                    + f'<details class="fulllist"{"" if chosen else " open"}><summary>Every {esc(nouns)} on PS Plus ({total})</summary>'
+                    f'<p class="intro">All {total}, best-rated first, as of {esc(asof)}. Availability is for Canada and the US;'
                     f' <a href="/?{q}">open the wall</a> to pick your own country and hide what you\'ve played.</p>'
                     f'<p><a class="btn" href="/?{q}">Open these on the wall</a></p>'
-                    + table(shown) + (faq_html(cp["faq"], vals) if cp.get("faq") else "") + f'<h2>More PS Plus lists</h2>{list_nav(slug)}')
+                    + table(gs) + "</details>"
+                    + (faq_html(cp["faq"], vals) if cp.get("faq") else "") + f'<h2>More PS Plus lists</h2>{list_nav(slug)}')
             written[slug] = page(slug, fill(cp.get("title", title), vals), fill(cp.get("desc", desc), vals), body, f"{SITE}/lists/{slug}")
             continue
         total = len(gs)
