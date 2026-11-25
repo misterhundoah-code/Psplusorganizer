@@ -58,14 +58,26 @@ def load_games():
 
 
 def api(**params):
+    """A Wikipedia API call. When Wikipedia is busy it answers with an error (maxlag, rate limit) rather than
+    data; those used to be passed on as if empty, which silently dropped whole batches of games, so now the
+    call waits and tries again, and gives up loudly."""
     params.update(format="json", formatversion=2, maxlag=5)
-    for attempt in range(4):
-        r = S.get(API, params=params, timeout=40)
-        if r.status_code == 200 and "error" not in r.json():
-            return r.json()
-        time.sleep(2 + attempt * 3)
-    r.raise_for_status()
-    return r.json()
+    err = None
+    for attempt in range(8):
+        try:
+            r = S.get(API, params=params, timeout=40)
+            if r.status_code == 200:
+                j = r.json()
+                if "error" not in j:
+                    return j
+                err = j["error"].get("code")
+            else:
+                err = r.status_code
+            wait = float(r.headers.get("Retry-After") or 0) or 3 + attempt * 5
+        except Exception as e:
+            err, wait = e, 3 + attempt * 5
+        time.sleep(min(wait, 60))
+    raise RuntimeError(f"Wikipedia API kept failing ({err})")
 
 
 def base_title(t):
