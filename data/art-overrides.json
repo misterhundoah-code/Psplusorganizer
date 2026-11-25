@@ -25,6 +25,9 @@
  ],
  "_note_wiki_art": "Games whose Wikipedia article is right but whose main image is another game's cover; the description is kept, the cover isn't.",
  "wiki_art_skip": [
-  "ratchet-clank-ps3"
+  "dragon-s-lair",
+  "ratchet-clank-ps3",
+  "spelunky",
+  "warlords"
  ]
 }
