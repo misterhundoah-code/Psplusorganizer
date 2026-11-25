@@ -129,12 +129,37 @@ def resolve(games):
                 # A plain-title match whose description names a year far from the game's own is
                 # probably a different game of the same name (unless ours is a remaster or remake).
                 years = [int(m) for m in re.findall(r"\b(19\d{2}|20\d{2})\b", p.get("description") or "")]
-                remake = re.search(r"remaster|remake|collection|edition|redux|\(", g["t"], re.I)
+                # PS3 streaming games and classics are often later re-releases of older games, so their year
+                # in our data can be well after the original's.
+                remake = re.search(r"remaster|remake|collection|edition|redux|\(", g["t"], re.I) or g.get("s3") or g.get("cl")
                 if g.get("y") and years and not c.endswith("video game)") and not remake \
                         and min(abs(int(g["y"]) - yy) for yy in years) > 3:
                     continue
                 found[g["id"]] = p
                 break
+    # Second try for games still unmatched: Wikipedia's search, taking a result only when its title is the
+    # game's own (ignoring case, punctuation and a "(video game)" suffix) and it is about one game.
+    def key(t):
+        t = re.sub(r"\s*\((?:\d{4} )?video game\)$", "", t)
+        return re.sub(r"[^a-z0-9]+", " ", t.lower().replace("&", "and")).strip()
+    for g in games:
+        if g["id"] in found:
+            continue
+        names = {key(g["t"].replace("’", "'")), key(base_title(g["t"]))}
+        try:
+            hits = api(action="query", list="search", srsearch=f'{base_title(g["t"])} video game', srlimit=5,
+                       srnamespace=0).get("query", {}).get("search", [])
+        except Exception:
+            continue
+        cands = [h["title"] for h in hits if key(h["title"]) in names]
+        if cands:
+            data = api(action="query", titles="|".join(cands), redirects=1, prop="description|pageimages|pageprops",
+                       piprop="thumbnail|original", pithumbsize=500, pilicense="any", ppprop="wikibase_item")
+            for pg in data.get("query", {}).get("pages", []):
+                if is_game(pg):
+                    found[g["id"]] = pg
+                    break
+        time.sleep(0.2)
     return found
 
 
