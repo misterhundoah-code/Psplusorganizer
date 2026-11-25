@@ -119,11 +119,12 @@ def is_game(page):
     d = (page.get("description") or "").lower()
     if page.get("missing") or not d or "disambiguation" in d:
         return False
-    if re.search(r"\b(company|developer|publisher|studio|corporation|character|person|engine|console)\b", d):
+    # (?<!-) so "first-person" and "third-person" games aren't mistaken for articles about a person
+    if re.search(r"(?<!-)\b(company|developer|publisher|studio|corporation|character|person|engine|console)\b", d):
         return False
     if re.search(r"\b(?:game|video game) (?:series|franchise)\b|^(?:media )?franchise|^series\b", d):
         return False
-    return "video game" in d or re.search(r"\bgame\b", d)
+    return "video game" in d or re.search(r"\bgame\b", d) or "expansion pack" in d
 
 
 def resolve(games):
@@ -166,10 +167,6 @@ def resolve(games):
                     continue
                 found[g["id"]] = p
                 break
-    # A few unmatched games, with what each candidate title found, to show why they missed.
-    for g in [g for g in games if g["id"] not in found and g.get("s3")][:8]:
-        print("  unmatched", g["id"], [(c, (pages.get(c) or {}).get("title"), (pages.get(c) or {}).get("description"),
-                                       bool((pages.get(c) or {}).get("missing"))) for c in want[g["id"]]])
     # Second try for games still unmatched: Wikipedia's search, taking a result only when its title is the
     # game's own (ignoring case, punctuation and a "(video game)" suffix) and it is about one game.
     def key(t):
