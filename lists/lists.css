@@ -159,3 +159,9 @@ details.fulllist>table{margin:16px 0 0;width:100%;border:0;border-top:2px solid 
 .msc{display:inline-block;min-width:28px;text-align:center;font-weight:900;font-size:12.5px;padding:0 4px;border:2px solid var(--ink);color:#0E1636;margin-left:6px}
 .msc.hi{background:#5BC85B}.msc.mid{background:#FFC925}.msc.lo{background:#F06A5A}
 .msw{white-space:nowrap}
+
+/* Store and trailer links under a game in a table */
+td.t .plinks{display:flex;flex-wrap:wrap;gap:4px 14px;margin:6px 0 0 !important;font-size:14px}
+td.t .plinks a,td.t .plinks a:last-child,td.t .plinks a:visited{display:inline;border:0;padding:0;background:none;color:var(--blue);font-weight:700;font-size:14px;text-decoration:underline;text-underline-offset:3px}
+td.t .plinks a:hover{text-decoration-thickness:2px;background:none;color:var(--blue)}
+td.cv img.wide{object-fit:cover}

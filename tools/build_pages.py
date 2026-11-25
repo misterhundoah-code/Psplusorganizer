@@ -234,7 +234,7 @@ Cover art belongs to Sony and the games' publishers. The short synopses were dra
 <p><a href="/">Open the wall</a> · <a href="/lists/">All lists</a> · <a href="/about">About</a> · <a href="/faq">FAQ</a> · <a href="/privacy">Privacy</a> ·
 <a href="https://github.com/misterhundoah-code/Psplusorganizer/issues/new/choose" rel="noopener">Report a problem</a></p>
 </footer>
-{ANALYTICS}
+{REGION_JS if 'class="plinks"' in body else ""}{ANALYTICS}
 </body></html>
 """
 
@@ -252,7 +252,8 @@ def table(gs, numbered=True, show_leave=True):
         synopsis = f'<span class="d">{esc(g["d"])}</span>' if g.get("d") else ""
         rows.append(
             f'<tr data-tier="{"x" if g.get("cat") else "p"}"><td class="n">{i if numbered else ""}</td><td class="cv">{cover}</td>'
-            f'<td class="t"><b>{esc(g["t"])}</b>{leave}<span class="meta">{esc(" · ".join(bits))}</span>{synopsis}</td>'
+            f'<td class="t"><b>{esc(g["t"])}</b>{leave}<span class="meta">{esc(" · ".join(bits))}</span>{synopsis}'
+            f'{plinks(g["t"], {}, g.get("u"), reviews=False)}</td>'
             f'<td class="m">{g.get("m") or "–"}</td><td class="h">{hours(g.get("h")) or "–"}</td></tr>')
     return ('<table><thead><tr><th class="n"><span class="vh">Rank</span></th><th class="cv"><span class="vh">Cover</span></th>'
             '<th>Game</th><th class="m">Metascore</th><th class="h">Main story</th></tr></thead><tbody>'
@@ -340,7 +341,7 @@ def picks(chosen, cp):
         lv = LEAVING.get(g["id"])
         leave = f'<span class="leave">Leaving {esc(short_date(lv))}</span>' if lv else ""
         text = (cp.get("writeups") or {}).get(g["id"]) or WRITEUPS.get(g["id"]) or g.get("d") or ""
-        links = [f'<a href="{esc(g["u"])}" rel="noopener">PlayStation Store</a>' if g.get("u") else "",
+        links = [f'<a class="ps" href="{esc(g["u"])}" rel="noopener">PlayStation Store</a>' if g.get("u") else "",
                  f'<a href="{esc(mc_url(g))}" rel="noopener">Metacritic</a>',
                  f'<a href="{esc(yt_url(g))}" rel="noopener">Trailers on YouTube</a>',
                  f'<a href="/?q={urllib.parse.quote(g["t"])}">Open on the wall</a>']
@@ -392,14 +393,39 @@ def list_nav(current=None):
     return f'<ul class="lists">{mo}{nw}{lv}{pr}{hi}{items}</ul>'
 
 
-def plinks(t, x):
-    """Store, trailer and review links for a game on the predictions page (lists/predict.js builds the same ones). The
-    store link is a search in Canada's store; predict.js switches it to the visitor's own region."""
-    q = urllib.parse.quote(t)
+def plinks(t, x, store=None, reviews=True):
+    """Store, trailer and review links for a game (lists/predict.js builds the same ones on the predictions page). The
+    store link is the game's own store page when we have it, else a search, in Canada's store; REGION_JS switches it to
+    the visitor's own region."""
+    q = urllib.parse.quote(re.sub(r"[™®]", "", t))
+    store = store if store and str(store).startswith("https://store.playstation.com/") else f"https://store.playstation.com/en-ca/search/{q}"
     rev = f"https://www.metacritic.com/game/{urllib.parse.quote(x['mc'])}/" if x.get("mc") else f"https://www.metacritic.com/search/{q}/"
-    return (f'<p class="plinks"><a class="ps" href="https://store.playstation.com/en-ca/search/{q}" target="_blank" rel="noopener">PlayStation Store</a>'
+    return (f'<p class="plinks"><a class="ps" href="{esc(store)}" target="_blank" rel="noopener">PlayStation Store</a>'
             f'<a href="https://www.youtube.com/results?search_query={urllib.parse.quote(t + " trailer")}" target="_blank" rel="noopener">Trailers</a>'
-            f'<a href="{rev}" target="_blank" rel="noopener">Reviews</a></p>')
+            + (f'<a href="{rev}" target="_blank" rel="noopener">Reviews</a>' if reviews else "") + '</p>')
+
+
+# Switches store links to the visitor's own region: the one they picked on the wall, else a guess from the browser.
+REGION_JS = """<script>(()=>{let r="";try{r=(JSON.parse(localStorage.getItem("psplus-sorter")||"{}")||{}).region||"";}catch(e){}
+if(!/^[a-z]{2}-[a-z]{2}$/.test(r)){const l=(navigator.language||"").toLowerCase();r=["en-us","en-ca","fr-ca","en-gb","en-au"].includes(l)?l:"en-us";}
+document.querySelectorAll(".plinks a.ps").forEach(a=>{a.href=a.href.replace(/store\\.playstation\\.com\\/[a-z]{2}-[a-z]{2}\\//,"store.playstation.com/"+r+"/");});})();</script>"""
+
+
+def announced(x, byid):
+    """The game behind an announced title: the wall's entry if it's there yet, else the hand-made share-card entry in
+    data/cards.json (Metascore, length, a sentence), matched by title, until it arrives in data/games.json."""
+    g = byid.get(x.get("id") or "")
+    if g:
+        return g
+    return CARDS.get(card_key(x.get("t")))
+
+
+def card_key(t):
+    t = re.sub(r"\s*[-–:]\s*(cross-gen|deluxe|standard|digital deluxe) edition\s*$", "", t or "", flags=re.I)
+    return re.sub(r"[^a-z0-9]", "", t.lower().replace("’", "'"))
+
+
+CARDS = {card_key(c.get("t")): dict(c, card=1) for c in (load("cards.json", {}) or {}).get("games", [])}
 
 
 def predict_page():
@@ -499,8 +525,9 @@ def monthly_card(x, g, when):
         bits.append(f"about {esc(hours(g['h']))} main story")
     text = g.get("d") if g and g.get("card") else blurb(g)
     wall = f'<a href="/?q={urllib.parse.quote(x["t"])}">Find it on the wall</a>' if g and not g.get("card") else ""
+    links = plinks(x["t"], {}, None if (g or {}).get("card") else (g or {}).get("u"))
     return (f'<li class="mcard">{cover}<div><h3>{esc(x["t"])}</h3><p class="meta">{" · ".join(b for b in bits if b)}</p>'
-            f'{f"<p>{esc(text)}</p>" if text else ""}{f"<p class=small>{wall}</p>" if wall else ""}</div></li>')
+            f'{f"<p>{esc(text)}</p>" if text else ""}{links}{f"<p class=small>{wall}</p>" if wall else ""}</div></li>')
 
 
 def monthly_page():
@@ -508,15 +535,10 @@ def monthly_page():
     Built from data/coming.json (Sony's PlayStation Blog posts), so it updates itself each month."""
     slug = "ps-plus-monthly-games"
     byid = {g["id"]: g for g in GAMES}
-    # Games announced but not on the wall yet: take their Metascore and length from data/cards.json (the
-    # hand-made list for the share card), matched by title, until they arrive in data/games.json.
-    def norm(t):
-        t = re.sub(r"\s*[-–:]\s*(cross-gen|deluxe|standard|digital deluxe) edition\s*$", "", t or "", flags=re.I)
-        return re.sub(r"[^a-z0-9]", "", t.lower().replace("’", "'"))
-    cards = {norm(c.get("t")): dict(c, card=1) for c in (load("cards.json", {}) or {}).get("games", [])}
+    # Games announced but not on the wall yet: their share-card entry stands in (see announced()).
     for x in COMING.get("games", []) + (COMING.get("monthly") or {}).get("games", []):
-        if not byid.get(x.get("id") or "") and norm(x.get("t")) in cards:
-            c = cards[norm(x.get("t"))]
+        c = announced(x, byid)
+        if c and c.get("card"):
             x["id"] = x.get("id") or c.get("id")
             byid.setdefault(x["id"], c)
     today = TODAY.isoformat()
@@ -764,14 +786,16 @@ def build():
             "arrival dates.") if cg else "Games Sony has announced for PS Plus that haven't arrived yet."
     rows = []
     for x in cg:
-        g = byid.get(x.get("id") or "")
-        cover = (f'<img src="/art/{g["id"]}.webp" alt="" width="60" height="75" loading="lazy">' if g and g["id"] in ART
+        g = announced(x, byid)
+        cover = (f'<img src="/art/{g["id"]}.webp" alt="" width="60" height="75" loading="lazy">' if g and g.get("id") in ART
+                 else f'<img class="wide" src="{esc(x["img"])}" alt="" width="60" height="75" loading="lazy">' if x.get("img")
                  else '<span class="nocover" aria-hidden="true"></span>')
         plats = ", ".join(x.get("p") or [])
         score = (g or {}).get("m")
         rows.append(f'<tr><td class="n"></td><td class="cv">{cover}</td><td class="t"><b>{esc(x["t"])}</b>'
                     f'<span class="leave" style="background:var(--blue)">Arrives {esc(short_date(x["date"]))}</span>'
-                    f'<span class="meta">{esc(" · ".join(b for b in (x.get("tier"), plats) if b))}</span></td>'
+                    f'<span class="meta">{esc(" · ".join(b for b in (x.get("tier"), (g or {}).get("g") if (g or {}).get("card") else "", plats) if b))}</span>'
+                    f'{plinks(x["t"], {}, None if (g or {}).get("card") else (g or {}).get("u"), reviews=False)}</td>'
                     f'<td class="m">{score or "–"}</td><td class="h">{hours((g or {}).get("h")) or "–"}</td></tr>')
     srcs = "".join(f'<li><a href="{esc(p["url"])}" rel="noopener">{esc(p["title"])}</a></li>' for p in COMING.get("posts", [])
                    if str(p.get("url", "")).startswith("https://blog.playstation.com/"))
