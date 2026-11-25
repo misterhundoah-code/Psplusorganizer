@@ -1598,8 +1598,10 @@ function claimNowIds(){const n=Date.now();if(!CLAIMNOW||n-CLAIMT>1000){const M=m
 function playableAnyway(g){return (g.cat&&!g.gone&&tierAt("extra"))||((g.cl||g.s3)&&tierAt("premium"))||!!g.buy||bids().has(g.id)||claimNowIds().has(g.id);}
 function preJoin(g){return !!(S.since&&g.e&&g.e<S.since&&!(g.cat&&!g.gone)&&!g.cl&&!g.own&&!MARKS[g.id]&&LIB[g.id]!==1);}
 function pass(g){
-  if(!inScope(g))return false;
   const mk=MARKS[g.id];
+  // In your own tabs (Now playing, Played and so on) a game you marked always shows, even if your tier,
+  // country or start date would hide it while browsing, so the tab matches its count.
+  if(!inScope(g)&&!(mk&&S.view===mk))return false;
   if(CTX.like&&g.id===CTX.like)return false;
   if(g.gone&&(!MARKS[g.id]||S.view==="browse"))return false;
   if(CTX.ser&&g.ser!==CTX.ser)return false;
@@ -1608,7 +1610,7 @@ function pass(g){
   if(S.players==="xp"){if(!XPLAY[g.id])return false;}
   else if(S.players!=="all"){const m=(FACTS[g.id]||{}).modes||"";if(S.players==="s1"?!(m.includes("s")&&!m.includes("m")):!m.includes(S.players))return false;}
   const SS=srcSet();
-  if(g.buy&&S.view!=="l"&&!(SS&&SS.has("buy"))&&!CTX.ser)return false;   // purchases: only in My library and My purchases
+  if(g.buy&&(S.view==="browse"||S.view==="n")&&!(SS&&SS.has("buy"))&&!CTX.ser)return false;   // purchases: not in Browse unless asked for; always in your own tabs
   if(CTX.ser){/* a series view shows every entry, whatever its mark */}
   else if(S.view==="n"){if(LIB[g.id]!==-1)return false;}
   else if(S.view==="l"){if(LIB[g.id]!==1&&!g.buy)return false;}
