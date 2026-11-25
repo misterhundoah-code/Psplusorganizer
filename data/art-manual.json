@@ -1,5 +1,5 @@
 {
- "_note": "Hand-picked covers for games with no Sony artwork and no Wikipedia article of their own: {game id: image address or Fandom file page}. tools/fetch_art.py downloads them.",
- "the-sly-collection": "https://slycooper.fandom.com/wiki/The_Sly_Collection?file=Sly_Collection_North_America_PS3.png",
- "ninja-gaiden-sigma": "https://ninjagaiden.fandom.com/wiki/Ninja_Gaiden_Sigma?file=2605557-ninja-gaiden-sigma-ps3-cover.jpeg"
+ "_note": "Hand-picked covers for games with no Sony artwork and no Wikipedia article of their own: {game id: image address or Fandom file page}. tools/fetch_art.py downloads them. \"local\" means the cover was added to art/ by hand and is kept as it is.",
+ "the-sly-collection": "local",
+ "ninja-gaiden-sigma": "local"
 }

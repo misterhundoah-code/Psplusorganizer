@@ -237,7 +237,7 @@ def main():
         gid = g["id"]
         out = ART / f"{gid}.webp"
         if gid in manual:
-            if refresh or not out.exists() or done.get(gid) != manual[gid]:
+            if manual[gid] != "local" and (refresh or not out.exists() or done.get(gid) != manual[gid]):
                 try:
                     save_letterboxed(resolve_manual(manual[gid]), out)
                     done[gid] = manual[gid]
