@@ -80,6 +80,23 @@ def api(**params):
     raise RuntimeError(f"Wikipedia API kept failing ({err})")
 
 
+def query_all(**params):
+    """action=query, following "continue": Wikipedia can hand back some fields (such as descriptions or
+    images) for only part of a batch and the rest on later requests. Pages are merged by title."""
+    data = api(action="query", **params)
+    pages = {pg["title"]: pg for pg in data.get("query", {}).get("pages", [])}
+    cont = data.get("continue")
+    for _ in range(20):
+        if not cont:
+            break
+        more = api(action="query", **params, **cont)
+        for pg in more.get("query", {}).get("pages", []):
+            pages.setdefault(pg["title"], {}).update({k: v for k, v in pg.items() if v not in (None, "", [], {})})
+        cont = more.get("continue")
+    data.setdefault("query", {})["pages"] = list(pages.values())
+    return data
+
+
 def base_title(t):
     prev = None
     while prev != t:
@@ -116,8 +133,8 @@ def resolve(games):
     pages, redirect = {}, {}
     for i in range(0, len(titles), 50):
         chunk = titles[i:i + 50]
-        data = api(action="query", titles="|".join(chunk), redirects=1, prop="description|pageimages|pageprops",
-                   piprop="thumbnail|original", pithumbsize=500, pilicense="any", ppprop="wikibase_item")
+        data = query_all(titles="|".join(chunk), redirects=1, prop="description|pageimages|pageprops",
+                         piprop="thumbnail|original", pithumbsize=500, pilicense="any", ppprop="wikibase_item")
         q = data.get("query", {})
         norm = {n["from"]: n["to"] for n in q.get("normalized", [])}
         # A redirect to a section of another article ("Secret Neighbor" -> "Hello Neighbor#...") is a
@@ -149,6 +166,10 @@ def resolve(games):
                     continue
                 found[g["id"]] = p
                 break
+    # A few unmatched games, with what each candidate title found, to show why they missed.
+    for g in [g for g in games if g["id"] not in found and g.get("s3")][:8]:
+        print("  unmatched", g["id"], [(c, (pages.get(c) or {}).get("title"), (pages.get(c) or {}).get("description"),
+                                       bool((pages.get(c) or {}).get("missing"))) for c in want[g["id"]]])
     # Second try for games still unmatched: Wikipedia's search, taking a result only when its title is the
     # game's own (ignoring case, punctuation and a "(video game)" suffix) and it is about one game.
     def key(t):
@@ -165,7 +186,7 @@ def resolve(games):
             continue
         cands = [h["title"] for h in hits if key(h["title"]) in names]
         if cands:
-            data = api(action="query", titles="|".join(cands), redirects=1, prop="description|pageimages|pageprops",
+            data = query_all(titles="|".join(cands), redirects=1, prop="description|pageimages|pageprops",
                        piprop="thumbnail|original", pithumbsize=500, pilicense="any", ppprop="wikibase_item")
             for pg in data.get("query", {}).get("pages", []):
                 if is_game(pg):
