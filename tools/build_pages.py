@@ -227,7 +227,7 @@ def page(slug, title, desc, body, canonical):
 PlayStation and PS Plus are trademarks of Sony Interactive Entertainment. Metascores are from Metacritic, completion times from
 HowLongToBeat, age ratings and availability from the PlayStation Store, and game modes and crossplay from Wikidata and Wikipedia.
 Cover art belongs to Sony and the games' publishers. The short synopses were drafted with Claude and haven't all been checked by hand.</p>
-<p><a href="/">Open the wall</a> · <a href="/lists/">All lists</a> · <a href="/about">About</a> · <a href="/faq">FAQ</a> · <a href="/privacy.html">Privacy</a> ·
+<p><a href="/">Open the wall</a> · <a href="/lists/">All lists</a> · <a href="/about">About</a> · <a href="/faq">FAQ</a> · <a href="/privacy">Privacy</a> ·
 <a href="https://github.com/misterhundoah-code/Psplusorganizer/issues/new/choose" rel="noopener">Report a problem</a></p>
 </footer>
 {ANALYTICS}
@@ -801,7 +801,7 @@ def build():
     urls = [f"{SITE}/", f"{SITE}/lists/", f"{SITE}/lists/new-on-ps-plus", f"{SITE}/lists/leaving-ps-plus"] + ([f"{SITE}/lists/coming-to-ps-plus"] if PREDICT else []) + [f"{SITE}/lists/ps-plus-monthly-games", f"{SITE}/lists/ps-plus-monthly-games-history", f"{SITE}/about", f"{SITE}/faq"] + [f"{SITE}/lists/{s}" for s, *_ in LISTS]
     sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     sm += [f"  <url><loc>{u}</loc><changefreq>weekly</changefreq></url>" for u in urls]
-    sm += [f"  <url><loc>{SITE}/{p}</loc><changefreq>yearly</changefreq></url>" for p in ("privacy.html", "terms.html")]
+    sm += [f"  <url><loc>{SITE}/{p}</loc><changefreq>yearly</changefreq></url>" for p in ("privacy", "terms")]
     (ROOT / "sitemap.xml").write_text("\n".join(sm + ["</urlset>", ""]), encoding="utf-8")
     print(f"Wrote {len(written)} list pages; {len(lv)} games leaving.")
 
