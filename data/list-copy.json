@@ -939,5 +939,85 @@
     "Yes, including Ape Escape, LocoRoco, Jak and Daxter and Sly Cooper, from the PS1, PS2 and PSP."
    ]
   ]
+ },
+ "best-ps3-games-ps-plus-premium": {
+  "title": "The 10 best PS3 games to stream on PS Plus Premium ({month})",
+  "h1": "The best PS3 games on PS Plus Premium",
+  "desc": "The best PS3 games you can stream with PS Plus Premium, from Resident Evil 4 to Fallout 3 and Ratchet & Clank, checked on a PS5.",
+  "intro": "PS Plus Premium lets you stream around 300 PS3 games on a PS5 or PS4, and a surprising number still hold up. These are our ten favourites, picked partly for how well they play over a stream: slower, more forgiving games feel fine, while fast fighting games can suffer from the slight delay. Each one says what kind of game it is and roughly how long the main story takes. The full list of PS3 streaming games follows.",
+  "about_h": "What counts as a PS3 streaming game",
+  "nouns": "PS3 streaming game",
+  "all_premium": true,
+  "about": [
+   "PS Plus Premium includes a library of PS3 games that you stream from Sony's servers rather than download. They play on PS5 and PS4, need a steady internet connection, and some come with a slight delay between pressing a button and seeing it happen. PS3 streaming is only offered in some countries, including Canada and the US.",
+   "This list counts every PS3 game in that library. Some are HD remasters of PS2 games that came out on the PS3, like the early Ratchet & Clank and Sly Cooper games. We checked the whole list on a PS5 in Canada in November 2026, and removed games that had quietly left."
+  ],
+  "picks": [
+   "resident-evil-4",
+   "the-elder-scrolls-iv-oblivion",
+   "fallout-3",
+   "xcom-enemy-within",
+   "ratchet-clank-up-your-arsenal",
+   "the-secret-of-monkey-island-special-edition",
+   "ninja-gaiden-sigma",
+   "infamous",
+   "the-sly-collection",
+   "puppeteer"
+  ],
+  "featured": 10,
+  "notes": {
+   "resident-evil-4": "Survival horror",
+   "the-elder-scrolls-iv-oblivion": "Open-world RPG",
+   "fallout-3": "Open-world RPG",
+   "xcom-enemy-within": "Turn-based strategy",
+   "ratchet-clank-up-your-arsenal": "Platformer shooter",
+   "the-secret-of-monkey-island-special-edition": "Point-and-click adventure",
+   "ninja-gaiden-sigma": "Hack and slash",
+   "infamous": "Open-world action",
+   "the-sly-collection": "Stealth platformer",
+   "puppeteer": "Platformer"
+  },
+  "writeups": {
+   "resident-evil-4": "Leon Kennedy is sent to rural Spain to rescue the President's daughter from a cult, and finds a village that wants him dead. The game that reinvented survival horror is still tense, inventive and endlessly replayable, and its deliberate pace suits streaming well.",
+   "the-elder-scrolls-iv-oblivion": "You escape prison just as the Emperor is murdered and gates to a hellish realm start opening across Cyrodiil. It's a huge, charming fantasy RPG where the guild quests are as good as the main story, and its slow, exploratory pace is ideal for streaming.",
+   "fallout-3": "You leave the safety of Vault 101 to search for your father in the ruins of Washington, D.C. Exploring the Capital Wasteland is still unforgettable, and the VATS targeting system means quick reactions matter less than planning.",
+   "xcom-enemy-within": "Aliens invade and you run the secret organisation fighting back, from base building to tense turn-based missions where any soldier can die for good. Being turn-based, it plays perfectly over a stream.",
+   "ratchet-clank-up-your-arsenal": "The third Ratchet & Clank, and for many the best of the PS2 era, with brilliantly daft weapons and a great villain in Dr. Nefarious. Most of the series streams on Premium, from the original to Into the Nexus.",
+   "the-secret-of-monkey-island-special-edition": "Guybrush Threepwood wants to be a pirate, and the adventure game that follows is still one of the funniest ever written. This edition redraws it in HD, and you can switch back to the original pixel art at any time.",
+   "ninja-gaiden-sigma": "Ryu Hayabusa cuts his way through demons and soldiers in one of the toughest, slickest action games ever made. It asks a lot of your reflexes, so it plays best on a fast, wired connection.",
+   "infamous": "Cole MacGrath survives a blast that levels part of Empire City and wakes up with electric powers, and the city's people have to decide if he's a hero or a villain. It's the first game from the makers of Ghost of Tsushima and a PlayStation exclusive.",
+   "the-sly-collection": "The first three Sly Cooper games, remastered: a raccoon master thief and his gang pull off heists around the world. Charming, funny and easy to pick up, with plenty to collect.",
+   "puppeteer": "A boy turned into a wooden puppet tries to win back his head from the Moon Bear King in a platformer staged like a theatre show, with sets that change around you. A gorgeous PS3 exclusive that few people played."
+  },
+  "faq": [
+   [
+    "What's the best PS3 game on PS Plus Premium?",
+    "By Metascore, Resident Evil 4 at 96, followed by Oblivion and Fallout 3."
+   ],
+   [
+    "Can I download PS3 games on PS Plus?",
+    "No. PS3 games are streamed only, so you need a steady internet connection, and they don't count towards your console's storage."
+   ],
+   [
+    "Can I play PS3 games on PS5?",
+    "Yes, by streaming them with PS Plus Premium. They also stream on PS4."
+   ],
+   [
+    "Are fighting games playable over a stream?",
+    "They work, but the slight delay matters more in fighting games than anywhere else. Super Street Fighter II Turbo HD Remix and BlazBlue: Calamity Trigger are both in the library if you want to try."
+   ],
+   [
+    "Is Red Dead Redemption on PS Plus?",
+    "Not at the moment. The original used to stream with Premium but has left the service."
+   ],
+   [
+    "Are the God of War games available?",
+    "Yes. God of War HD, God of War II HD and God of War: Ascension all stream on Premium."
+   ],
+   [
+    "Is PS3 streaming available in my country?",
+    "Only in some countries. It's in Canada and the US, but not every country that has Premium. For downloadable PS1, PS2 and PSP games, see our <a href=\"/lists/best-ps-plus-premium-classics\">Premium classics list</a>."
+   ]
+  ]
  }
 }
