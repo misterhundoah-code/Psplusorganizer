@@ -486,6 +486,8 @@ def monthly_card(x, g, when):
     else:
         cover = '<span class="nocover" aria-hidden="true"></span>'
     bits = [esc(" and ".join(x.get("p") or (g or {}).get("p") or []))]
+    if g and g.get("card") and g.get("g"):
+        bits.insert(0, esc(g["g"]))
     if g and g.get("m"):
         bits.append(f'Metascore {g["m"]}')
     oc = oc_bit(g) if g else ""
@@ -495,8 +497,8 @@ def monthly_card(x, g, when):
         bits.append(oc)
     if g and g.get("h") is not None:
         bits.append(f"about {esc(hours(g['h']))} main story")
-    text = blurb(g)
-    wall = f'<a href="/?q={urllib.parse.quote(x["t"])}">Find it on the wall</a>' if g else ""
+    text = g.get("d") if g and g.get("card") else blurb(g)
+    wall = f'<a href="/?q={urllib.parse.quote(x["t"])}">Find it on the wall</a>' if g and not g.get("card") else ""
     return (f'<li class="mcard">{cover}<div><h3>{esc(x["t"])}</h3><p class="meta">{" · ".join(b for b in bits if b)}</p>'
             f'{f"<p>{esc(text)}</p>" if text else ""}{f"<p class=small>{wall}</p>" if wall else ""}</div></li>')
 
@@ -506,6 +508,17 @@ def monthly_page():
     Built from data/coming.json (Sony's PlayStation Blog posts), so it updates itself each month."""
     slug = "ps-plus-monthly-games"
     byid = {g["id"]: g for g in GAMES}
+    # Games announced but not on the wall yet: take their Metascore and length from data/cards.json (the
+    # hand-made list for the share card), matched by title, until they arrive in data/games.json.
+    def norm(t):
+        t = re.sub(r"\s*[-–:]\s*(cross-gen|deluxe|standard|digital deluxe) edition\s*$", "", t or "", flags=re.I)
+        return re.sub(r"[^a-z0-9]", "", t.lower().replace("’", "'"))
+    cards = {norm(c.get("t")): dict(c, card=1) for c in (load("cards.json", {}) or {}).get("games", [])}
+    for x in COMING.get("games", []) + (COMING.get("monthly") or {}).get("games", []):
+        if not byid.get(x.get("id") or "") and norm(x.get("t")) in cards:
+            c = cards[norm(x.get("t"))]
+            x["id"] = x.get("id") or c.get("id")
+            byid.setdefault(x["id"], c)
     today = TODAY.isoformat()
     cur = COMING.get("monthly") or {}
     nxt = [x for x in COMING.get("games", []) if x.get("tier") == "Essential" and (x.get("date") or "") > today]

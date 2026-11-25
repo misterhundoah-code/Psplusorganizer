@@ -12,3 +12,4 @@ README.md
 .wrangler
 .gitignore
 __pycache__
+share-cards

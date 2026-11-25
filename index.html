@@ -2695,7 +2695,7 @@ onRows("click",e=>{
   else if(t.dataset.why){const id=t.dataset.id,k=t.dataset.why;const w=((DATES[id]&&DATES[id].why)||[]).slice();const i=w.indexOf(k);if(i>=0)w.splice(i,1);else w.push(k);setMeta(id,"why",w,()=>{
     const again=document.querySelector(`.why button[data-id="${CSS.escape(id)}"][data-why="${k}"]`);if(again)again.focus({preventScroll:true});});}
   else if(t.dataset.delown){const id=t.dataset.delown;
-    if(t.dataset.armed){delete CUSTOM[id];delete MARKS[id];delete RATE[id];delete NOTES[id];delete DATES[id];syncCustom();saveMarks();renderHero();render(false);}
+    if(t.dataset.armed){delete CUSTOM[id];delete MARKS[id];delete RATE[id];delete NOTES[id];delete DATES[id];if(DLG_ID===id&&$("gamedlg").open)$("gamedlg").close();syncCustom();saveMarks();renderHero();render(false);}
     else{t.dataset.armed="1";t.innerHTML="Click again to remove";}}
 });
 $("wall").addEventListener("click",e=>{const c=e.target.closest("[data-open]");if(c)openGame(c.dataset.open);});
