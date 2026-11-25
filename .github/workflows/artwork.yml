@@ -18,7 +18,7 @@ on:
     - cron: "23 9 * * 1"
   push:
     branches: [main]
-    paths: ["data/games.json", "data/catalogue.json", "data/writeups.json", "data/list-copy.json", "tools/fetch_wide_art.py"]
+    paths: ["data/games.json", "data/catalogue.json", "data/writeups.json", "data/list-copy.json", "tools/fetch_wide_art.py", "data/art-manual.json", "tools/fetch_art.py"]
 
 permissions:
   contents: write

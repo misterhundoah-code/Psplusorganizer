@@ -155,6 +155,33 @@ def save(img_url, out):
     im.save(out, "WEBP", quality=78, method=6)
 
 
+def resolve_manual(url):
+    """A hand-picked cover's address. Fandom file pages (".../wiki/Page?file=Name.png" or ".../wiki/File:Name.png")
+    are turned into the image's own address through the wiki's API."""
+    m = re.match(r"(https://[a-z0-9-]+\.fandom\.com)/wiki/(?:File:([^?#]+)|[^?#]*\?file=([^&#]+))", url)
+    if not m:
+        return url
+    name = requests.utils.unquote(m.group(2) or m.group(3))
+    j = S.get(m.group(1) + "/api.php", params={"action": "query", "titles": "File:" + name, "prop": "imageinfo",
+                                                "iiprop": "url", "format": "json"}, timeout=30).json()
+    for pg in j.get("query", {}).get("pages", {}).values():
+        for ii in pg.get("imageinfo", []):
+            return ii["url"]
+    raise ValueError(f"no image for {name}")
+
+
+def save_letterboxed(img_url, out):
+    """For box art: shrink the whole cover into the square on the site's dark background instead of cropping it."""
+    r = S.get(img_url, timeout=40)
+    r.raise_for_status()
+    im = Image.open(io.BytesIO(r.content)).convert("RGB")
+    scale = SIZE / max(im.size)
+    im = im.resize((max(1, round(im.width * scale)), max(1, round(im.height * scale))), Image.LANCZOS)
+    sq = Image.new("RGB", (SIZE, SIZE), (22, 23, 29))
+    sq.paste(im, ((SIZE - im.width) // 2, (SIZE - im.height) // 2))
+    sq.save(out, "WEBP", quality=80, method=6)
+
+
 def slug(title):
     t = unicodedata.normalize("NFD", str(title)).encode("ascii", "ignore").decode().lower()
     t = re.sub(r"[’'™®©.!]", "", t).replace("&", "and")
@@ -200,9 +227,29 @@ def main():
     sp, op = ROOT / "data/art-sources.json", ROOT / "data/art-overrides.json"
     wiki = json.loads(sp.read_text(encoding="utf-8")) if sp.exists() else {}
     blocked = set(json.loads(op.read_text(encoding="utf-8")).get("block", [])) if op.exists() else set()
+    # Hand-picked covers (data/art-manual.json: {game id: image or Fandom file page}) for games with no Sony
+    # artwork and no Wikipedia article of their own. Downloaded again whenever the address changes.
+    mp = ROOT / "data/art-manual.json"
+    manual = {k: v for k, v in (json.loads(mp.read_text(encoding="utf-8")) if mp.exists() else {}).items()
+              if not k.startswith("_")}
+    done = links.pop("_manual", {})
     for g in games:
         gid = g["id"]
         out = ART / f"{gid}.webp"
+        if gid in manual:
+            if refresh or not out.exists() or done.get(gid) != manual[gid]:
+                try:
+                    save_letterboxed(resolve_manual(manual[gid]), out)
+                    done[gid] = manual[gid]
+                    new += 1
+                    stats["hand-picked"] = stats.get("hand-picked", 0) + 1
+                except Exception as e:
+                    print(f"  {gid} (hand-picked): {e}")
+            if out.exists():
+                got.append(gid)
+            else:
+                missing.append(g.get("t", gid))
+            continue
         if gid in wiki and out.exists():
             got.append(gid)
             continue
@@ -248,6 +295,7 @@ def main():
     ids = sorted(set(got) & {g["id"] for g in games})
     links = {k: v for k, v in sorted(links.items())}
     links["_tried"] = sorted(tried)
+    links["_manual"] = dict(sorted(done.items()))
     lp.write_text(json.dumps(links, indent=0) + "\n", encoding="utf-8")
     (ROOT / "data/art.json").write_text(json.dumps(ids, separators=(",", ":")) + "\n", encoding="utf-8")
     print(f"artwork for {len(ids)} of {len(games)} games ({new} new; found via {stats})")
