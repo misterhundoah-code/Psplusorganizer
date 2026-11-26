@@ -1706,7 +1706,7 @@ function renderHero(){
   $("lastwrap").hidden=!lc.length;
   if(lc.length){const dates=[...new Set(lc.map(g=>LEAVING[g.id]))];
     $("lastnote").textContent=(dates.length===1?`Leaving the Game Catalogue on ${fmtD(dates[0])}`:"Leaving the Game Catalogue soon")+daysLeft(dates[0]).replace(" · ",", ");
-    $("lastdeck").innerHTML=lc.map(g=>{const t=g.h;return `<a class="card" title="${esc(g.d||"")}" href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${tile(g)}<span class="ct">${esc(g.t)}</span><span class="cm">${g.m!=null?"Metascore "+g.m:"No Metascore"}${t!=null?`<span class="ctm"> · ${fmtT(t)}</span>`:""}</span><span class="talk due">Due back ${esc(fmtD(LEAVING[g.id]).replace(/ \d{4}$/,""))}</span></a>`;}).join("");}
+    $("lastdeck").innerHTML=lc.map(g=>{const t=g.h;return `<a class="card" data-open="${esc(g.id)}" title="${esc(g.d||"")}" href="${esc(gameUrl(g))}">${tile(g)}<span class="ct">${esc(g.t)}</span><span class="cm">${g.m!=null?"Metascore "+g.m:"No Metascore"}${t!=null?`<span class="ctm"> · ${fmtT(t)}</span>`:""}</span><span class="talk due">Due back ${esc(fmtD(LEAVING[g.id]).replace(/ \d{4}$/,""))}</span></a>`;}).join("");}
   renderMonthly();
   renderComing();
   renderTaste();
@@ -1719,7 +1719,7 @@ function renderHero(){
   if(!pick.length){pick=GAMES.filter(g=>!MARKS[g.id]&&playable(g)).sort(byScore);note="games you haven't sorted yet, "+how;}
   const pickTalk=(g,i)=>MARKS[g.id]==="u"?"Pick it back up":retry(g.id)?"Try it again?":talker(g,i);
   $("decknote").textContent=note;
-  $("deck").innerHTML=pick.slice(0,14).map((g,i)=>{const t=g.h;return `<a class="card" style="--i:${i}" title="${esc(g.d||"")}" href="${esc(gameUrl(g))}" target="_blank" rel="noopener">${tile(g)}<span class="ct">${esc(g.t)}</span><span class="cm">${TASTE.on?"Priority "+pv(g):(g.m!=null?"Metascore "+g.m:"No Metascore")}${t!=null?`<span class="ctm"> · ${fmtT(t)}</span>`:""}</span><span class="talk">${esc(pickTalk(g,i))}</span></a>`;}).join("");
+  $("deck").innerHTML=pick.slice(0,14).map((g,i)=>{const t=g.h;return `<a class="card" style="--i:${i}" data-open="${esc(g.id)}" title="${esc(g.d||"")}" href="${esc(gameUrl(g))}">${tile(g)}<span class="ct">${esc(g.t)}</span><span class="cm">${TASTE.on?"Priority "+pv(g):(g.m!=null?"Metascore "+g.m:"No Metascore")}${t!=null?`<span class="ctm"> · ${fmtT(t)}</span>`:""}</span><span class="talk">${esc(pickTalk(g,i))}</span></a>`;}).join("");
   shelfTabs(true);
 }
 /* Coming soon: games Sony has announced on the PlayStation Blog that haven't arrived yet
@@ -1738,7 +1738,7 @@ function renderComing(){
     const p=COMING.posts[x.post],href=g?gameUrl(g):(p&&/^https:\/\/blog\.playstation\.com\//.test(p.url||"")?p.url:"");
     const pic=g?tile(g):`<span class="tile ext" aria-hidden="true"><span class="tape"><span class="lab">${esc(tapeName(x.t))}</span><span class="vhs">VHS</span></span>${img?`<img src="${esc(img)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()">`:""}</span>`;
     const plats=Array.isArray(x.p)?x.p.filter(v=>typeof v==="string").join(", "):"";
-    return `<${href?`a href="${esc(href)}" target="_blank" rel="noopener"`:"div"} class="card">${pic}<span class="ct">${esc(x.t)}</span><span class="cm">${esc([x.tier,plats].filter(Boolean).join(" · "))}</span>${(()=>{const ay=alreadyYours(x.t,x.p,g);return ay&&ay.state!=="other"?`<span class="talk got">Already yours</span>`:`<span class="talk arr">Arrives ${esc(short(x.date))}</span>`;})()}</${href?"a":"div"}>`;}).join("");
+    return `<${href?`a href="${esc(href)}"${g?` data-open="${esc(g.id)}"`:` target="_blank" rel="noopener"`}`:"div"} class="card">${pic}<span class="ct">${esc(x.t)}</span><span class="cm">${esc([x.tier,plats].filter(Boolean).join(" · "))}</span>${(()=>{const ay=alreadyYours(x.t,x.p,g);return ay&&ay.state!=="other"?`<span class="talk got">Already yours</span>`:`<span class="talk arr">Arrives ${esc(short(x.date))}</span>`;})()}</${href?"a":"div"}>`;}).join("");
 }
 /* This month's games: the Monthly Games (every tier gets them) you can claim now, and the last day to claim.
    From Sony's post when known (COMING.monthly, from tools/fetch_coming.py), otherwise worked out from the data:
@@ -1768,7 +1768,7 @@ function renderMonthly(){
     const g=x.g,img=/^https:\/\/blog\.playstation\.com\/tachyon\//.test(x.img||"")?x.img:"",ay=alreadyYours(x.t,x.p,g);
     const pic=g?tile(g):`<span class="tile ext" aria-hidden="true"><span class="tape"><span class="lab">${esc(tapeName(x.t))}</span><span class="vhs">VHS</span></span>${img?`<img src="${esc(img)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()">`:""}</span>`;
     const href=g?gameUrl(g):M.url,plats=Array.isArray(x.p)?x.p.join(", "):"";
-    return `<${href?`a href="${esc(href)}"${g?"":` target="_blank" rel="noopener"`}`:"div"} class="card">${pic}<span class="ct">${esc(x.t)}</span><span class="cm">${esc([plats,g&&g.m?"Metascore "+g.m:""].filter(Boolean).join(" · "))}</span>${ay&&ay.state!=="other"?`<span class="talk got">${ay.state==="lib"?"In your library":"Already yours"}</span>`:ay?`<span class="talk claim" title="You own the ${esc(ay.plat)} version; claim this one if you want the other platform">You own the ${esc(ay.plat)} version</span>`:`<span class="talk claim">Claim by ${esc(short)}</span>`}</${href?"a":"div"}>`;}).join("");
+    return `<${href?`a href="${esc(href)}"${g?` data-open="${esc(g.id)}"`:` target="_blank" rel="noopener"`}`:"div"} class="card">${pic}<span class="ct">${esc(x.t)}</span><span class="cm">${esc([plats,g&&g.m?"Metascore "+g.m:""].filter(Boolean).join(" · "))}</span>${ay&&ay.state!=="other"?`<span class="talk got">${ay.state==="lib"?"In your library":"Already yours"}</span>`:ay?`<span class="talk claim" title="You own the ${esc(ay.plat)} version; claim this one if you want the other platform">You own the ${esc(ay.plat)} version</span>`:`<span class="talk claim">Claim by ${esc(short)}</span>`}</${href?"a":"div"}>`;}).join("");
 }
 function icsArrivals(list){
   const esc_=t=>String(t).replace(/\\/g,"\\\\").replace(/([,;])/g,"\\$1").replace(/\r?\n/g,"\\n");
@@ -1934,7 +1934,7 @@ function fillDlg(){if(!DLG_ID)return;const g=BYID.get(DLG_ID);if(!g)return;const
   fillFacts(g);
   loadOC();
   fillBuy(g);
-  $("dlgtrailer").href="https://www.youtube.com/results?search_query="+encodeURIComponent(`${g.t} ${g.p.includes("PS5")?"PS5":g.p[0]||"PlayStation"} trailer`);}
+  $("dlgtrailer").href="https://www.youtube.com/results?search_query="+encodeURIComponent(`${g.t} ${g.sys||((g.cl||g.s3)?"":g.p.includes("PS5")?"PS5":g.p[0]||"")} trailer`.replace(/\s+/g," "));}
 /* Longer description from Wikipedia (data/about.json, made by tools/fetch_wiki.py), loaded the first
    time a pop-up opens. Wikipedia text is CC BY-SA 4.0, so it's credited with a link to the article. */
 let ABOUT=null,ABOUT_LOADING=null;
@@ -2699,6 +2699,9 @@ onRows("click",e=>{
     else{t.dataset.armed="1";t.innerHTML="Click again to remove";}}
 });
 $("wall").addEventListener("click",e=>{const c=e.target.closest("[data-open]");if(c)openGame(c.dataset.open);});
+// Cards in the This month panel (Claim now, Leaving, Coming soon, Staff picks) open the game's pop-up on the wall, which
+// has the store and trailer links, so visitors stay on the site. Ctrl, Cmd or middle click still opens the store page.
+document.addEventListener("click",e=>{const c=e.target.closest("a.card[data-open]");if(!c||c.closest("#wall")||e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||!BYID.get(c.dataset.open))return;e.preventDefault();openGame(c.dataset.open);});
 document.querySelector(".layoutsw").addEventListener("click",e=>{const b=e.target.closest("[data-layout]");if(!b)return;S.layout=b.dataset.layout;render();});
 $("gamex").addEventListener("click",()=>$("gamedlg").close());
 $("ratestars").addEventListener("click",e=>{const b=e.target.closest("button[data-n]");if(!b||!RB)return;const n=+b.dataset.n,id=RB.id;
