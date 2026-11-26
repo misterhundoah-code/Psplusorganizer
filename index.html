@@ -311,6 +311,34 @@ tr.is-p .title a,tr.is-x .title a,tr.is-b .title a{color:var(--muted)}
 .flag{display:inline-block;font-weight:800;font-size:11.5px;border-radius:2px;padding:1px 6px;margin-left:8px;vertical-align:2px;white-space:nowrap;color:#fff;background:var(--fc,var(--accent))}
 .flag.new{--fc:var(--accent);color:var(--accent-ink)}
 .flag.mon{--fc:var(--monthly)}
+/* Quick sort and bulk marking */
+.qsopen{margin-left:auto}
+.bulkbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 0;padding:8px 12px;background:var(--case);border-left:4px solid var(--skip);font-size:14px}
+.bulkbar .btn{padding:6px 12px;font-size:14px}
+.bulkbar .btn.armed{background:var(--bounced);color:#fff;border-color:var(--bounced)}
+dialog.dlgbox.qsbox{width:min(720px,calc(100vw - 16px));max-height:calc(100vh - 16px);overflow:auto}
+.qshead{display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:700;color:var(--muted)}
+.qsgame{display:grid;grid-template-columns:200px 1fr;gap:18px;align-items:start}
+.qscover{aspect-ratio:1;background:var(--paper,#e8ebf3);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:800;padding:0}
+.qscover img{width:100%;height:100%;object-fit:cover;display:block}
+.qsinfo h2{margin:0 0 4px;font-size:24px;line-height:1.15}
+.qsmeta,.qsfacts{margin:0 0 6px;color:var(--muted);font-size:14px}
+.qsfacts{display:flex;flex-wrap:wrap;gap:2px 14px}.qsfacts span{white-space:nowrap}.qsfacts b{color:var(--ink);font-size:16px}
+.qsdesc{margin:6px 0;font-size:15px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
+.qslinks{display:flex;gap:16px;flex-wrap:wrap;margin:6px 0 0;font-size:14px;font-weight:700}
+.qsbtns{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.qsbtns button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 6px;border:2px solid var(--ink);background:var(--case);color:var(--ink);border-radius:3px;font:inherit;cursor:pointer;min-height:64px}
+.qsbtns button b{font-size:15px;line-height:1.2}
+.qsbtns button small{font-size:12px;color:var(--muted)}
+.qsbtns button[data-qs=w]{border-color:var(--want)}.qsbtns button[data-qs=p]{border-color:var(--played)}
+.qsbtns button[data-qs=b]{border-color:var(--bounced)}.qsbtns button[data-qs=x]{border-color:var(--skip)}
+.qsbtns button:hover,.qsbtns button:focus-visible{background:var(--ink);color:var(--case)}
+.qsbtns button:hover small,.qsbtns button:focus-visible small{color:inherit}
+.qsfoot{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin:0;font-size:13px;color:var(--muted)}
+.qsend{font-size:16px;margin:8px 0}
+.linkbtn{background:none;border:0;padding:0;font:inherit;font-weight:700;color:var(--accent,#1E3A9E);text-decoration:underline;cursor:pointer}.linkbtn:disabled{color:var(--muted);text-decoration:none;cursor:default}
+@media (max-width:560px){.qsgame{grid-template-columns:110px 1fr;gap:12px}.qsinfo h2{font-size:19px}.qsdesc{-webkit-line-clamp:4;font-size:14px}
+  .qsbtns{grid-template-columns:repeat(2,1fr)}.qsbtns button[data-qs=skip]{grid-column:1/-1;min-height:48px}.qsfoot span{display:none}}
 .regnote{font-size:13.5px;line-height:1.45;color:var(--band-muted);margin:8px 2px 0;max-width:70ch}
 .flag.leave{--fc:var(--red)}
 .flag.own{--fc:var(--bounced)}
@@ -884,7 +912,7 @@ dialog.dlgbox#madedlg{width:min(720px,calc(100vw - 32px));max-height:calc(100vh 
             <button type="button" data-v="Arcade">Arcade</button>
           </div>
           <span class="hint">Picking a system shows only Classics from it. Classics need PS Plus Premium, and PS3 games can only be streamed.</span>
-          <span class="hint">Each monthly game has two tags: "In my library" and "Not in my library". Games tagged Not in my library drop out of Browse and wait in their own tab.</span>
+          <span class="hint">Each monthly game has two tags: "In my library" and "Not in my library". Games tagged Not in my library drop out of Browse and your progress total, and wait in the Unclaimed monthly games tab.</span>
           <button class="btn" id="bulkno" type="button">Tag all untagged monthly games as not in my library</button>
         </div>
         <div class="grp">
@@ -1010,14 +1038,16 @@ dialog.dlgbox#madedlg{width:min(720px,calc(100vw - 32px));max-height:calc(100vh 
             <button type="button" role="tab" data-v="b">↩ Bounced off<b id="nb">0</b></button>
             <button type="button" role="tab" data-v="x">✕ Not interested<b id="nx">0</b></button>
             <button type="button" role="tab" data-v="l">My library<b id="nl">0</b></button>
-            <button type="button" role="tab" data-v="n">Not in library<b id="nn">0</b></button>
+            <button type="button" role="tab" data-v="n">Unclaimed monthly games<b id="nn">0</b></button>
             <button type="button" class="mcheckbtn" id="mcheckbtn">Check my monthly games<b id="nmc">0</b></button>
           </div>
         </div>
       </div>
       <div class="countrow"><div class="count" id="count" aria-live="polite"></div>
+        <button type="button" class="btn qsopen" id="qsopen" title="Go through the unmarked games shown here one at a time">Quick sort</button>
         <div class="layoutsw" role="group" aria-label="Show games as"><button type="button" data-layout="wall">Cover wall</button><button type="button" data-layout="list">List</button></div></div>
       <div class="ctx" id="ctx" hidden></div>
+      <div class="bulkbar" id="bulkbar" hidden><span id="bulktxt"></span><button type="button" class="btn" id="bulkx"></button></div>
       <div class="tablebox" style="margin-top:8px">
         <table>
           <thead>
@@ -1083,6 +1113,25 @@ dialog.dlgbox#madedlg{width:min(720px,calc(100vw - 32px));max-height:calc(100vh 
     <button type="button" class="btn" id="rateundo">Undo</button>
     <button type="button" class="ratex" id="ratex" aria-label="Close">✕</button>
   </div>
+  <dialog class="dlgbox qsbox" id="qsdlg" aria-labelledby="qstitle">
+    <div class="dlg">
+      <div class="qshead"><span id="qsprog"></span><button type="button" class="btn" id="qsdone">Done</button></div>
+      <div class="qsgame" id="qsgame">
+        <div class="qscover" id="qscover"></div>
+        <div class="qsinfo"><h2 id="qstitle"></h2><p class="qsmeta" id="qsmeta"></p><p class="qsfacts" id="qsfacts"></p><p class="qsdesc" id="qsdesc"></p>
+          <p class="qslinks"><a id="qstrailer" target="_blank" rel="noopener">Watch trailers</a><a id="qsmore" href="#">More about this game</a></p></div>
+      </div>
+      <p class="qsend" id="qsend" hidden></p>
+      <div class="qsbtns" id="qsbtns" role="group" aria-label="Mark this game">
+        <button type="button" data-qs="w"><b>Want to play</b><small>1</small></button>
+        <button type="button" data-qs="p"><b>Played</b><small>2</small></button>
+        <button type="button" data-qs="b"><b>Bounced off</b><small>3</small></button>
+        <button type="button" data-qs="x"><b>Not interested</b><small>4</small></button>
+        <button type="button" data-qs="skip"><b>Skip for now</b><small>→</small></button>
+      </div>
+      <p class="qsfoot"><button type="button" class="linkbtn" id="qsundo" disabled>Undo the last one</button><span>Keys 1 to 4 mark, the right arrow skips and Z undoes.</span></p>
+    </div>
+  </dialog>
   <dialog class="dlgbox gamebox" id="gamedlg" aria-label="Game details">
     <div class="dlg"><button type="button" class="dlgx" id="gamex" aria-label="Close">✕</button>
       <div class="tablebox"><table><tbody id="dlgrows"></tbody></table></div>
@@ -1686,7 +1735,12 @@ function counts(){const c={g:0,u:0,w:0,p:0,b:0,x:0};for(const id in MARKS)if(IDS
 function renderHero(){
   applyRegion();
   learn();try{sinceHint();tierUI();}catch(e){}
-  const c=counts(),tot=GAMES.filter(inScope).length,done=c.g+c.u+c.w+c.p+c.b+c.x;
+  // The total leaves out monthly games you've tagged as not in your library (unless they're also in the catalogue,
+  // the Classics or bought), since you can't play them as a subscriber. Marks on them don't count either.
+  const unclaimed=g=>LIB[g.id]===-1&&!(g.cat&&!g.gone)&&!g.cl&&!g.s3&&!g.buy;
+  const pool=GAMES.filter(g=>inScope(g)&&!unclaimed(g)),c={g:0,u:0,w:0,p:0,b:0,x:0};
+  pool.forEach(g=>{const m=MARKS[g.id];if(m&&c[m]!=null)c[m]++;});
+  const tot=pool.length,done=c.g+c.u+c.w+c.p+c.b+c.x;
   $("ptext").textContent=`Sorted ${done} of ${tot}`;
   $("pleft").textContent=done?`${tot-done} still to look at`:"Start marking games and this bar fills in";
   const pb=$("pbar"),bars=pb.children;["g","u","w","p","b","x"].forEach((k,i)=>bars[i].style.width=(c[k]/tot*100)+"%");
@@ -1835,7 +1889,7 @@ function renderCtx(list){
     el.hidden=false;el.innerHTML=`<b>More like ${esc(a?a.t:"this")}</b><span>The ${list.length} closest matches by style, camera and length. Your filters still apply.</span><span class="sp"></span><button type="button" class="btn" data-ctxclear="1">Back to everything</button>`;}
   else{el.hidden=true;el.innerHTML="";}
 }
-const VIEWNAME={browse:"Browse",g:"Now playing",u:"Paused",w:"Want to play",p:"Played",b:"Bounced off",x:"Not interested",l:"My library",n:"Not in library"};
+const VIEWNAME={browse:"Browse",g:"Now playing",u:"Paused",w:"Want to play",p:"Played",b:"Bounced off",x:"Not interested",l:"My library",n:"Unclaimed monthly games"};
 function searchHints(here){
   const el=$("qelse"),q=S.q.trim();
   $("qclear").hidden=!q;
@@ -2014,6 +2068,7 @@ function render(animate){
     }
   }
   renderCtx(list);
+  LASTLIST=list;bulkBar(list);
   const keep=animate===false?SHOWN:0;PEND=[];let last=null,i=0;
   const tally=new Map();list.forEach(g=>{const b=bandOf(g)[0];tally.set(b,(tally.get(b)||0)+1);});
   for(const g of list){
@@ -2090,6 +2145,59 @@ function setMark(id,k){
     const again=document.querySelector(`.marks button[data-id="${CSS.escape(id)}"][data-m="${k}"]`);
     if(again){again.focus({preventScroll:true});again.classList.add("popped");}});
 }
+/* ---- Quick sort and bulk "Not interested" ----
+   Both work on the games shown right now (LASTLIST, in the wall's order) that you haven't marked yet. */
+let LASTLIST=[],QS=null,BULK=null;
+function narrowed(list){return S.view==="browse"&&!CTX.ser&&!CTX.like&&list.length<GAMES.filter(inScope).length;}
+function bulkBar(list){
+  const bar=$("bulkbar"),un=list.filter(g=>!MARKS[g.id]);
+  if(BULK&&BULK.done){bar.hidden=false;$("bulktxt").textContent=`Marked ${BULK.ids.length} ${BULK.ids.length===1?"game":"games"} as Not interested.`;
+    const b=$("bulkx");b.textContent="Undo";b.classList.remove("armed");return;}
+  bar.hidden=!(narrowed(list)&&un.length);if(bar.hidden){BULK=null;return;}
+  $("bulktxt").textContent=`${un.length} of the games shown ${un.length===1?"isn't":"aren't"} marked yet.`;
+  const b=$("bulkx");b.classList.toggle("armed",!!(BULK&&BULK.armed));
+  b.textContent=BULK&&BULK.armed?`Tap again to mark all ${un.length} as Not interested`:`Mark all ${un.length} as Not interested`;
+}
+$("bulkx").addEventListener("click",()=>{
+  if(BULK&&BULK.done){BULK.ids.forEach(id=>{if(MARKS[id]==="x"){delete MARKS[id];stamp(id);}});BULK=null;saveMarks();renderHero();render(false);return;}
+  const un=LASTLIST.filter(g=>!MARKS[g.id]);if(!un.length)return;
+  if(!(BULK&&BULK.armed)){BULK={armed:1};clearTimeout(bulkBar.t);bulkBar.t=setTimeout(()=>{if(BULK&&BULK.armed){BULK=null;bulkBar(LASTLIST);}},5000);bulkBar(LASTLIST);return;}
+  clearTimeout(bulkBar.t);
+  BULK={done:1,ids:un.map(g=>g.id)};un.forEach(g=>{MARKS[g.id]="x";stamp(g.id);});saveMarks();renderHero();render(false);
+  clearTimeout(bulkBar.u);bulkBar.u=setTimeout(()=>{if(BULK&&BULK.done){BULK=null;bulkBar(LASTLIST);}},15000);
+});
+function qsShow(){
+  const q=QS;while(q.i<q.ids.length&&MARKS[q.ids[q.i]])q.i++;
+  const g=q.i<q.ids.length?BYID.get(q.ids[q.i]):null;
+  $("qsgame").hidden=!g;$("qsbtns").hidden=!g;$("qsend").hidden=!!g;$("qsundo").disabled=!q.hist.length;
+  $("qsprog").textContent=g?`${q.i+1} of ${q.ids.length}`:`${q.done} marked`;
+  if(!g){$("qsend").textContent=q.ids.length?`That's every unmarked game in this view. You marked ${q.done} and skipped ${q.skipped}.`:"Every game shown here is already marked.";$("qsdone").focus();return;}
+  $("qscover").innerHTML=ART.has(g.id)?`<img src="art/${encodeURIComponent(g.id)}.webp" alt="">`:g.img?`<img src="${esc(g.img)}?w=440" alt="" referrerpolicy="no-referrer">`:`<span>${esc(g.t)}</span>`;
+  $("qstitle").textContent=g.t;
+  $("qsmeta").textContent=[g.y,g.sys||(g.p||[]).join(", "),g.pv,(g.g||[]).join(", ")].filter(Boolean).join(" · ");
+  $("qsfacts").innerHTML=[g.m!=null?`Metascore <b>${g.m}</b>`:"",g.h?`Main story <b>${esc(fmtT(g.h))}</b>`:"",g.cl?(g.s3?"PS3 streaming":"Premium classic"):g.cat?"Game Catalogue":g.e?"Monthly game":""].filter(Boolean).map(x=>`<span>${x}</span>`).join("");
+  $("qsdesc").textContent=g.d||"";
+  $("qstrailer").href="https://www.youtube.com/results?search_query="+encodeURIComponent(`${g.t} ${g.sys||((g.cl||g.s3)?"":(g.p||[]).includes("PS5")?"PS5":(g.p||[])[0]||"")} trailer`.replace(/\s+/g," "));
+}
+function qsAct(k){
+  const q=QS;if(!q)return;
+  if(k==="undo"){const h=q.hist.pop();if(!h)return;if(h.k!=="skip"){if(h.prev)MARKS[h.id]=h.prev;else delete MARKS[h.id];stamp(h.id);saveMarks();q.done--;}else q.skipped--;q.i=h.i;q.back=1;qsShow();return;}
+  const id=q.ids[q.i];if(!id)return;
+  q.hist.push({id,k,i:q.i,prev:MARKS[id]});
+  if(k==="skip"){q.skipped++;q.i++;}else{MARKS[id]=k;if(k!=="p")delete RATE[id];stamp(id);saveMarks();q.done++;q.i++;}
+  qsShow();
+}
+$("qsopen").addEventListener("click",()=>{
+  QS={ids:LASTLIST.filter(g=>!MARKS[g.id]).map(g=>g.id),i:0,hist:[],done:0,skipped:0};
+  qsShow();$("qsdlg").showModal();const b=document.querySelector("#qsbtns button");if(b&&!$("qsbtns").hidden)b.focus();
+});
+$("qsbtns").addEventListener("click",e=>{const b=e.target.closest("[data-qs]");if(b)qsAct(b.dataset.qs);});
+$("qsundo").addEventListener("click",()=>qsAct("undo"));
+$("qsdone").addEventListener("click",()=>$("qsdlg").close());
+$("qsmore").addEventListener("click",e=>{e.preventDefault();const id=QS&&QS.ids[QS.i];if(id){$("qsdlg").close();openGame(id);}});
+$("qsdlg").addEventListener("keydown",e=>{if(e.ctrlKey||e.metaKey||e.altKey)return;
+  const k={"1":"w","2":"p","3":"b","4":"x","ArrowRight":"skip","z":"undo","Z":"undo","ArrowLeft":"undo"}[e.key];if(k){e.preventDefault();qsAct(k);}});
+$("qsdlg").addEventListener("close",()=>{if(QS&&(QS.done||QS.back)){renderHero();render(false);}QS=null;});
 function saveNote(id,text){text=(text||"").trim().slice(0,2000);if(text)NOTES[id]=text;else delete NOTES[id];OPEN_NOTE=null;saveMarks();render(false);}
 /* ---- Ask Claude: recommendations that read the viewer's notes ---- */
 let askCtl=null;
