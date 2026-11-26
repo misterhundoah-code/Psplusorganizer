@@ -231,6 +231,9 @@ mark.hit{background:var(--yellow);color:var(--yellow-ink);padding:0 1px}
 
 /* game details dialog */
 .rcptbtn{margin-left:auto}
+.qstop{font:inherit;font-size:14px;font-weight:800;color:var(--ink,#141a33);background:var(--yellow);border:2px solid var(--yellow);border-radius:3px;padding:4px 14px;cursor:pointer;white-space:nowrap}
+.qstop:hover,.qstop:focus-visible{background:#fff;border-color:#fff}
+@media (max-width:700px){.counter .plabel{flex:1 1 100%;max-width:100%}.qstop{flex:1 1 100%;padding:9px 14px;font-size:16px}}
 dialog.dlgbox.rcptbox{width:min(420px,calc(100vw - 24px));max-height:calc(100vh - 24px)}
 #rcpt{width:100%;height:auto;display:block;align-self:center;max-width:360px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.18))}
 dialog.dlgbox.gamebox{width:min(780px,calc(100vw - 24px));max-height:calc(100vh - 32px)}
@@ -771,7 +774,7 @@ dialog.dlgbox#madedlg{width:min(720px,calc(100vw - 32px));max-height:calc(100vh 
    </div>
    <div class="counter">
     <div class="progress">
-      <div class="plabel"><div id="ptext">Sorted 0 of 0</div><span id="pleft"></span></div>
+      <div class="plabel"><div id="ptext">Sorted 0 of 0</div><span id="pleft"></span><button type="button" class="qstop" id="qstop" title="Go through the games one at a time and mark each with one tap">Quick sort</button></div>
       <div class="pbar" role="progressbar" aria-labelledby="ptext" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" id="pbar"><i class="sg"></i><i class="su"></i><i class="sw"></i><i class="sp"></i><i class="sb"></i><i class="sx"></i></div>
       <div class="legend">
         <span><i style="background:#FF9B45"></i>Now playing <b id="lg">0</b></span>
@@ -2187,9 +2190,14 @@ function qsAct(k){
   if(k==="skip"){q.skipped++;q.i++;}else{MARKS[id]=k;if(k!=="p")delete RATE[id];stamp(id);saveMarks();q.done++;q.i++;}
   qsShow();
 }
-$("qsopen").addEventListener("click",()=>{
-  QS={ids:LASTLIST.filter(g=>!MARKS[g.id]).map(g=>g.id),i:0,hist:[],done:0,skipped:0};
+function qsStart(list){
+  QS={ids:list.filter(g=>!MARKS[g.id]).map(g=>g.id),i:0,hist:[],done:0,skipped:0};
   qsShow();$("qsdlg").showModal();const b=document.querySelector("#qsbtns button");if(b&&!$("qsbtns").hidden)b.focus();
+}
+$("qsopen").addEventListener("click",()=>qsStart(LASTLIST));
+$("qstop").addEventListener("click",()=>{
+  if(S.view==="browse"&&!CTX.ser&&!CTX.like)return qsStart(LASTLIST);
+  const v=S.view;S.view="browse";let list;try{list=GAMES.filter(pass).sort(cmp);}finally{S.view=v;}qsStart(list);
 });
 $("qsbtns").addEventListener("click",e=>{const b=e.target.closest("[data-qs]");if(b)qsAct(b.dataset.qs);});
 $("qsundo").addEventListener("click",()=>qsAct("undo"));
