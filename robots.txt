@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+# The account and ratings API: addresses the site's code calls, not pages to visit.
+Disallow: /api/
 
 Sitemap: https://wallofpsplus.com/sitemap.xml
