@@ -5335,5 +5335,37 @@
 ]
 }
 ]
+},
+{
+"url": "https://blog.playstation.com/2026/11/25/playstation-plus-monthly-games-for-december-tony-hawks-pro-skater-34-dragon-ball-xenoverse-2-amnesia-the-bunker/",
+"kind": "monthly",
+"month": "2026-12",
+"date": "2026-12-01",
+"title": "PlayStation Plus Monthly Games for December: Tony Hawk’s Pro Skater 3+4, Dragon Ball Xenoverse 2, Amnesia: The Bunker",
+"games": [
+{
+"t": "Tony Hawk’s Pro Skater 3+4 – Cross-Gen Edition",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Dragon Ball Xenoverse 2",
+"tier": "Essential",
+"p": [
+"PS4",
+"PS5"
+]
+},
+{
+"t": "Amnesia: The Bunker",
+"tier": "Essential",
+"p": [
+"PS4"
+]
+}
+]
 }
 ]
