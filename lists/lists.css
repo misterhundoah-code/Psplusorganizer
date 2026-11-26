@@ -165,3 +165,6 @@ td.t .plinks{display:flex;flex-wrap:wrap;gap:4px 14px;margin:6px 0 0 !important;
 td.t .plinks a,td.t .plinks a:last-child,td.t .plinks a:visited{display:inline;border:0;padding:0;background:none;color:var(--blue);font-weight:700;font-size:14px;text-decoration:underline;text-underline-offset:3px}
 td.t .plinks a:hover{text-decoration-thickness:2px;background:none;color:var(--blue)}
 td.cv img.wide{object-fit:cover}
+
+/* Small print under a lineup that differs by country */
+.regnote{font-size:14px;line-height:1.5;color:var(--muted,#5b6480);margin:10px 0 0;max-width:68ch}

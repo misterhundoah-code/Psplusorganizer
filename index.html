@@ -311,6 +311,7 @@ tr.is-p .title a,tr.is-x .title a,tr.is-b .title a{color:var(--muted)}
 .flag{display:inline-block;font-weight:800;font-size:11.5px;border-radius:2px;padding:1px 6px;margin-left:8px;vertical-align:2px;white-space:nowrap;color:#fff;background:var(--fc,var(--accent))}
 .flag.new{--fc:var(--accent);color:var(--accent-ink)}
 .flag.mon{--fc:var(--monthly)}
+.regnote{font-size:13.5px;line-height:1.45;color:var(--band-muted);margin:8px 2px 0;max-width:70ch}
 .flag.leave{--fc:var(--red)}
 .flag.own{--fc:var(--bounced)}
 .flag.cl{--fc:var(--classic)}
@@ -764,7 +765,7 @@ dialog.dlgbox#madedlg{width:min(720px,calc(100vw - 32px));max-height:calc(100vh 
       </div></div>
       <div id="monwrap" class="pane" role="tabpanel" aria-labelledby="sh-mon" hidden>
         <div class="deckhead"><h2 class="eyebrow mon">This month's games</h2><span id="monnote"></span><span class="lastbtns"><button type="button" class="lastall" id="monclaimed" title="Tag all of this month's games as in your library">I've claimed these</button><button type="button" class="lastall" id="moncal" title="Download a calendar reminder for the last day to claim">Remind me to claim</button><a class="lastall" id="monsrc" target="_blank" rel="noopener" hidden>Sony's announcement</a></span></div>
-        <div class="deck" id="mondeck"></div>
+        <div class="deck" id="mondeck"></div><p class="regnote" id="monregion" hidden></p>
       </div>
       <div id="lastwrap" class="pane" role="tabpanel" aria-labelledby="sh-last" hidden>
         <div class="deckhead"><h2 class="eyebrow last">Last chance</h2><span id="lastnote"></span><span class="lastbtns"><button type="button" class="lastall" id="lastcal" title="Download calendar reminders: your want-to-play games if any are leaving, otherwise all of these">Add these to my calendar</button><button type="button" class="lastall" id="lastall">Show them all on the shelf</button></span></div>
@@ -772,7 +773,7 @@ dialog.dlgbox#madedlg{width:min(720px,calc(100vw - 32px));max-height:calc(100vh 
       </div>
       <div id="comewrap" class="pane" role="tabpanel" aria-labelledby="sh-come" hidden>
         <div class="deckhead"><h2 class="eyebrow come">Coming soon</h2><span id="comenote"></span><span class="lastbtns"><button type="button" class="lastall" id="comecal" title="Download calendar reminders for the day each game arrives">Add arrivals to my calendar</button><a class="lastall" id="comesrc" target="_blank" rel="noopener">Sony's announcement</a></span></div>
-        <div class="deck" id="comedeck"></div>
+        <div class="deck" id="comedeck"></div><p class="regnote" id="comeregion" hidden></p>
       </div>
       <div id="pickwrap" class="pane" role="tabpanel" aria-labelledby="sh-pick">
         <div class="deckhead"><h2 class="eyebrow">Staff picks</h2><span id="decknote"></span></div>
@@ -1173,11 +1174,13 @@ dialog.dlgbox#madedlg{width:min(720px,calc(100vw - 32px));max-height:calc(100vh 
 (()=>{const f=()=>document.documentElement.style.setProperty("--sbw",(innerWidth-document.documentElement.clientWidth)+"px");addEventListener("resize",f);addEventListener("load",f);new ResizeObserver(f).observe(document.documentElement);})();
 (async function main(){
 "use strict";
-let GAMES,META,ARTLIST,LINKS,REGDATA,FACTS={},XPLAY={},COMING={games:[],posts:[]};
+let GAMES,META,ARTLIST,LINKS,REGDATA,FACTS={},XPLAY={},COMING={games:[],posts:[]},REGNOTES={};
 try{
   const get=u=>fetch(u,{cache:"no-cache"}).then(r=>{if(!r.ok)throw new Error(u+" "+r.status);return r.json();});
   [GAMES,META,ARTLIST,LINKS,REGDATA,FACTS,XPLAY,COMING]=await Promise.all([get("data/games.json"),get("data/catalogue.json"),get("data/art.json").catch(()=>[]),get("data/links.json").catch(()=>({})),get("data/regions.json").catch(()=>({})),get("data/facts.json").catch(()=>({})),get("data/crossplay.json").then(j=>j&&j.games&&typeof j.games==="object"?j.games:{}).catch(()=>({})),
-  get("data/coming.json").then(j=>({games:Array.isArray(j&&j.games)?j.games:[],posts:Array.isArray(j&&j.posts)?j.posts:[]})).catch(()=>({games:[],posts:[]}))]);
+  get("data/coming.json").then(j=>({games:Array.isArray(j&&j.games)?j.games:[],posts:Array.isArray(j&&j.posts)?j.posts:[],monthly:j&&j.monthly&&typeof j.monthly==="object"?j.monthly:null})).catch(()=>({games:[],posts:[]}))]);
+  // data/region-notes.json: month (YYYY-MM) -> one sentence on how that month's lineup differs by country.
+  REGNOTES=await get("data/region-notes.json").catch(()=>({}));if(!REGNOTES||typeof REGNOTES!=="object")REGNOTES={};
 }catch(e){
   document.getElementById("count").textContent="Couldn't load the game list. Check your connection and reload the page.";
   return;
@@ -1733,6 +1736,7 @@ function renderComing(){
   $("comenote").textContent=(dates.length===1?`Arriving ${short(dates[0])}`:`Arriving ${short(dates[0])} to ${short(dates[dates.length-1])}`)+". Dates are Sony's, and a few vary by country.";
   const post=COMING.posts.find(p=>p&&/^https:\/\/blog\.playstation\.com\//.test(p.url||""));
   const src=$("comesrc");src.hidden=!post;if(post)src.href=post.url;
+  {const rn=$("comeregion"),rt=[...new Set(cg.filter(x=>x.tier==="Essential").map(x=>String(x.date||"").slice(0,7)))].map(m=>REGNOTES[m]).filter(v=>typeof v==="string").join(" ");rn.textContent=rt;rn.hidden=!rt;}
   $("comedeck").innerHTML=cg.map(x=>{
     const g=x.id&&BYID.get(x.id),img=/^https:\/\/blog\.playstation\.com\/tachyon\//.test(x.img||"")?x.img:"";
     const p=COMING.posts[x.post],href=g?gameUrl(g):(p&&/^https:\/\/blog\.playstation\.com\//.test(p.url||"")?p.url:"");
@@ -1748,16 +1752,17 @@ const isoD=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+Str
 function monthlyNow(){
   const today=todayISO(),M=COMING.monthly;
   if(M&&Array.isArray(M.games)&&/^\d{4}-\d{2}-\d{2}$/.test(M.until||"")&&M.until>=today&&(M.from||"")<=today)
-    return {until:M.until,url:/^https:\/\/blog\.playstation\.com\//.test(M.url||"")?M.url:"",
+    return {until:M.until,month:String(M.month||""),url:/^https:\/\/blog\.playstation\.com\//.test(M.url||"")?M.url:"",
       games:M.games.filter(x=>x&&typeof x.t==="string").map(x=>({t:x.t,p:x.p,g:x.id&&BYID.get(x.id),img:x.img}))};
   const now=new Date();let y=now.getFullYear(),m=now.getMonth();
   if(isoD(firstTue(y,m))>today){m--;if(m<0){m=11;y--;}}
   const key=y+"-"+String(m+1).padStart(2,"0"),nx=firstTue(m===11?y+1:y,(m+1)%12);nx.setDate(nx.getDate()-1);
   const gs=GAMES.filter(g=>g.e===key);
-  return gs.length?{until:isoD(nx),url:"",games:gs.map(g=>({t:g.t,p:g.p,g}))}:null;
+  return gs.length?{until:isoD(nx),month:key,url:"",games:gs.map(g=>({t:g.t,p:g.p,g}))}:null;
 }
 function renderMonthly(){
   const M=monthlyNow(),wrap=$("monwrap");wrap.hidden=!M;if(!M)return;
+  const rn=$("monregion"),rt=typeof REGNOTES[M.month]==="string"?REGNOTES[M.month]:"";rn.textContent=rt;rn.hidden=!rt;
   const d=new Date(M.until+"T12:00:00"),day=d.toLocaleDateString(undefined,{weekday:"long"}),short=fmtD(M.until).replace(/ \d{4}$/,"");
   const left=Math.round((d-new Date(todayISO()+"T12:00:00"))/864e5);
   $("monnote").textContent=`Free to claim with every PS Plus tier until ${day} ${short}${left<=7?` (${left===0?"last day":left===1?"1 day left":left+" days left"})`:""}. Claimed games stay playable while you're a member.`;

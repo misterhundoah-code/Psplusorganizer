@@ -49,6 +49,7 @@ ART = set(load("art.json", []) or [])
 ABOUT = load("about.json", {}) or {}            # id -> {"x": Wikipedia's description, "w": article title}
 LEAVING = CAT.get("leaving", {}) or {}
 COMING = load("coming.json", {}) or {}
+REGION_NOTES = {k: v for k, v in (load("region-notes.json", {}) or {}).items() if not k.startswith("_")}
 TODAY = date.today()
 
 esc = html.escape
@@ -530,6 +531,11 @@ def monthly_card(x, g, when):
             f'{f"<p>{esc(text)}</p>" if text else ""}{links}{f"<p class=small>{wall}</p>" if wall else ""}</div></li>')
 
 
+def region_note(month):
+    """Small print under a month's lineup when it differs by country (data/region-notes.json)."""
+    return f'<p class="regnote">{esc(REGION_NOTES[month])}</p>' if REGION_NOTES.get(month) else ""
+
+
 def monthly_page():
     """This month's monthly games (Essential): the ones to claim now, and next month's once Sony announces them.
     Built from data/coming.json (Sony's PlayStation Blog posts), so it updates itself each month."""
@@ -566,7 +572,8 @@ def monthly_page():
                  + (f'. Until then you can still claim {esc(cur_name.split()[0])}\'s games, below' if cur.get("games") else "")
                  + '.</p>')
         o.append(f'<h2>Coming {esc(arrive.strftime("%A"))} {esc(nice_date(nxt[0]["date"]))}</h2><ul class="mlist">'
-                 + "".join(monthly_card(x, byid.get(x.get("id") or ""), "next") for x in nxt) + "</ul>")
+                 + "".join(monthly_card(x, byid.get(x.get("id") or ""), "next") for x in nxt) + "</ul>"
+                 + region_note(nxt[0]["date"][:7]))
     if cur.get("games"):
         ld = date.fromisoformat(last_day)
         left = (ld - TODAY).days
@@ -575,7 +582,8 @@ def monthly_page():
                  + (f" ({left} day{'s' if left != 1 else ''} left)" if 0 <= left <= 31 else "")
                  + '. Once claimed, they\'re yours to play for as long as you\'re a PS Plus member, on any tier. '
                  'Adding them to your library is enough; you don\'t need to download them.</p>'
-                 + '<ul class="mlist">' + "".join(monthly_card(x, byid.get(x.get("id") or ""), "now") for x in cur["games"]) + "</ul>")
+                 + '<ul class="mlist">' + "".join(monthly_card(x, byid.get(x.get("id") or ""), "now") for x in cur["games"]) + "</ul>"
+                 + region_note(cur.get("month", "")))
     if not nxt:
         if swap:
             ann = swap - timedelta(days=(swap.weekday() - 2) % 7 or 7)
@@ -804,7 +812,8 @@ def build():
                f'Dates are from Sony\'s announcements on the PlayStation Blog; a few vary by country.</p>'
                '<table><thead><tr><th class="n"><span class="vh">#</span></th><th class="cv"><span class="vh">Cover</span></th>'
                '<th>Game</th><th class="m">Metascore</th><th class="h">Main story</th></tr></thead><tbody>' + "".join(rows)
-               + f"</tbody></table><h2>Sony's announcements</h2><ul>{srcs}</ul>" if cg else
+               + "</tbody></table>" + "".join(region_note(m) for m in sorted({(x.get("date") or "")[:7] for x in cg if x.get("tier") == "Essential"}))
+               + f"<h2>Sony's announcements</h2><ul>{srcs}</ul>" if cg else
                '<p class="intro">Nothing announced right now. Sony announces the monthly games near the end of each month and '
                'the Extra and Premium additions about a week before they arrive; this page updates the same day.</p>')
             + f"<h2>More PS Plus lists</h2>{list_nav('new-on-ps-plus')}")
