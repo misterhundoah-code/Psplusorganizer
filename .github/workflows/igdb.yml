@@ -33,7 +33,7 @@ concurrency:
 jobs:
   lookup:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -51,11 +51,16 @@ jobs:
           elif [ "$MODE" = "refresh" ]; then python tools/fetch_igdb.py --all --refresh
           elif [ "$MODE" = "misses" ]; then python tools/fetch_igdb.py --all --misses
           else python tools/fetch_igdb.py --all; fi
+      - name: Covers and videos for the wall
+        if: ${{ !inputs.ids && inputs.mode != 'sample' }}
+        run: |
+          pip install -q pillow
+          python tools/igdb_extras.py
       - name: Save data/igdb.json
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
-          git add data/igdb.json 2>/dev/null || exit 0
+          git add data/igdb.json data/videos.json data/box.json box 2>/dev/null || true
           git diff --cached --quiet && exit 0
           git commit -m "Update IGDB covers and trailers"
           for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
