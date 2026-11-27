@@ -1,0 +1,4 @@
+Sound effects in sfx.mp3: Kenney (https://kenney.nl): Impact Sounds, RPG Audio, Foley Sounds, Interface Sounds
+and Retro Sounds. License: CC0 1.0 (public domain). Packed into one file; sfx.json gives each sound's start
+and length in seconds. Zombie groans, the shop's hum, the after-hours drone and passing cars are synthesized in
+the browser (tools/store/main.js).

@@ -25,6 +25,7 @@ body.night #stage canvas{cursor:crosshair}
 .tabtop{display:flex;align-items:center;gap:10px;justify-content:space-between}
 .tab h1{margin:0;font:400 19px/1.1 Bungee,"Arial Black",sans-serif}
 .tab .back{color:#fff;font-size:14px;font-weight:700}
+#snd{margin-left:auto;font:inherit;font-size:12.5px;font-weight:700;color:#fff;background:transparent;border:1px solid rgba(255,255,255,.6);border-radius:3px;padding:2px 7px;cursor:pointer;min-height:26px}#snd[aria-pressed=false]{opacity:.7}
 .stock{display:flex;gap:6px;margin-top:8px}
 .stock button,.aisle button{font:inherit;font-size:14px;font-weight:700;color:#fff;background:transparent;border:2px solid rgba(255,255,255,.55);border-radius:3px;padding:5px 10px;min-height:36px;cursor:pointer}
 .stock button[aria-pressed=true]{background:var(--yellow);border-color:var(--yellow);color:var(--ink)}
@@ -91,7 +92,7 @@ body.night .stock,body.night #stocknote,body.night .aisle,body.night .aislemeta{
 <div id="stage" aria-label="A 3D video shop full of game boxes. Walk with WASD or the arrow keys, drag to look around, and click a box to pick it up. The section list jumps to a genre."></div>
 <div id="loading">Opening the shop…</div>
 <header class="tab">
-  <div class="tabtop"><h1>Wall of PS Plus</h1><a class="back" href="/">Back to the wall</a></div>
+  <div class="tabtop"><h1>Wall of PS Plus</h1><button type="button" id="snd" aria-pressed="true">Sound on</button><a class="back" href="/">Back to the wall</a></div>
   <div class="stock" role="group" aria-label="Stock the shop with">
     <button type="button" data-stock="all" aria-pressed="true">Every game</button>
     <button type="button" data-stock="wall" id="wallstock" aria-pressed="false" hidden>My wall's filters</button>

@@ -4,7 +4,10 @@
 // leaves their ids in sessionStorage). Pick up a box to read the back or watch its trailer on the nearest TV.
 // After hours (the staff light switch behind the counter) it turns into a shooter: the dead clerks roam the
 // aisles and you throw game cases at them, with popcorn for health and a few tapes that do odd things.
+// The dead clerks are Quaternius's Zombie Apocalypse Kit models (CC0), in store/models/.
 import * as THREE from "three/webgpu";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { clone as cloneRig } from "three/examples/jsm/utils/SkeletonUtils.js";
 
 const $ = (id) => document.getElementById(id);
 const CALM = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -16,6 +19,112 @@ const plat = (g) => g.sys || (g.p || []).join(", ");
 const get = (u) => fetch(u).then((r) => (r.ok ? r.json() : Promise.reject(r.status)));
 const sget = (k) => { try { return sessionStorage.getItem(k); } catch (e) { return null; } };
 const rnd = (a, b) => a + Math.random() * (b - a);
+
+// ---------- sound ----------
+// Recorded effects are Kenney's CC0 packs (impact, RPG, foley, interface and retro sounds), packed into one
+// file, store/sfx/sfx.mp3, with store/sfx/sfx.json giving each sound's start and length. The zombie groans,
+// the shop's hum, the after-hours drone and the passing cars are made here with the Web Audio API.
+const SND = { ctx: null, buf: null, map: null, on: true, master: null, amb: null, ambNight: null, loading: false };
+try { SND.on = localStorage.getItem("psplus-shop-sound") !== "off"; } catch (e) {}
+function audioStart() {
+  if (!SND.on) return;
+  if (!SND.ctx) {
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    SND.ctx = new AC(); SND.master = SND.ctx.createGain(); SND.master.gain.value = 0.8; SND.master.connect(SND.ctx.destination);
+  }
+  if (SND.ctx.state === "suspended") SND.ctx.resume();
+  if (!SND.buf && !SND.loading) {
+    SND.loading = true;
+    Promise.all([get("sfx/sfx.json"), fetch("sfx/sfx.mp3").then((r) => r.arrayBuffer())])
+      .then(([map, ab]) => new Promise((ok, no) => SND.ctx.decodeAudioData(ab, ok, no)).then((b) => { SND.map = map; SND.buf = b; }))
+      .catch(() => { SND.loading = false; });
+  }
+  ambience();
+}
+function noiseBuf() {
+  if (SND.noise) return SND.noise;
+  const c = SND.ctx, b = c.createBuffer(1, c.sampleRate * 2, c.sampleRate), d = b.getChannelData(0);
+  let last = 0; for (let i = 0; i < d.length; i++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = last * 3.5; }   // brown noise
+  return (SND.noise = b);
+}
+// where a sound sits relative to the listener: quieter with distance, panned left or right
+let EAR = { x: 0, z: 0, yaw: 0 };
+function place(x, z, near = 2, far = 16) {
+  if (x === undefined) return { g: 1, pan: 0 };
+  const dx = x - EAR.x, dz = z - EAR.z, d = Math.hypot(dx, dz);
+  const g = d <= near ? 1 : Math.max(0, 1 - (d - near) / (far - near)) ** 1.6;
+  // the camera looks down -z at yaw 0; right is +x
+  const rx = Math.cos(EAR.yaw) * dx - Math.sin(EAR.yaw) * dz;
+  return { g, pan: d > 0.01 ? Math.max(-1, Math.min(1, rx / Math.max(d, 1.5))) * 0.8 : 0 };
+}
+function out(gain, pan) {
+  const c = SND.ctx, g = c.createGain(); g.gain.value = gain;
+  if (c.createStereoPanner) { const p = c.createStereoPanner(); p.pan.value = pan; g.connect(p); p.connect(SND.master); }
+  else g.connect(SND.master);
+  return g;
+}
+function sfx(name, vol = 1, x, z, rate = 1) {
+  if (!SND.on || !SND.buf || !SND.ctx || SND.ctx.state !== "running") return;
+  const names = Array.isArray(name) ? name : [name], n = names[Math.floor(Math.random() * names.length)], at = SND.map[n]; if (!at) return;
+  const { g, pan } = place(x, z); if (g < 0.02) return;
+  const s = SND.ctx.createBufferSource(); s.buffer = SND.buf; s.playbackRate.value = rate * (0.94 + Math.random() * 0.12);
+  s.connect(out(vol * g, pan)); s.start(0, at[0], at[1] + 0.02);
+}
+// a groan: a buzzing low voice through two vowel-ish filters, sagging in pitch
+function groan(x, z, low) {
+  if (!SND.on || !SND.ctx || SND.ctx.state !== "running") return;
+  const { g, pan } = place(x, z, 2, 14); if (g < 0.03) return;
+  const c = SND.ctx, t = c.currentTime, len = 0.7 + Math.random() * 0.9, f0 = (low ? 58 : 78) + Math.random() * 30;
+  const o = c.createOscillator(); o.type = "sawtooth";
+  o.frequency.setValueAtTime(f0 * 1.15, t); o.frequency.linearRampToValueAtTime(f0 * 0.82, t + len);
+  const lfo = c.createOscillator(), lg = c.createGain(); lfo.frequency.value = 5 + Math.random() * 4; lg.gain.value = f0 * 0.05; lfo.connect(lg); lg.connect(o.frequency);
+  const f1 = c.createBiquadFilter(); f1.type = "bandpass"; f1.Q.value = 6; f1.frequency.setValueAtTime(520 + Math.random() * 200, t); f1.frequency.linearRampToValueAtTime(380, t + len);
+  const f2 = c.createBiquadFilter(); f2.type = "bandpass"; f2.Q.value = 8; f2.frequency.value = 1050 + Math.random() * 300;
+  const env = c.createGain(); env.gain.setValueAtTime(0.0001, t); env.gain.exponentialRampToValueAtTime(1, t + 0.12); env.gain.setValueAtTime(1, t + len * 0.6); env.gain.exponentialRampToValueAtTime(0.0001, t + len);
+  const sink = out(0.55 * g, pan);
+  o.connect(f1); o.connect(f2); f1.connect(env); const f2g = c.createGain(); f2g.gain.value = 0.5; f2.connect(f2g); f2g.connect(env); env.connect(sink);
+  o.start(t); lfo.start(t); o.stop(t + len + 0.05); lfo.stop(t + len + 0.05);
+}
+// a car going past outside, muffled by the glass
+function carBy(x, z, dir) {
+  if (!SND.on || !SND.ctx || SND.ctx.state !== "running") return;
+  const c = SND.ctx, t = c.currentTime, { g, pan } = place(x, z, 4, 22); if (g < 0.03) return;
+  const s = c.createBufferSource(); s.buffer = noiseBuf(); s.loop = true;
+  const f = c.createBiquadFilter(); f.type = "lowpass"; f.frequency.setValueAtTime(300, t); f.frequency.linearRampToValueAtTime(700, t + 1.1); f.frequency.linearRampToValueAtTime(250, t + 2.6);
+  const env = c.createGain(); env.gain.setValueAtTime(0.0001, t); env.gain.exponentialRampToValueAtTime(0.5 * g, t + 1.1); env.gain.exponentialRampToValueAtTime(0.0001, t + 2.6);
+  let p = null;
+  const k = 0.7 * Math.cos(EAR.yaw);   // the car crosses from one ear to the other, whichever way you face
+  if (c.createStereoPanner) { p = c.createStereoPanner(); p.pan.setValueAtTime(-dir * k, t); p.pan.linearRampToValueAtTime(dir * k, t + 2.6); }
+  s.connect(f); f.connect(env); if (p) { env.connect(p); p.connect(SND.master); } else env.connect(SND.master);
+  s.start(t); s.stop(t + 2.7);
+}
+// the shop's background: a faint strip-light hum and street noise by day, a low drone after hours
+function ambience() {
+  if (!SND.ctx || SND.amb) return;
+  const c = SND.ctx;
+  const day = c.createGain(); day.gain.value = 0; day.connect(SND.master);
+  const hum = c.createOscillator(); hum.frequency.value = 120; const hg = c.createGain(); hg.gain.value = 0.018; hum.connect(hg); hg.connect(day);
+  const hum2 = c.createOscillator(); hum2.frequency.value = 240; const hg2 = c.createGain(); hg2.gain.value = 0.006; hum2.connect(hg2); hg2.connect(day);
+  const st = c.createBufferSource(); st.buffer = noiseBuf(); st.loop = true; const sf = c.createBiquadFilter(); sf.type = "lowpass"; sf.frequency.value = 400;
+  const sg = c.createGain(); sg.gain.value = 0.05; st.connect(sf); sf.connect(sg); sg.connect(day);
+  const nightG = c.createGain(); nightG.gain.value = 0; nightG.connect(SND.master);
+  const lp = c.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 220; lp.Q.value = 4; lp.connect(nightG);
+  const sweep = c.createOscillator(), sw = c.createGain(); sweep.frequency.value = 0.07; sw.gain.value = 90; sweep.connect(sw); sw.connect(lp.frequency);
+  for (const f of [55, 55.6, 82.4]) { const o = c.createOscillator(); o.type = "sawtooth"; o.frequency.value = f; const og = c.createGain(); og.gain.value = 0.05; o.connect(og); og.connect(lp); o.start(); }
+  hum.start(); hum2.start(); st.start(); sweep.start();
+  SND.amb = day; SND.ambNight = nightG;
+  ambMode(document.body.classList.contains("night"));
+}
+function ambMode(nightOn) {
+  if (!SND.amb) return;
+  const t = SND.ctx.currentTime;
+  SND.amb.gain.setTargetAtTime(nightOn ? 0 : 1, t, 0.6); SND.ambNight.gain.setTargetAtTime(nightOn ? 1 : 0, t, 0.6);
+}
+function setSound(on) {
+  SND.on = on; try { localStorage.setItem("psplus-shop-sound", on ? "on" : "off"); } catch (e) {}
+  const b = $("snd"); b.setAttribute("aria-pressed", String(on)); b.textContent = on ? "Sound on" : "Sound off";
+  if (on) audioStart(); else if (SND.ctx) SND.ctx.suspend();
+}
 
 const SECTIONS = [
   ["JRPGs", ["JRPG"]], ["RPGs", ["RPG"]], ["Horror", ["Horror", "Survival"]], ["Roguelikes and Metroidvanias", ["Roguelike", "Metroidvania", "Soulslike"]],
@@ -187,25 +296,25 @@ async function start() {
   // ---------- the shop front and the street outside ----------
   // Everything outside is unlit and ignores the fog (MeshBasicMaterial, fog off), so it costs no lights and
   // still reads through the glass from the back of the shop. The far side of the street is one painted canvas.
-  let seed = 11; const rnd = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+  let seed = 11; const srnd = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);   // repeatable, so the street looks the same each visit
   const facadeTex = canvasTex(2048, 768, (x, w, h) => {
     x.fillStyle = "#0b1030"; x.fillRect(0, 0, w, h);
     const g = x.createLinearGradient(0, 0, 0, h * 0.6); g.addColorStop(0, "#060818"); g.addColorStop(1, "#1a1f4a");
     x.fillStyle = g; x.fillRect(0, 0, w, h);
     x.fillStyle = "#e9ecff"; x.beginPath(); x.arc(w * 0.78, 90, 34, 0, 6.28); x.fill();
     x.fillStyle = "#060818"; x.beginPath(); x.arc(w * 0.78 + 14, 82, 30, 0, 6.28); x.fill();
-    for (let i = 0; i < 70; i++) { x.fillStyle = `rgba(255,255,255,${0.3 + rnd() * 0.5})`; x.fillRect(rnd() * w, rnd() * h * 0.35, 2, 2); }
+    for (let i = 0; i < 70; i++) { x.fillStyle = `rgba(255,255,255,${0.3 + srnd() * 0.5})`; x.fillRect(srnd() * w, srnd() * h * 0.35, 2, 2); }
     const shops = [["PIZZA", "#ff5c3a"], ["LAUNDRY", "#5ce1ff"], ["NOODLES", "#ffcf3a"], ["COMICS", "#ff4fd8"], ["24 HR", "#7cff8a"], ["ARCADE", "#b48cff"], ["DINER", "#ff5c7a"], ["HARDWARE", "#ffe27a"]];
     const walls = ["#2a1d2c", "#1d2336", "#2d2320", "#24202e", "#1b2a2e"];
     const ground = 150, px = w / 48;   // 48 m across, so about 43 px to the metre
     let bx = 0, n = 0;
     while (bx < w) {
-      const bw = 170 + Math.floor(rnd() * 200), bh = 330 + Math.floor(rnd() * 360), top = h - bh;
+      const bw = 170 + Math.floor(srnd() * 200), bh = 330 + Math.floor(srnd() * 360), top = h - bh;
       x.fillStyle = walls[n % walls.length]; x.fillRect(bx, top, bw, bh);
       x.fillStyle = "rgba(0,0,0,0.35)"; x.fillRect(bx, top, bw, 10); x.fillRect(bx + bw - 6, top, 6, bh);
       // upper windows: some lit warm, a few with a TV's blue
       for (let wy = top + 26; wy < h - ground - 40; wy += 52) for (let wx = bx + 18; wx < bx + bw - 34; wx += 42) {
-        const r = rnd(); x.fillStyle = r < 0.32 ? "#ffd27a" : r < 0.4 ? "#ffefc2" : r < 0.46 ? "#7fb6ff" : "#11142a";
+        const r = srnd(); x.fillStyle = r < 0.32 ? "#ffd27a" : r < 0.4 ? "#ffefc2" : r < 0.46 ? "#7fb6ff" : "#11142a";
         x.fillRect(wx, wy, 22, 30);
         if (r < 0.46) { x.fillStyle = "rgba(0,0,0,0.25)"; x.fillRect(wx, wy + 14, 22, 2); }
       }
@@ -217,8 +326,8 @@ async function start() {
       x.fillStyle = sg; x.fillRect(sx, sy, sw2, sh);
       // shelves, stock and the odd customer inside, then a streak of reflection on the glass
       x.fillStyle = "rgba(90,60,30,0.55)"; for (let yy = sy + 22; yy < sy + sh - 8; yy += 24) x.fillRect(sx + 4, yy, sw2 - 8, 4);
-      for (let yy = sy + 8; yy < sy + sh - 20; yy += 24) for (let xx = sx + 8; xx < sx + sw2 - 10; xx += 9) if (rnd() < 0.6) { x.fillStyle = ["#b0412e", "#2e6bb0", "#d9b23a", "#3d8a52", "#7a4ab0"][Math.floor(rnd() * 5)]; x.fillRect(xx, yy + 4, 6, 10); }
-      if (rnd() < 0.7) { const fx = sx + 20 + rnd() * (sw2 - 50); x.fillStyle = "rgba(20,14,24,0.85)"; x.beginPath(); x.arc(fx, sy + sh - 58, 9, 0, 6.28); x.fill(); x.fillRect(fx - 11, sy + sh - 48, 22, 48); }
+      for (let yy = sy + 8; yy < sy + sh - 20; yy += 24) for (let xx = sx + 8; xx < sx + sw2 - 10; xx += 9) if (srnd() < 0.6) { x.fillStyle = ["#b0412e", "#2e6bb0", "#d9b23a", "#3d8a52", "#7a4ab0"][Math.floor(srnd() * 5)]; x.fillRect(xx, yy + 4, 6, 10); }
+      if (srnd() < 0.7) { const fx = sx + 20 + srnd() * (sw2 - 50); x.fillStyle = "rgba(20,14,24,0.85)"; x.beginPath(); x.arc(fx, sy + sh - 58, 9, 0, 6.28); x.fill(); x.fillRect(fx - 11, sy + sh - 48, 22, 48); }
       x.fillStyle = "rgba(255,255,255,0.14)"; x.beginPath(); x.moveTo(sx + sw2 * 0.55, sy); x.lineTo(sx + sw2 * 0.7, sy); x.lineTo(sx + sw2 * 0.4, sy + sh); x.lineTo(sx + sw2 * 0.25, sy + sh); x.fill();
       x.fillStyle = "#3b2a1a"; x.fillRect(bx + bw - 46, h - ground + 46, 28, ground - 46);
       for (let s = 0; s < bw - 16; s += 22) { x.fillStyle = s % 44 ? "#e8e1d0" : col; x.fillRect(bx + 8 + s, h - ground + 22, 22, 18); }
@@ -232,7 +341,7 @@ async function start() {
   });
   const roadTex = canvasTex(512, 256, (x, w, h) => {
     x.fillStyle = "#14151c"; x.fillRect(0, 0, w, h);
-    for (let i = 0; i < 900; i++) { x.fillStyle = `rgba(255,255,255,${rnd() * 0.05})`; x.fillRect(rnd() * w, rnd() * h, 2, 2); }
+    for (let i = 0; i < 900; i++) { x.fillStyle = `rgba(255,255,255,${srnd() * 0.05})`; x.fillRect(srnd() * w, srnd() * h, 2, 2); }
     x.fillStyle = "#d9b23a"; for (let i = 0; i < w; i += 128) x.fillRect(i + 16, h / 2 - 3, 72, 6);
   });
   roadTex.wrapS = THREE.RepeatWrapping;
@@ -350,8 +459,10 @@ async function start() {
   function tickStreet(dt, now) {
     const st = S.street;
     for (const car of st.cars) {
-      if (!car.c.visible) { car.wait -= dt; if (car.wait <= 0) { car.c.visible = true; car.speed = 7 + Math.random() * 5; car.c.userData.body.material = CAR_COLS[Math.floor(Math.random() * CAR_COLS.length)]; car.c.position.x = -car.dir * (car.W / 2 + 6); } continue; }
+      if (!car.c.visible) { car.wait -= dt; if (car.wait <= 0) { car.c.visible = true; car.heard = false; car.speed = 7 + Math.random() * 5; car.c.userData.body.material = CAR_COLS[Math.floor(Math.random() * CAR_COLS.length)]; car.c.position.x = -car.dir * (car.W / 2 + 6); } continue; }
       car.c.position.x += car.dir * car.speed * dt;
+      const ahead = car.dir * (P.x - car.c.position.x);
+      if (!car.heard && ahead > 0 && ahead < 11) { car.heard = true; carBy(P.x, car.c.position.z, car.dir); }
       if (Math.abs(car.c.position.x) > car.W / 2 + 6) { car.c.visible = false; car.wait = 4 + Math.random() * 10; }
     }
     if (night.on && !CALM) {
@@ -364,6 +475,96 @@ async function start() {
     S.street.dim.forEach((m) => m.color.set(on ? (m === OUT.facade ? "#7a5560" : "#5a3a44") : (m === OUT.curb ? "#5a5d6a" : "#ffffff")));
     S.street.lamps.forEach((l) => (l.head.visible = l.pool.visible = true));
     S.street.neon.visible = true; S.street.neonMat.color.set(on ? "#ff2a2a" : "#ffffff");
+  }
+
+  // ---------- decoration: posters, neon, a popcorn machine, the returns box and a stack of baskets ----------
+  const POSTERS = [
+    { bg: "#d7263d", fg: "#fff", big: "BE KIND", small: "Please rewind", icon: "tape" },
+    { bg: YELLOW, fg: INK, big: "NEW RELEASES", small: "Every Tuesday", icon: "star" },
+    { bg: BLUE, fg: "#fff", big: "LATE FEES?", small: "We don't talk about late fees", icon: "clock" },
+    { bg: "#1d6b3a", fg: "#fff", big: "FREE POPCORN", small: "For members, while it lasts", icon: "pop" },
+    { bg: "#141a33", fg: YELLOW, big: "NO SLEEPING", small: "In the aisles. Especially after closing.", icon: "moon" },
+    { bg: "#7a3cff", fg: "#fff", big: "STAFF PICK", small: "Ask at the counter", icon: "cover" },
+  ];
+  function posterTex(pz, coverImg) {
+    return canvasTex(256, 368, (x, w, h) => {
+      x.fillStyle = pz.bg; x.fillRect(0, 0, w, h);
+      x.strokeStyle = pz.fg; x.lineWidth = 6; x.strokeRect(10, 10, w - 20, h - 20);
+      x.fillStyle = pz.fg; x.textAlign = "center";
+      let fs = 40; x.font = `${fs}px Bungee, "Arial Black", sans-serif`;
+      while (x.measureText(pz.big).width > w - 40 && fs > 18) { fs -= 2; x.font = `${fs}px Bungee, "Arial Black", sans-serif`; }
+      x.fillText(pz.big, w / 2, 70);
+      const cy = 190;
+      if (pz.icon === "tape") { x.fillRect(48, cy - 46, 160, 92); x.fillStyle = pz.bg; x.beginPath(); x.arc(96, cy, 22, 0, 6.28); x.arc(160, cy, 22, 0, 6.28); x.fill(); x.fillRect(96, cy - 8, 64, 16); }
+      else if (pz.icon === "star") { x.beginPath(); for (let i = 0; i < 10; i++) { const r = i % 2 ? 30 : 70, a = -Math.PI / 2 + (i * Math.PI) / 5; x.lineTo(w / 2 + Math.cos(a) * r, cy + Math.sin(a) * r); } x.fill(); }
+      else if (pz.icon === "clock") { x.lineWidth = 10; x.beginPath(); x.arc(w / 2, cy, 60, 0, 6.28); x.stroke(); x.beginPath(); x.moveTo(w / 2, cy); x.lineTo(w / 2, cy - 42); x.moveTo(w / 2, cy); x.lineTo(w / 2 + 30, cy + 10); x.stroke(); }
+      else if (pz.icon === "pop") { x.fillStyle = "#fff"; x.beginPath(); x.moveTo(84, cy - 30); x.lineTo(172, cy - 30); x.lineTo(160, cy + 64); x.lineTo(96, cy + 64); x.fill(); x.fillStyle = "#d7263d"; for (let i = 0; i < 4; i++) x.fillRect(92 + i * 20, cy - 30, 9, 94); x.fillStyle = "#fff3c4"; for (let i = 0; i < 9; i++) { x.beginPath(); x.arc(92 + (i % 5) * 18, cy - 38 - Math.floor(i / 5) * 14, 13, 0, 6.28); x.fill(); } }
+      else if (pz.icon === "moon") { x.beginPath(); x.arc(w / 2, cy, 58, 0, 6.28); x.fill(); x.fillStyle = pz.bg; x.beginPath(); x.arc(w / 2 + 26, cy - 16, 52, 0, 6.28); x.fill(); x.fillStyle = pz.fg; x.font = "28px Bungee, sans-serif"; x.fillText("Z z z", w / 2 + 36, cy + 44); }
+      else if (pz.icon === "cover" && coverImg) { x.drawImage(coverImg, w / 2 - 66, cy - 88, 132, 176); x.strokeRect(w / 2 - 66, cy - 88, 132, 176); }
+      x.fillStyle = pz.fg; x.font = "600 21px Archivo, system-ui, sans-serif"; wrap(x, pz.small, w / 2, 316, w - 44, 24, 2);
+    });
+  }
+  function neonTex(text, col, w = 512, h = 160) {
+    return canvasTex(w, h, (x) => {
+      x.shadowColor = col; x.shadowBlur = 24; x.strokeStyle = col; x.lineWidth = 5; x.font = `${Math.floor(h * 0.55)}px Bungee, "Arial Black", sans-serif`;
+      x.textAlign = "center"; x.textBaseline = "middle"; x.strokeText(text, w / 2, h / 2 + 4); x.fillStyle = "#fff"; x.globalAlpha = 0.55; x.fillText(text, w / 2, h / 2 + 4);
+    });
+  }
+  const DM = {
+    red: new THREE.MeshStandardMaterial({ color: "#c81e2e", roughness: 0.5 }),
+    chrome: new THREE.MeshStandardMaterial({ color: "#c9ccd6", roughness: 0.25, metalness: 0.8 }),
+    glassy: new THREE.MeshStandardMaterial({ color: "#ffe9a8", roughness: 0.2, transparent: true, opacity: 0.35, emissive: "#ffcc55", emissiveIntensity: 0.35 }),
+    corn: new THREE.MeshStandardMaterial({ color: "#fff1b8", roughness: 0.9, emissive: "#ffcc55", emissiveIntensity: 0.25 }),
+    drop: new THREE.MeshStandardMaterial({ color: BLUE, roughness: 0.6 }),
+    slot: new THREE.MeshStandardMaterial({ color: "#0a0d18", roughness: 0.9 }),
+    basket: new THREE.MeshStandardMaterial({ color: "#d7263d", roughness: 0.55 }),
+  };
+  function decorate(group, mg, own, obstacles, halfW, zBack, zFront, cx, cz) {
+    const flatOn = (tex, w, h, x, y, z, ry, extra = {}) => {
+      const m = new THREE.Mesh(own(new THREE.PlaneGeometry(w, h)), own(new THREE.MeshStandardMaterial({ map: tex, roughness: 0.7, ...extra })));
+      m.position.set(x, y, z); m.rotation.y = ry; group.add(m); return m;
+    };
+    // posters down both side walls, between the shelves and the front
+    const spots = [[-1, zBack + 3], [1, zBack + 3], [-1, 0], [1, 0], [-1, zFront - 6.5], [1, zFront - 6.5]];
+    const best = GAMES.filter((g) => g.m >= 90 && BOX.has(g.id)); const pickG = best[Math.floor(Math.random() * best.length)];
+    spots.forEach(([side, z], i) => {
+      const pz = POSTERS[i % POSTERS.length];
+      const tex = own(posterTex(pz, null));
+      flatOn(tex, 0.8, 1.15, side * (halfW - 0.01), 1.65, z, side > 0 ? -Math.PI / 2 : Math.PI / 2);
+      if (pz.icon === "cover" && pickG) { const img = new Image(); img.onload = () => { const t2 = posterTex(pz, img); tex.image = t2.image; tex.needsUpdate = true; t2.dispose(); }; img.src = coverURL(pickG); }
+    });
+    // neon over the back wall's staff doors and down the left wall by the door
+    const nAdd = (text, col, w, h, x, y, z, ry) => {
+      const m = new THREE.Mesh(own(new THREE.PlaneGeometry(w, h)), own(new THREE.MeshBasicMaterial({ map: own(neonTex(text, col)), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })));
+      m.position.set(x, y, z); m.rotation.y = ry; group.add(m); return m;
+    };
+    const neons = [nAdd("GAMES", "#ff4fd8", 1.5, 0.47, -halfW + 4.6, 2.55, zBack + 0.02, 0), nAdd("RENTALS", "#4fd8ff", 1.6, 0.5, halfW - 4.6, 2.55, zBack + 0.02, 0),
+      nAdd("PLAY ON", "#ffcf3a", 1.4, 0.44, -halfW + 0.02, 2.45, zFront - 3.4, Math.PI / 2)];
+    // the popcorn machine at the end of the counter
+    const px = cx - 2.25, pzz = cz + 0.1;
+    mg.box(DM.red, 0.62, 0.8, 0.5, px, 0.4, pzz); mg.box(DM.chrome, 0.66, 0.04, 0.54, px, 0.82, pzz);
+    mg.box(DM.glassy, 0.58, 0.6, 0.46, px, 1.14, pzz); mg.box(DM.red, 0.64, 0.14, 0.52, px, 1.51, pzz);
+    mg.box(DM.corn, 0.54, 0.08, 0.42, px, 0.88, pzz);
+    for (let i = 0; i < 60; i++) mg.box(DM.corn, 0.05, 0.05, 0.05, px + rnd(-0.25, 0.25), 0.93 + rnd(0, 0.1) * (1 - Math.abs(i % 7 - 3) / 4), pzz + rnd(-0.19, 0.19), rnd(0, 1.5));
+    for (const sx of [-0.31, 0.31]) mg.box(DM.chrome, 0.03, 0.62, 0.03, px + sx, 1.14, pzz - 0.24);
+    flatOn(own(sign("POPCORN", null, 512, 128, "#c81e2e")), 0.6, 0.15, px, 1.51, pzz - 0.265, Math.PI, { emissive: "#ffffff", emissiveIntensity: 0.25 });
+    obstacles.push({ x0: px - 0.36, x1: px + 0.36, z0: pzz - 0.3, z1: pzz + 0.3 });
+    // the returns box by the door
+    const rx = -halfW + 3.5, rz = zFront - 0.55;
+    mg.box(DM.drop, 0.7, 1.05, 0.5, rx, 0.525, rz); mg.box(DM.drop, 0.74, 0.08, 0.54, rx, 1.09, rz);
+    mg.box(DM.slot, 0.42, 0.06, 0.02, rx, 0.88, rz - 0.255);
+    flatOn(own(sign("RETURNS", null, 512, 160)), 0.6, 0.19, rx, 0.68, rz - 0.256, Math.PI);
+    obstacles.push({ x0: rx - 0.4, x1: rx + 0.4, z0: rz - 0.3, z1: rz + 0.3 });
+    // a stack of baskets just inside the door
+    const bx = -halfW + 0.55, bz = zFront - 1.6;
+    for (let i = 0; i < 5; i++) {
+      const y = 0.04 + i * 0.075;
+      mg.box(DM.basket, 0.5, 0.03, 0.36, bx, y, bz);
+      for (const s of [-1, 1]) { mg.box(DM.basket, 0.5, 0.2, 0.02, bx, y + 0.1, bz + s * 0.17); mg.box(DM.basket, 0.02, 0.2, 0.36, bx + s * 0.24, y + 0.1, bz); }
+    }
+    mg.box(DM.chrome, 0.03, 0.03, 0.4, bx, 0.6, bz);
+    obstacles.push({ x0: bx - 0.3, x1: bx + 0.3, z0: bz - 0.24, z1: bz + 0.24 });
+    return { neons };
   }
 
   // ---------- the shop (rebuilt when the stock changes) ----------
@@ -511,6 +712,7 @@ async function start() {
     const doors = [-halfW + 2.4, halfW - 2.4].map((x) => { mg.box(M.door, 1.1, 2.1, 0.06, x, 1.05, zBack + 0.03); return { x, z: zBack + 0.6 }; });
     const doorTx = own(sign("STAFF ROOM", null, 512, 128, "#5a1d24"));
     for (const d of doors) { const m = new THREE.Mesh(own(new THREE.PlaneGeometry(0.9, 0.22)), own(new THREE.MeshBasicMaterial({ map: doorTx }))); m.position.set(d.x, 2.3, zBack + 0.07); group.add(m); }
+    const deco = decorate(group, mg, own, obstacles, halfW, zBack, zFront, cx, cz);
     const shopTx = own(sign("WALL OF PS PLUS", "Rentals and recommendations"));
     const shop = new THREE.Mesh(own(new THREE.PlaneGeometry(3.4, 0.85)), own(new THREE.MeshBasicMaterial({ map: shopTx }))); shop.position.set(0, 2.3, zBack + 0.03); group.add(shop);
     const outTx = own(sign("EXIT", null, 256, 96, "#1d6b3a"));
@@ -531,7 +733,7 @@ async function start() {
       if (x < -halfW + 0.35 || x > halfW - 0.35 || z < zBack + 0.35 || z > zFront - 0.35 || obstacles.some((o) => x > o.x0 - 0.3 && x < o.x1 + 0.3 && z > o.z0 - 0.3 && z < o.z1 + 0.3)) blocked[j * gw + i] = 1;
     }
     S = { group, dispose, boxes, obstacles, tvs, faces, starts, list, halfW, zBack, zFront, lights, lever, switchObjs: [plate, lever, staff], doors,
-      grid: { cell, gw, gh, blocked, dist: new Int32Array(gw * gh) }, counter: { x: cx, z: cz }, street };
+      grid: { cell, gw, gh, blocked, dist: new Int32Array(gw * gh) }, counter: { x: cx, z: cz }, street, deco };
     $("secsel").innerHTML = `<option value="">Go to a section…</option>` + starts.map((s, i) => `<option value="${i}">${esc(s.name)} (${s.n})</option>`).join("");
     $("stocknote").textContent = kind === "wall" ? (fromWall.label ? `Stocked from your wall: ${fromWall.label}` : "Stocked from your wall's filters") : `Every game, ${GAMES.length} in all, shelved by genre`;
     document.querySelectorAll("[data-stock]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.stock === kind)));
@@ -602,8 +804,11 @@ async function start() {
     if (len > 1) { f /= len; r /= len; }
     const sx = -Math.sin(P.yaw), sz = -Math.cos(P.yaw), rx = Math.cos(P.yaw), rz = -Math.sin(P.yaw);
     const dx = (sx * f + rx * r) * speed * dt, dz = (sz * f + rz * r) * speed * dt;
+    const ox = P.x, oz = P.z;
     if (!blockedAt(P.x + dx, P.z)) P.x += dx;
     if (!blockedAt(P.x, P.z + dz)) P.z += dz;
+    P.stride = (P.stride || 0) + Math.hypot(P.x - ox, P.z - oz);
+    if (P.stride > 0.75) { P.stride = 0; sfx(["step0", "step1", "step2", "step3", "step4"], 0.28); }
     hideHint();
   }
   function size() {
@@ -686,13 +891,13 @@ async function start() {
     setCover(m, true);
     const u = m.userData, full = coverTex(u.g, u.th, () => { if (u.full === full && u.coverMat) { u.coverMat.map = full; u.coverMat.needsUpdate = true; m.material[4] = u.coverMat; } }); u.full = full;
     if (!m.userData.backMat.map) { m.userData.backMat.map = boxBack(m.userData.g); m.userData.backMat.color.set("#ffffff"); m.userData.backMat.needsUpdate = true; }
-    P.held = m; P.flipped = false;
+    P.held = m; P.flipped = false; sfx("pick", 0.6);
     const { p, q } = heldPose(false); animate(m, p, q);
     showCard(m.userData.g); tvLabel = ["CH 3", "WATCH ON THE TV?"];
   }
-  function flip() { if (!P.held) return; P.flipped = !P.flipped; const { p, q } = heldPose(P.flipped); animate(P.held, p, q, 520); $("flip").textContent = P.flipped ? "Turn to the front" : "Turn it over"; }
+  function flip() { if (!P.held) return; P.flipped = !P.flipped; sfx("flip", 0.6); const { p, q } = heldPose(P.flipped); animate(P.held, p, q, 520); $("flip").textContent = P.flipped ? "Turn to the front" : "Turn it over"; }
   function dropFull(m) { const u = m.userData; if (u.full) { if (u.coverMat) { u.coverMat.map = u.small; u.coverMat.needsUpdate = true; m.material[4] = u.small.userData.ok ? u.coverMat : faceMat(m); } u.full.dispose(); u.full = null; } }
-  function putBack() { const m = P.held; if (!m) return; P.held = null; dropFull(m); animate(m, m.userData.home.p.clone(), m.userData.home.q.clone()); $("card").hidden = true; tvLabel = ["CH 3", "PICK UP A BOX"]; }
+  function putBack() { const m = P.held; if (!m) return; P.held = null; sfx(["place1", "place2", "place3"], 0.6); dropFull(m); animate(m, m.userData.home.p.clone(), m.userData.home.q.clone()); $("card").hidden = true; tvLabel = ["CH 3", "PICK UP A BOX"]; }
   const vidsFor = (g) => (Array.isArray(VIDS[g.id]) ? VIDS[g.id].filter((v) => Array.isArray(v) && /^[\w-]{6,20}$/.test(v[1] || "")) : []);
   function showCard(g) {
     $("ctitle").textContent = g.t;
@@ -789,7 +994,51 @@ async function start() {
     }) }));
     return tagMats.get(name);
   }
+  // The animated models load when the lights first go out (about 1.9 MB). Until they arrive the clerks are
+  // the old box figures.
+  const ZT = { loading: false, kinds: {} };
+  function loadZombies() {
+    if (ZT.loading) return; ZT.loading = true;
+    const gl = new GLTFLoader();
+    for (const k of ["basic", "arm", "ribcage", "chubby"]) gl.load(`models/zombie_${k}.glb`, (gltf) => {
+      const box = new THREE.Box3().setFromObject(gltf.scene), clips = {};
+      gltf.animations.forEach((a) => (clips[a.name] = a));
+      ZT.kinds[k] = { scene: gltf.scene, clips, h: box.max.y - box.min.y || 1.8 };
+    });
+  }
+  const zReady = () => ZT.kinds.basic || ZT.kinds.arm || ZT.kinds.ribcage;
+  function modelZombie(x, z, boss) {
+    const pool = ["basic", "arm", "ribcage"].filter((k) => ZT.kinds[k]);
+    const kind = boss && ZT.kinds.chubby ? "chubby" : pool[Math.floor(Math.random() * pool.length)], t = ZT.kinds[kind];
+    const m = cloneRig(t.scene), g = new THREE.Group(), mats = [];
+    m.scale.setScalar((boss ? 2.05 : 1.75) / t.h);
+    m.traverse((o) => {
+      if (!o.isMesh) return;
+      o.frustumCulled = false;
+      const mat = o.material.clone(); mat.emissive = new THREE.Color("#9fd07a"); mat.emissiveMap = mat.map; mat.emissiveIntensity = 0.38;
+      o.material = mat; mats.push(mat);
+    });
+    g.add(m);
+    // the name badge, pinned on the shirt front
+    const tag = new THREE.Mesh(zG.tag, tagMat(boss ? "MANAGER" : NAMES[Math.floor(Math.random() * NAMES.length)]));
+    tag.scale.setScalar(boss ? 1.8 : 1.6); tag.position.set(boss ? -0.2 : 0.14, boss ? 1.08 : 1.0, boss ? 0.5 : 0.33); tag.rotation.x = -0.15; g.add(tag);
+    g.position.set(x, 0, z); scene.add(g);
+    const mixer = new THREE.AnimationMixer(m), act = {};
+    for (const [n, c] of Object.entries(t.clips)) act[n] = mixer.clipAction(c);
+    for (const n of ["Death", "HitReact"]) if (act[n]) { act[n].setLoop(THREE.LoopOnce, 1); act[n].clampWhenFinished = true; }
+    const crawl = !boss && act.Crawl && Math.random() < 0.15;
+    const sp = (boss ? 0.75 : crawl ? 0.6 : 0.95) + Math.min(1.1, night.t / 110) * (crawl ? 0.5 : 1) + rnd(0, 0.25);
+    const zz = { g, model: true, mixer, act, cur: null, mats, parts: [], hp: boss ? 9 : 3, boss, crawl, speed: sp, phase: rnd(0, 6), flash: 0, dead: 0, knock: 0, kx: 0, kz: 0, rise: 0.6, hitT: 0, nextGroan: rnd(1, 4) };
+    zAct(zz, crawl ? "Crawl" : "Walk", 0);
+    mixer.update(rnd(0, 1));
+    return zz;
+  }
+  function zAct(z, name, fade = 0.2) {
+    const a = z.act[name] || z.act.Walk; if (!a || z.cur === a) return;
+    a.reset().play(); if (z.cur) a.crossFadeFrom(z.cur, fade, false); z.cur = a;
+  }
   function makeZombie(x, z, boss) {
+    if (zReady()) return modelZombie(x, z, boss);
     const g = new THREE.Group(), shirt = boss ? zM.boss : zM.shirt, parts = [];
     const mk = (geo, mat, px, py, pz) => { const m = new THREE.Mesh(geo, mat); m.position.set(px, py, pz); g.add(m); parts.push(m); return m; };
     const lL = mk(zG.leg, zM.pants, -0.12, 0.4, 0), lR = mk(zG.leg, zM.pants, 0.12, 0.4, 0);
@@ -807,7 +1056,7 @@ async function start() {
   function lightsOut() {
     if (P.held) putBack();
     Object.assign(night, { on: true, over: false, t: 0, score: 0, floored: 0, hp: 10, cool: 0, hurt: 0, nextSpawn: 2.5, nextPick: 6, nextManager: 45, fx: { ff: 0, set: 0, rew: 0 } });
-    S.lever.rotation.x = 0.9; nightLights(true);
+    S.lever.rotation.x = 0.9; nightLights(true); loadZombies(); sfx("switch", 0.8); ambMode(true);
     $("card").hidden = true; $("hud").hidden = false; $("over").hidden = true; document.body.classList.add("night");
     tvLabel = ["CH 13", "THEY'RE BACK"]; hideHint();
     say(TOUCH ? "The dead clerks are back. Walk with the stick, look by dragging, tap to throw a case." : "The dead clerks are back. WASD to move, click to aim with the mouse and throw. Esc lets go of the mouse.", 5000);
@@ -821,14 +1070,15 @@ async function start() {
     scene.background.copy(on ? BG_NIGHT : BG); scene.fog.color.copy(on ? BG_NIGHT : BG); scene.fog.near = on ? 3 : 10; scene.fog.far = on ? 15 : 26;
   }
   function clearNight() {
-    night.zombies.forEach((z) => scene.remove(z.g)); night.zombies = [];
+    night.zombies.forEach(dropZombie); night.zombies = [];
     night.cases.forEach((c) => { scene.remove(c.m); c.m.material[4].dispose(); }); night.cases = [];
     night.pickups.forEach((p) => scene.remove(p.m)); night.pickups = [];
   }
+  function dropZombie(z) { scene.remove(z.g); if (z.model) { z.mixer.stopAllAction(); z.mats.forEach((m) => m.dispose()); } }
   function lightsOn() {
     night.on = false; night.over = false; clearNight();
     if (locked()) document.exitPointerLock();
-    S.lever.rotation.x = 0; nightLights(false);
+    S.lever.rotation.x = 0; nightLights(false); sfx("switch", 0.8); ambMode(false);
     $("hud").hidden = true; $("over").hidden = true; $("fx").textContent = ""; document.body.classList.remove("night");
     tvLabel = ["CH 3", "PICK UP A BOX"];
   }
@@ -836,7 +1086,7 @@ async function start() {
   const caseTex = [];
   function shoot(at) {
     if (!night.on || night.over || night.t < night.cool) return;
-    night.cool = night.t + (night.fx.ff > 0 ? 0.16 : 0.24);
+    night.cool = night.t + (night.fx.ff > 0 ? 0.16 : 0.24); sfx(["throw1", "throw2", "throw3"], 0.5);
     ray.setFromCamera(at || new THREE.Vector2(0, 0), camera);
     const spread = night.fx.set > 0 ? [-0.09, 0, 0.09] : [0];
     for (const a of spread) {
@@ -858,7 +1108,7 @@ async function start() {
     $("fx").textContent = [night.fx.ff > 0 ? `Fast forward ${Math.ceil(night.fx.ff)}` : "", night.fx.set > 0 ? `Box set ${Math.ceil(night.fx.set)}` : "", night.fx.rew > 0 ? `Paused ${Math.ceil(night.fx.rew)}` : ""].filter(Boolean).join("   ");
   }
   function gameOver() {
-    night.over = true; if (locked()) document.exitPointerLock();
+    night.over = true; if (locked()) document.exitPointerLock(); sfx("over", 0.8);
     const t = Math.floor(night.t);
     $("overtext").textContent = `You lasted ${Math.floor(t / 60)} min ${t % 60} s and floored ${night.floored} ${night.floored === 1 ? "clerk" : "clerks"}. Score ${night.score}.`;
     $("over").hidden = false; $("again").focus();
@@ -934,7 +1184,7 @@ async function start() {
     return [-S.halfW + (best[0] + 0.5) * cell - x, S.zBack + (best[1] + 0.5) * cell - zz];
   }
   function hurt() {
-    night.hp--; night.hurt = night.t + 0.8; hud();
+    night.hp--; night.hurt = night.t + 0.8; hud(); sfx("hurt", 0.9);
     const o = $("ouch"); o.classList.remove("on"); void o.offsetWidth; o.classList.add("on");
     if (night.hp <= 0) gameOver();
   }
@@ -945,11 +1195,12 @@ async function start() {
     if ((night.flowAt -= dt) <= 0) { flow(); night.flowAt = 0.3; }
     // spawning: faster and more of them as time goes on, and a manager now and then
     const alive = night.zombies.filter((z) => !z.dead).length, cap = Math.min(18, 4 + Math.floor(night.t / 14));
-    if ((night.nextSpawn -= dt) <= 0 && alive < cap) {
+    if ((night.nextSpawn -= dt) <= 0 && alive < cap && (zReady() || night.t > 8)) {
       const doors = [...S.doors, { x: -S.halfW + 2, z: S.zFront - 0.6 }].filter((d) => Math.hypot(d.x - P.x, d.z - P.z) > 5);
       const d = doors[Math.floor(Math.random() * doors.length)] || S.doors[0];
       const boss = night.t > night.nextManager; if (boss) { night.nextManager = night.t + 45; say("The manager's here", 1800); }
       night.zombies.push(makeZombie(d.x + rnd(-0.3, 0.3), d.z, boss));
+      sfx("door", 0.7, d.x, d.z); groan(d.x, d.z, boss);
       night.nextSpawn = Math.max(0.7, 3 - night.t / 45) * rnd(0.7, 1.3);
     }
     if ((night.nextPick -= dt) <= 0 && night.pickups.length < 4) {
@@ -958,14 +1209,34 @@ async function start() {
     }
     const frozen = night.fx.rew > 0;
     for (const z of night.zombies) {
-      if (z.dead) { z.dead += dt; z.g.rotation.x = -Math.min(Math.PI / 2, z.dead * 3); if (z.dead > 0.8) z.g.position.y -= dt * 0.5; continue; }
+      if (z.dead) {
+        z.dead += dt;
+        if (z.model) { if (!frozen) z.mixer.update(dt); if (z.dead > 1.8) z.g.position.y -= dt * 0.5; }
+        else { z.g.rotation.x = -Math.min(Math.PI / 2, z.dead * 3); if (z.dead > 0.8) z.g.position.y -= dt * 0.5; }
+        continue;
+      }
       if (z.rise > 0) { z.rise = Math.max(0, z.rise - dt); z.g.position.y = -z.rise * 1.2; }
-      if (z.flash > 0) { z.flash -= dt; if (z.flash <= 0) z.parts.forEach((p) => { if (p.userData.mat) p.material = p.userData.mat; }); }
+      if (z.flash > 0) {
+        z.flash -= dt;
+        if (z.flash <= 0) { if (z.model) z.mats.forEach((m) => (m.emissiveIntensity = 0.38)); else z.parts.forEach((p) => { if (p.userData.mat) p.material = p.userData.mat; }); }
+      }
       if (frozen) continue;
-      z.phase += dt * 3 * z.speed;
-      const sw = Math.sin(z.phase);
-      z.lL.rotation.x = sw * 0.5; z.lR.rotation.x = -sw * 0.5; z.aL.rotation.x = -0.1 + Math.sin(z.phase * 0.7) * 0.15; z.aR.rotation.x = -0.1 - Math.sin(z.phase * 0.7) * 0.15;
-      z.head.rotation.z = Math.sin(z.phase * 0.3) * 0.25;
+      if ((z.nextGroan -= dt) <= 0) { groan(z.g.position.x, z.g.position.z, z.boss); z.nextGroan = rnd(3, 8); }
+      if (z.model) {
+        const near = Math.hypot(P.x - z.g.position.x, P.z - z.g.position.z) < 0.9;
+        z.hitT = Math.max(0, z.hitT - dt);
+        if (z.hitT > 0) zAct(z, "HitReact", 0.08);
+        else if (z.crawl) zAct(z, "Crawl");
+        else if (near) zAct(z, "Punch", 0.15);
+        else zAct(z, z.speed > 1.55 ? "Run" : "Walk", 0.3);
+        if (z.cur === z.act.Walk) z.cur.timeScale = z.speed * 0.95; else if (z.cur === z.act.Run) z.cur.timeScale = z.speed * 0.45; else if (z.cur === z.act.Crawl) z.cur.timeScale = z.speed * 1.2; else z.cur.timeScale = 1;
+        z.mixer.update(dt);
+      } else {
+        z.phase += dt * 3 * z.speed;
+        const sw = Math.sin(z.phase);
+        z.lL.rotation.x = sw * 0.5; z.lR.rotation.x = -sw * 0.5; z.aL.rotation.x = -0.1 + Math.sin(z.phase * 0.7) * 0.15; z.aR.rotation.x = -0.1 - Math.sin(z.phase * 0.7) * 0.15;
+        z.head.rotation.z = Math.sin(z.phase * 0.3) * 0.25;
+      }
       let [vx, vz] = steer(z); const l = Math.hypot(vx, vz) || 1; vx /= l; vz /= l;
       for (const o of night.zombies) { if (o === z || o.dead) continue; const dx = z.g.position.x - o.g.position.x, dz = z.g.position.z - o.g.position.z, d = Math.hypot(dx, dz); if (d < 0.55 && d > 0.001) { vx += (dx / d) * 0.6; vz += (dz / d) * 0.6; } }
       const pd = Math.hypot(P.x - z.g.position.x, P.z - z.g.position.z);
@@ -978,7 +1249,7 @@ async function start() {
       }
       z.g.rotation.y = Math.atan2(P.x - z.g.position.x, P.z - z.g.position.z);
     }
-    night.zombies = night.zombies.filter((z) => { if (z.dead > 2.2) { scene.remove(z.g); return false; } return true; });
+    night.zombies = night.zombies.filter((z) => { if (z.dead > (z.model ? 3.2 : 2.2)) { dropZombie(z); return false; } return true; });
     for (let i = night.cases.length - 1; i >= 0; i--) {
       const c = night.cases[i]; c.life -= dt;
       c.vel.y -= 9.8 * 0.5 * dt; c.m.position.addScaledVector(c.vel, dt);
@@ -988,22 +1259,30 @@ async function start() {
       for (const z of night.zombies) {
         if (z.dead || z.rise > 0.2) continue;
         const s = z.boss ? 1.25 : 1, p = z.g.position;
-        if (Math.hypot(q.x - p.x, q.z - p.z) < 0.36 * s && q.y > 0.1 && q.y < 1.95 * s) { hit = z; break; }
+        if (Math.hypot(q.x - p.x, q.z - p.z) < 0.36 * s && q.y > 0.05 && q.y < (z.crawl ? 0.75 : 1.95 * s)) { hit = z; break; }
       }
       if (hit) {
-        hit.hp--; hit.flash = 0.1; hit.parts.forEach((p) => { if (p.material !== zM.eye) { p.userData.mat = p.userData.mat || p.material; p.material = zM.flash; } });
+        hit.hp--; hit.flash = 0.1;
+        if (hit.model) { hit.mats.forEach((m) => (m.emissiveIntensity = 3)); hit.hitT = hit.boss ? 0.2 : 0.4; }
+        else hit.parts.forEach((p) => { if (p.material !== zM.eye) { p.userData.mat = p.userData.mat || p.material; p.material = zM.flash; } });
+        sfx(["hit0", "hit1", "hit2"], 0.9, q.x, q.z);
         const l = Math.hypot(c.vel.x, c.vel.z) || 1; hit.kx = c.vel.x / l; hit.kz = c.vel.z / l; hit.knock = hit.boss ? 0.4 : 1;
         night.score += 10;
-        if (hit.hp <= 0) { hit.dead = 0.001; night.floored++; night.score += hit.boss ? 500 : 100; hit.parts.forEach((p) => { if (p.userData.mat) p.material = p.userData.mat; }); }
+        if (hit.hp <= 0) {
+          hit.dead = 0.001; night.floored++; night.score += hit.boss ? 500 : 100; hit.parts.forEach((p) => { if (p.userData.mat) p.material = p.userData.mat; });
+          if (hit.model) { hit.mats.forEach((m) => (m.emissiveIntensity = 0.38)); if (hit.act.Death) { hit.cur = null; hit.mixer.stopAllAction(); hit.act.Death.reset().play(); } }
+          sfx("floored", 1, q.x, q.z); groan(q.x, q.z, true);
+        }
         hud();
       }
       const wall = Math.abs(q.x) > S.halfW - 0.1 || q.z < S.zBack + 0.1 || q.z > S.zFront - 0.1 || S.obstacles.some((o) => q.x > o.x0 && q.x < o.x1 && q.z > o.z0 && q.z < o.z1 && q.y < 2.2);
+      if (!hit && wall) sfx(q.z > S.zFront - 0.1 ? "glass" : ["wall0", "wall1", "wall2"], 0.6, q.x, q.z);
       if (hit || wall || c.life <= 0 || q.y < 0.03) { scene.remove(c.m); c.m.material[4].dispose(); night.cases.splice(i, 1); }
     }
     for (let i = night.pickups.length - 1; i >= 0; i--) {
       const p = night.pickups[i]; p.m.rotation.y += dt * 2; p.m.position.y = 0.55 + Math.sin((night.t - p.born) * 3) * 0.08;
       if (Math.hypot(p.m.position.x - P.x, p.m.position.z - P.z) < 0.7) {
-        if (p.kind === "pop") night.hp = Math.min(10, night.hp + 3); else night.fx[p.kind] = p.kind === "rew" ? 4 : 9;
+        if (p.kind === "pop") { night.hp = Math.min(10, night.hp + 3); sfx("popcorn", 0.8); } else { night.fx[p.kind] = p.kind === "rew" ? 4 : 9; sfx("power", 0.8); }
         night.score += 25; say(PICKS[p.kind].say, 1500); scene.remove(p.m); night.pickups.splice(i, 1);
       } else if (night.t - p.born > 30) { scene.remove(p.m); night.pickups.splice(i, 1); }
     }
@@ -1028,12 +1307,16 @@ async function start() {
     if (auto) say("Switched to lighter graphics so it moves smoothly", 2200);
   }
   $("qualsel").value = qPick;
+  // browsers only allow sound after a tap or key press, so the first one starts it
+  for (const ev of ["pointerdown", "keydown"]) addEventListener(ev, audioStart, true);
+  $("snd").addEventListener("click", () => setSound(!SND.on));
+  setSound(SND.on);
   $("qualsel").addEventListener("change", (e) => {
     qPick = e.target.value; try { localStorage.setItem("psplus-shop-quality", qPick); } catch (x) {}
     setQuality(qPick === "auto" ? (slowDevice ? "lite" : "full") : qPick);
   });
   $("secsel").addEventListener("change", (e) => { if (e.target.value !== "") { if (P.held) putBack(); goSection(+e.target.value); } e.target.value = ""; });
-  if (location.hash.includes("debug")) window.__store = { P, night, lightsOut, lightsOn, shop: () => S, goSection, mem: () => ({ loaded, q: qName, tex: renderer.info.memory.textures, sheets: sheetState.filter((x) => x === 2).length, filled: S.boxes.filter((b) => b.material[4] !== M.blank).length, boxes: S.boxes.length }) };
+  if (location.hash.includes("debug")) window.__store = { P, night, ZT, SND, spawn: (x, z, b) => night.zombies.push(makeZombie(x, z, b)), shoot, lightsOut, lightsOn, shop: () => S, goSection, mem: () => ({ loaded, q: qName, tex: renderer.info.memory.textures, sheets: sheetState.filter((x) => x === 2).length, filled: S.boxes.filter((b) => b.material[4] !== M.blank).length, boxes: S.boxes.length }) };
 
   // ---------- frame loop ----------
   build(fromWall && new URLSearchParams(location.search).get("from") === "wall" ? "wall" : "all");
@@ -1054,6 +1337,7 @@ async function start() {
     let dy = P.yaw - camera.rotation.y; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
     camera.rotation.set(camera.rotation.x + (P.pitch - camera.rotation.x) * k, camera.rotation.y + dy * k, 0, "YXZ");
     camera.updateMatrixWorld();
+    EAR.x = camera.position.x; EAR.z = camera.position.z; EAR.yaw = camera.rotation.y;
     for (let i = anim.length - 1; i >= 0; i--) {
       const a = anim[i]; a.t = Math.min(1, a.t + (dt * 1000) / a.dur); const e = ease(a.t);
       a.m.position.lerpVectors(a.fromP, a.toP, e);

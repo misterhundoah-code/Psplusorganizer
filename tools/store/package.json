@@ -2,6 +2,11 @@
   "name": "wallofpsplus-store-preview",
   "private": true,
   "description": "Builds store/store.js from tools/store/main.js",
-  "scripts": { "build": "esbuild main.js --bundle --format=esm --minify --target=es2022 --outfile=../../store/store.js" },
-  "devDependencies": { "three": "0.186.1", "esbuild": "0.25.0" }
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "three": "0.186.1",
+    "esbuild": "0.25.0"
+  }
 }
