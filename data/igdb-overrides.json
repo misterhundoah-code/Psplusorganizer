@@ -2,7 +2,7 @@
  "_note": "Fixes for tools/fetch_igdb.py: wall id -> the title to search IGDB with, or false for no match. Changing an entry makes the next run look that game up again.",
  "for-the-king": "For The King",
  "mahjong": false,
- "resident-evil-hd-remaster": "Resident Evil HD Remaster",
+ "resident-evil-hd-remaster": false,
  "everybody-s-golf-ps1": "Everybody's Golf",
  "riven-ps1": "Riven: The Sequel to Myst"
 }
