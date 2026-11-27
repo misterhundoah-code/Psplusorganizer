@@ -184,6 +184,188 @@ async function start() {
   const tvMat = new THREE.MeshBasicMaterial({ map: TVTEX.t });
   let tvLabel = ["CH 3", "PICK UP A BOX"];
 
+  // ---------- the shop front and the street outside ----------
+  // Everything outside is unlit and ignores the fog (MeshBasicMaterial, fog off), so it costs no lights and
+  // still reads through the glass from the back of the shop. The far side of the street is one painted canvas.
+  let seed = 11; const rnd = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+  const facadeTex = canvasTex(2048, 768, (x, w, h) => {
+    x.fillStyle = "#0b1030"; x.fillRect(0, 0, w, h);
+    const g = x.createLinearGradient(0, 0, 0, h * 0.6); g.addColorStop(0, "#060818"); g.addColorStop(1, "#1a1f4a");
+    x.fillStyle = g; x.fillRect(0, 0, w, h);
+    x.fillStyle = "#e9ecff"; x.beginPath(); x.arc(w * 0.78, 90, 34, 0, 6.28); x.fill();
+    x.fillStyle = "#060818"; x.beginPath(); x.arc(w * 0.78 + 14, 82, 30, 0, 6.28); x.fill();
+    for (let i = 0; i < 70; i++) { x.fillStyle = `rgba(255,255,255,${0.3 + rnd() * 0.5})`; x.fillRect(rnd() * w, rnd() * h * 0.35, 2, 2); }
+    const shops = [["PIZZA", "#ff5c3a"], ["LAUNDRY", "#5ce1ff"], ["NOODLES", "#ffcf3a"], ["COMICS", "#ff4fd8"], ["24 HR", "#7cff8a"], ["ARCADE", "#b48cff"], ["DINER", "#ff5c7a"], ["HARDWARE", "#ffe27a"]];
+    const walls = ["#2a1d2c", "#1d2336", "#2d2320", "#24202e", "#1b2a2e"];
+    const ground = 150, px = w / 48;   // 48 m across, so about 43 px to the metre
+    let bx = 0, n = 0;
+    while (bx < w) {
+      const bw = 170 + Math.floor(rnd() * 200), bh = 330 + Math.floor(rnd() * 360), top = h - bh;
+      x.fillStyle = walls[n % walls.length]; x.fillRect(bx, top, bw, bh);
+      x.fillStyle = "rgba(0,0,0,0.35)"; x.fillRect(bx, top, bw, 10); x.fillRect(bx + bw - 6, top, 6, bh);
+      // upper windows: some lit warm, a few with a TV's blue
+      for (let wy = top + 26; wy < h - ground - 40; wy += 52) for (let wx = bx + 18; wx < bx + bw - 34; wx += 42) {
+        const r = rnd(); x.fillStyle = r < 0.32 ? "#ffd27a" : r < 0.4 ? "#ffefc2" : r < 0.46 ? "#7fb6ff" : "#11142a";
+        x.fillRect(wx, wy, 22, 30);
+        if (r < 0.46) { x.fillStyle = "rgba(0,0,0,0.25)"; x.fillRect(wx, wy + 14, 22, 2); }
+      }
+      // ground floor shop: a lit window, an awning and a neon sign
+      const [name, col] = shops[n % shops.length];
+      x.fillStyle = "#151726"; x.fillRect(bx + 8, h - ground, bw - 16, ground);
+      const sg = x.createLinearGradient(0, h - ground + 40, 0, h); sg.addColorStop(0, "#ffe3a6"); sg.addColorStop(1, "#a8743e");
+      const sx = bx + 18, sy = h - ground + 46, sw2 = bw - 70, sh = ground - 52;
+      x.fillStyle = sg; x.fillRect(sx, sy, sw2, sh);
+      // shelves, stock and the odd customer inside, then a streak of reflection on the glass
+      x.fillStyle = "rgba(90,60,30,0.55)"; for (let yy = sy + 22; yy < sy + sh - 8; yy += 24) x.fillRect(sx + 4, yy, sw2 - 8, 4);
+      for (let yy = sy + 8; yy < sy + sh - 20; yy += 24) for (let xx = sx + 8; xx < sx + sw2 - 10; xx += 9) if (rnd() < 0.6) { x.fillStyle = ["#b0412e", "#2e6bb0", "#d9b23a", "#3d8a52", "#7a4ab0"][Math.floor(rnd() * 5)]; x.fillRect(xx, yy + 4, 6, 10); }
+      if (rnd() < 0.7) { const fx = sx + 20 + rnd() * (sw2 - 50); x.fillStyle = "rgba(20,14,24,0.85)"; x.beginPath(); x.arc(fx, sy + sh - 58, 9, 0, 6.28); x.fill(); x.fillRect(fx - 11, sy + sh - 48, 22, 48); }
+      x.fillStyle = "rgba(255,255,255,0.14)"; x.beginPath(); x.moveTo(sx + sw2 * 0.55, sy); x.lineTo(sx + sw2 * 0.7, sy); x.lineTo(sx + sw2 * 0.4, sy + sh); x.lineTo(sx + sw2 * 0.25, sy + sh); x.fill();
+      x.fillStyle = "#3b2a1a"; x.fillRect(bx + bw - 46, h - ground + 46, 28, ground - 46);
+      for (let s = 0; s < bw - 16; s += 22) { x.fillStyle = s % 44 ? "#e8e1d0" : col; x.fillRect(bx + 8 + s, h - ground + 22, 22, 18); }
+      x.save(); x.shadowColor = col; x.shadowBlur = 18; x.fillStyle = col; x.strokeStyle = col; x.lineWidth = 3;
+      let fs = 30; x.font = `${fs}px Bungee, "Arial Black", sans-serif`;
+      while (x.measureText(name).width > bw - 40 && fs > 16) { fs -= 2; x.font = `${fs}px Bungee, "Arial Black", sans-serif`; }
+      x.textAlign = "center"; x.fillText(name, bx + bw / 2, h - ground + 8); x.restore();
+      bx += bw; n++;
+    }
+    x.fillStyle = "#0a0b14"; x.fillRect(0, h - 6, w, 6);
+  });
+  const roadTex = canvasTex(512, 256, (x, w, h) => {
+    x.fillStyle = "#14151c"; x.fillRect(0, 0, w, h);
+    for (let i = 0; i < 900; i++) { x.fillStyle = `rgba(255,255,255,${rnd() * 0.05})`; x.fillRect(rnd() * w, rnd() * h, 2, 2); }
+    x.fillStyle = "#d9b23a"; for (let i = 0; i < w; i += 128) x.fillRect(i + 16, h / 2 - 3, 72, 6);
+  });
+  roadTex.wrapS = THREE.RepeatWrapping;
+  const walkTex = canvasTex(256, 256, (x, w, h) => {
+    x.fillStyle = "#3a3d4a"; x.fillRect(0, 0, w, h); x.strokeStyle = "#2a2c36"; x.lineWidth = 4;
+    for (let i = 0; i <= w; i += 128) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i, h); x.stroke(); x.beginPath(); x.moveTo(0, i); x.lineTo(w, i); x.stroke(); }
+  });
+  walkTex.wrapS = walkTex.wrapT = THREE.RepeatWrapping;
+  const poolTex = canvasTex(128, 128, (x, w, h) => {
+    const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, "rgba(255,214,140,0.55)"); g.addColorStop(1, "rgba(255,214,140,0)");
+    x.fillStyle = g; x.fillRect(0, 0, w, h);
+  });
+  const beamTex = canvasTex(128, 128, (x, w, h) => {
+    const g = x.createLinearGradient(0, 0, w, 0); g.addColorStop(0, "rgba(255,248,210,0.5)"); g.addColorStop(1, "rgba(255,248,210,0)");
+    x.fillStyle = g; x.beginPath(); x.moveTo(0, h * 0.42); x.lineTo(w, 0); x.lineTo(w, h); x.lineTo(0, h * 0.58); x.fill();
+  });
+  const OUT = {
+    facade: new THREE.MeshBasicMaterial({ map: facadeTex, fog: false }),
+    road: new THREE.MeshBasicMaterial({ map: roadTex, fog: false }),
+    walk: new THREE.MeshBasicMaterial({ map: walkTex, fog: false }),
+    curb: new THREE.MeshBasicMaterial({ color: "#5a5d6a", fog: false }),
+    post: new THREE.MeshBasicMaterial({ color: "#23252e", fog: false }),
+    lamp: new THREE.MeshBasicMaterial({ color: "#ffe6a8", fog: false }),
+    pool: new THREE.MeshBasicMaterial({ map: poolTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }),
+    beam: new THREE.MeshBasicMaterial({ map: beamTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, side: THREE.DoubleSide }),
+    glass: new THREE.MeshBasicMaterial({ color: "#a8c8ff", transparent: true, opacity: 0.07, depthWrite: false, side: THREE.DoubleSide }),
+    head: new THREE.MeshBasicMaterial({ color: "#fff6d0", fog: false }),
+    tail: new THREE.MeshBasicMaterial({ color: "#ff2a2a", fog: false }),
+    carWin: new THREE.MeshBasicMaterial({ color: "#0a0d18", fog: false }),
+  };
+  const CAR_COLS = ["#7a1f2b", "#1f3f7a", "#d8d2c4", "#2f5a3a", "#c9a227", "#3a3d46"].map((c) => new THREE.MeshBasicMaterial({ color: c, fog: false }));
+  function makeCar() {
+    const g = new THREE.Group(), body = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.7, 1.8), CAR_COLS[0]);
+    body.position.y = 0.55; const cab = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.55, 1.6), OUT.carWin); cab.position.set(-0.2, 1.17, 0);
+    g.add(body, cab);
+    for (const z of [-0.6, 0.6]) {
+      const hl = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.16), OUT.head); hl.position.set(2.11, 0.6, z); hl.rotation.y = Math.PI / 2; g.add(hl);
+      const tl = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.14), OUT.tail); tl.position.set(-2.11, 0.62, z); tl.rotation.y = -Math.PI / 2; g.add(tl);
+    }
+    const beam = new THREE.Mesh(new THREE.PlaneGeometry(7, 3.2), OUT.beam); beam.rotation.x = -Math.PI / 2; beam.position.set(5.6, 0.02, 0); g.add(beam);
+    g.userData = { body, geos: [body.geometry, cab.geometry, beam.geometry, ...g.children.filter((c) => c.geometry.type === "PlaneGeometry").map((c) => c.geometry)] };
+    return g;
+  }
+  // Builds the front wall (kick plate, glass, door, header), the window lettering and neon, and the street.
+  function storefront(group, mg, own, halfW, zFront) {
+    const dX = -halfW + 2, dW = 1.2, gTop = 2.5, gBot = 0.5, FL = Math.PI;
+    const spans = [[-halfW, dX - dW / 2], [dX + dW / 2, halfW]];
+    for (const [a, b] of spans) {
+      const w = b - a, cx = (a + b) / 2;
+      mg.plane(M.wall, w, gBot, cx, gBot / 2, zFront, FL);
+      const glass = new THREE.Mesh(own(new THREE.PlaneGeometry(w - 0.6, gTop - gBot)), OUT.glass);
+      glass.position.set(cx, (gTop + gBot) / 2, zFront); group.add(glass);
+      for (const e of [a + 0.15, b - 0.15]) mg.box(M.wall, 0.3, gTop - gBot, 0.12, e, (gTop + gBot) / 2, zFront - 0.06);
+      const n = Math.max(1, Math.round((w - 0.6) / 2.4));
+      for (let i = 1; i < n; i++) mg.box(M.pole, 0.06, gTop - gBot, 0.08, a + 0.3 + (i * (w - 0.6)) / n, (gTop + gBot) / 2, zFront - 0.04);
+      mg.box(M.pole, w - 0.6, 0.06, 0.1, cx, gBot + 0.03, zFront - 0.05); mg.box(M.pole, w - 0.6, 0.06, 0.1, cx, gTop - 0.03, zFront - 0.05);
+    }
+    mg.plane(M.wall, halfW * 2, CEIL - gTop, 0, (CEIL + gTop) / 2, zFront, FL);
+    // the glass door under the EXIT sign
+    mg.plane(M.wall, dW, gTop - 2.2, dX, 2.35, zFront - 0.001, FL);
+    const door = new THREE.Mesh(own(new THREE.PlaneGeometry(dW - 0.1, 2.18)), OUT.glass); door.position.set(dX, 1.09, zFront); group.add(door);
+    for (const e of [-1, 1]) mg.box(M.pole, 0.06, 2.2, 0.1, dX + e * (dW / 2 - 0.03), 1.1, zFront - 0.05);
+    mg.box(M.pole, dW, 0.06, 0.1, dX, 2.2, zFront - 0.05); mg.box(M.pole, 0.5, 0.04, 0.05, dX, 1.05, zFront - 0.09);
+    // lettering painted on the glass, the right way round from the street (so mirrored from inside)
+    const spanR = spans[1], letW = Math.min(4, spanR[1] - spanR[0] - 3);
+    const letTx = own(canvasTex(1024, 300, (x, w, h) => {
+      x.translate(w, 0); x.scale(-1, 1); x.textAlign = "center"; x.fillStyle = YELLOW;
+      x.font = `92px Bungee, "Arial Black", sans-serif`; x.fillText("WALL OF PS PLUS", w / 2, 120);
+      x.font = `600 46px Archivo, system-ui, sans-serif`; x.fillStyle = "#fff"; x.fillText("Rentals · Recommendations · Open late", w / 2, 210);
+    }));
+    const letters = new THREE.Mesh(own(new THREE.PlaneGeometry(letW, letW * 0.29)), own(new THREE.MeshBasicMaterial({ map: letTx, transparent: true, depthWrite: false })));
+    letters.position.set((spanR[0] + spanR[1]) / 2, 1.95, zFront - 0.015); letters.rotation.y = FL; group.add(letters);
+    const neonTx = own(canvasTex(512, 200, (x, w, h) => {
+      x.translate(w, 0); x.scale(-1, 1); x.strokeStyle = "#ff3355"; x.lineWidth = 8; x.shadowColor = "#ff3355"; x.shadowBlur = 26;
+      x.beginPath(); x.roundRect(20, 20, w - 40, h - 40, 40); x.stroke();
+      x.fillStyle = "#ff6b80"; x.font = `110px Bungee, "Arial Black", sans-serif`; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText("OPEN", w / 2, h / 2 + 6);
+    }));
+    const neonMat = own(new THREE.MeshBasicMaterial({ map: neonTx, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+    const neon = new THREE.Mesh(own(new THREE.PlaneGeometry(1.0, 0.39)), neonMat);
+    neon.position.set(spanR[1] - 1.3, 1.0, zFront - 0.03); neon.rotation.y = FL; group.add(neon);
+
+    // the street: our sidewalk, the curb, the road, the far sidewalk and the shops opposite
+    const W = Math.max(48, halfW * 2 + 24), zW = zFront + 3.4, zR = zW + 7.5, zF = zR + 2.6;
+    const street = new THREE.Group();
+    const flat = (mat, w, d, y, z, rx, ry) => { const m = new THREE.Mesh(own(new THREE.PlaneGeometry(w, d)), mat); m.rotation.x = -Math.PI / 2; m.position.set(0, y, z); street.add(m); return m; };
+    const wt = own(walkTex.clone()); wt.repeat.set(W / 1.6, 3.4 / 1.6); wt.needsUpdate = true; const walkMat = own(new THREE.MeshBasicMaterial({ map: wt, fog: false }));
+    const roadMat = own(new THREE.MeshBasicMaterial({ map: (() => { const t = own(roadTex.clone()); t.repeat.set(W / 8, 1); t.needsUpdate = true; return t; })(), fog: false }));
+    flat(walkMat, W, zW - zFront, -0.01, (zFront + zW) / 2);
+    flat(walkMat, W, zF - zR, -0.01, (zR + zF) / 2);
+    flat(roadMat, W, zR - zW, -0.14, (zW + zR) / 2);
+    for (const z of [zW, zR]) { const c = new THREE.Mesh(own(new THREE.BoxGeometry(W, 0.14, 0.18)), OUT.curb); c.position.set(0, -0.07, z); street.add(c); }
+    const fac = new THREE.Mesh(own(new THREE.PlaneGeometry(48, 18)), OUT.facade); fac.scale.x = W / 48; fac.position.set(0, 9 - 0.02, zF); fac.rotation.y = Math.PI; street.add(fac);
+    // the sky above the rooftops and the ends of the street, so nothing shows the void
+    const skyMat = own(new THREE.MeshBasicMaterial({ color: "#060818", fog: false, side: THREE.DoubleSide }));
+    for (const s of [-1, 1]) { const m = new THREE.Mesh(own(new THREE.PlaneGeometry(zF - zFront, 18)), skyMat); m.position.set(s * W / 2, 9, (zFront + zF) / 2); m.rotation.y = Math.PI / 2; street.add(m); }
+    const lamps = [];
+    for (let lx = -W / 2 + 4; lx < W / 2; lx += 9) {
+      const post = new THREE.Mesh(own(new THREE.BoxGeometry(0.12, 4.2, 0.12)), OUT.post); post.position.set(lx, 2.1, zW - 0.4);
+      const arm = new THREE.Mesh(own(new THREE.BoxGeometry(0.08, 0.08, 1.1)), OUT.post); arm.position.set(lx, 4.15, zW + 0.1);
+      const head = new THREE.Mesh(own(new THREE.BoxGeometry(0.5, 0.12, 0.3)), OUT.lamp); head.position.set(lx, 4.08, zW + 0.6);
+      const pool = flat(OUT.pool, 5.5, 5.5, 0.0, zW + 0.4); pool.position.x = lx;
+      street.add(post, arm, head); lamps.push({ head, pool });
+    }
+    group.add(street);
+    const cars = [0, 1].map((lane) => {
+      const c = makeCar(); c.userData.geos.forEach(own);
+      const z = lane ? zW + 5.4 : zW + 2.0, dir = lane ? -1 : 1;
+      c.position.set(-dir * (W / 2 + 6), -0.14, z); c.rotation.y = dir > 0 ? 0 : Math.PI;
+      c.visible = false; street.add(c);
+      return { c, dir, wait: 2 + lane * 5 + Math.random() * 4, speed: 0, W };
+    });
+    return { cars, lamps, neon, neonMat, W, dim: [walkMat, roadMat, OUT.facade, OUT.curb] };
+  }
+  // Cars pass now and then. After hours the streetlights stutter and the OPEN sign gives up.
+  function tickStreet(dt, now) {
+    const st = S.street;
+    for (const car of st.cars) {
+      if (!car.c.visible) { car.wait -= dt; if (car.wait <= 0) { car.c.visible = true; car.speed = 7 + Math.random() * 5; car.c.userData.body.material = CAR_COLS[Math.floor(Math.random() * CAR_COLS.length)]; car.c.position.x = -car.dir * (car.W / 2 + 6); } continue; }
+      car.c.position.x += car.dir * car.speed * dt;
+      if (Math.abs(car.c.position.x) > car.W / 2 + 6) { car.c.visible = false; car.wait = 4 + Math.random() * 10; }
+    }
+    if (night.on && !CALM) {
+      if (frame % 9 === 0) st.lamps.forEach((l, i) => { const on = Math.random() > (i % 3 ? 0.08 : 0.4); l.head.visible = l.pool.visible = on; });
+      if (frame % 5 === 0) st.neon.visible = Math.random() > 0.55;
+    }
+  }
+  function streetNight(on) {
+    if (!S || !S.street) return;
+    S.street.dim.forEach((m) => m.color.set(on ? (m === OUT.facade ? "#7a5560" : "#5a3a44") : (m === OUT.curb ? "#5a5d6a" : "#ffffff")));
+    S.street.lamps.forEach((l) => (l.head.visible = l.pool.visible = true));
+    S.street.neon.visible = true; S.street.neonMat.color.set(on ? "#ff2a2a" : "#ffffff");
+  }
+
   // ---------- the shop (rebuilt when the stock changes) ----------
   let S = null;   // the current shop: group, boxes, obstacles, grid, tvs...
   const loader = new THREE.TextureLoader();
@@ -225,7 +407,8 @@ async function start() {
     const floor = new THREE.Mesh(own(new THREE.PlaneGeometry(halfW * 2, zFront - zBack)), own(new THREE.MeshStandardMaterial({ map: ft, roughness: 0.95 })));
     floor.rotation.x = -Math.PI / 2; floor.position.set(0, 0, (zBack + zFront) / 2); group.add(floor);
     mg.plane(M.ceil, halfW * 2, zFront - zBack, 0, CEIL, (zBack + zFront) / 2, 0, Math.PI / 2);
-    mg.plane(M.wall, halfW * 2, CEIL, 0, CEIL / 2, zBack, 0); mg.plane(M.wall, halfW * 2, CEIL, 0, CEIL / 2, zFront, Math.PI);
+    mg.plane(M.wall, halfW * 2, CEIL, 0, CEIL / 2, zBack, 0);
+    const street = storefront(group, mg, own, halfW, zFront);
     mg.plane(M.wall, zFront - zBack, CEIL, -halfW, CEIL / 2, (zBack + zFront) / 2, Math.PI / 2); mg.plane(M.wall, zFront - zBack, CEIL, halfW, CEIL / 2, (zBack + zFront) / 2, -Math.PI / 2);
     // light strips over every aisle
     for (let i = 0; i <= C; i++) { const x = (i - C / 2) * PX; for (let z = zBack + 1.5; z < zFront - 1; z += 1.6) mg.box(M.strip, 0.14, 0.03, 1.0, x, CEIL - 0.02, z); }
@@ -318,14 +501,14 @@ async function start() {
       if (x < -halfW + 0.35 || x > halfW - 0.35 || z < zBack + 0.35 || z > zFront - 0.35 || obstacles.some((o) => x > o.x0 - 0.3 && x < o.x1 + 0.3 && z > o.z0 - 0.3 && z < o.z1 + 0.3)) blocked[j * gw + i] = 1;
     }
     S = { group, dispose, boxes, obstacles, tvs, faces, starts, list, halfW, zBack, zFront, lights, lever, switchObjs: [plate, lever, staff], doors,
-      grid: { cell, gw, gh, blocked, dist: new Int32Array(gw * gh) }, counter: { x: cx, z: cz } };
+      grid: { cell, gw, gh, blocked, dist: new Int32Array(gw * gh) }, counter: { x: cx, z: cz }, street };
     $("secsel").innerHTML = `<option value="">Go to a section…</option>` + starts.map((s, i) => `<option value="${i}">${esc(s.name)} (${s.n})</option>`).join("");
     $("stocknote").textContent = kind === "wall" ? (fromWall.label ? `Stocked from your wall: ${fromWall.label}` : "Stocked from your wall's filters") : `Every game, ${GAMES.length} in all, shelved by genre`;
     document.querySelectorAll("[data-stock]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.stock === kind)));
     P.x = C % 2 ? PX / 2 : 0; P.z = zFront - 1.6; P.yaw = 0; P.pitch = -0.05;   // start in the middle aisle, by the door
     camera.position.set(P.x, EYE, P.z);
     loadNear();
-    if (night.on) nightLights(true);
+    if (night.on) nightLights(true); else streetNight(false);
   }
   // Covers load as you walk up to them and are let go again as you walk away, with a cap on how many are
   // held at once, so a long walk round the shop doesn't fill the phone's graphics memory. Far boxes are
@@ -594,6 +777,7 @@ async function start() {
     hemi.intensity = on ? 0.16 : 1.35; hemi.color.set(on ? "#ff8a7a" : "#fff6e8"); sun.intensity = on ? 0.12 : 0.9;
     S.lights.forEach((p, i) => { p.color.set(on ? "#ff2a2a" : "#fff4dc"); p.intensity = on ? (i % 2 ? 0.6 : 4) : 3; });
     M.strip.color.set(on ? "#2a0808" : "#fffbe8");
+    streetNight(on);
     scene.background.copy(on ? BG_NIGHT : BG); scene.fog.color.copy(on ? BG_NIGHT : BG); scene.fog.near = on ? 3 : 10; scene.fog.far = on ? 15 : 26;
   }
   function clearNight() {
@@ -847,6 +1031,7 @@ async function start() {
       tickNight(dt);
       if (!CALM && frame % 7 === 0) S.lights.forEach((p, i) => { if (i % 2 === 0) p.intensity = Math.random() < 0.15 ? 0.5 : 4; });
     }
+    tickStreet(dt, now);
     if (!$("tv").hidden && watchScreen) placeVideo();
     if (frame % 3 === 0 && !CALM) drawStatic();
     renderer.render(scene, camera);
