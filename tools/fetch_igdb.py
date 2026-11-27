@@ -44,8 +44,34 @@ def norm(t):
     return re.sub(r"[^a-z0-9]+", "", t)
 
 
+OVERRIDES = {k: v for k, v in (json.loads((ROOT / "data/igdb-overrides.json").read_text())
+             if (ROOT / "data/igdb-overrides.json").exists() else {}).items() if not k.startswith("_")}
+
+
+def clean(t):
+    """A plainer title to search with when the full one finds nothing: no edition, bundle or bracket."""
+    t = re.sub(r"\s*\([^)]*\)\s*$", "", t)
+    t = re.sub(r"\s*[-–:]?\s*\b(collector'?s|complete|definitive|deluxe|elite|gold|anniversary|voidheart|ultimate|"
+               r"democracy strikes back|playstation plus|bionic)\b.*?\b(edition|bundle)\b.*$", "", t, flags=re.I)
+    t = re.sub(r"\s+(gold|complete edition|definitive edition)$", "", t, flags=re.I)
+    return t.strip(" -–:")
+
+
 def find(g, cid, tok):
-    title = re.sub(r"\s*\((ps1|ps2|psp|ps3|(19|20)\d\d)\)\s*$", "", g["t"], flags=re.I)
+    o = OVERRIDES.get(g["id"])
+    if o is False:
+        return None, []
+    r, rows = find1(o or g["t"], g, cid, tok)
+    if not r and not o:
+        c = clean(g["t"])
+        if c and c != g["t"]:
+            time.sleep(0.26)
+            r, rows = find1(c, g, cid, tok)
+    return r, rows
+
+
+def find1(title, g, cid, tok):
+    title = re.sub(r"\s*\((ps1|ps2|psp|ps3|classic|(19|20)\d\d)\)\s*$", "", title, flags=re.I)
     q = (f'search "{title.replace(chr(34), "")}"; '
          "fields name,first_release_date,platforms,cover.image_id,cover.width,cover.height,"
          "videos.video_id,videos.name,category,version_parent; "
@@ -61,7 +87,8 @@ def find(g, cid, tok):
         if r.get("videos"): s += 1
         if year and r.get("first_release_date"):
             ry = time.gmtime(r["first_release_date"]).tm_year
-            s -= min(abs(ry - year), 6)
+            dy = abs(ry - year)
+            s -= dy if dy <= 3 else 3 + 2 * dy  # a different release years apart is usually a remake or sequel
         if r.get("version_parent"): s -= 1
         return s
     rows.sort(key=score, reverse=True)
@@ -74,9 +101,10 @@ def main():
     ap.add_argument("--ids", default="")
     ap.add_argument("--all", action="store_true")
     ap.add_argument("--refresh", action="store_true")
+    ap.add_argument("--misses", action="store_true", help="with --all: retry every game not found, now")
     a = ap.parse_args()
     if a.all:
-        return run_all(a.refresh)
+        return run_all(a.refresh, a.misses)
     d = json.loads((ROOT / "data/games.json").read_text())
     G = d if isinstance(d, list) else d["games"]
     by = {g["id"]: g for g in G}
@@ -120,14 +148,15 @@ def entry(r):
             "videos": [[v.get("name") or "Trailer", v["video_id"]] for v in (r.get("videos") or []) if v.get("video_id")]}
 
 
-def run_all(refresh):
+def run_all(refresh, refresh_misses=False):
     d = json.loads((ROOT / "data/games.json").read_text())
     G = d if isinstance(d, list) else d["games"]
     out_path = ROOT / "data/igdb.json"
     out = {} if refresh or not out_path.exists() else json.loads(out_path.read_text())
     today = time.strftime("%Y-%m-%d")
     retry = time.strftime("%Y-%m-%d", time.gmtime(time.time() - 14 * 86400))
-    todo = [g for g in G if g["id"] not in out or (out[g["id"]].get("miss") and out[g["id"]]["miss"] <= retry)]
+    todo = [g for g in G if g["id"] not in out or g["id"] in OVERRIDES and out[g["id"]].get("ov") != OVERRIDES[g["id"]]
+            or (out[g["id"]].get("miss") and (refresh_misses or out[g["id"]]["miss"] <= retry))]
     print(f"{len(G)} games, {len(todo)} to look up.")
     cid, tok = token()
     hit = miss = 0
@@ -140,6 +169,8 @@ def run_all(refresh):
             out[g["id"]] = entry(r); hit += 1
         else:
             out[g["id"]] = {"miss": today}; miss += 1
+        if g["id"] in OVERRIDES:
+            out[g["id"]]["ov"] = OVERRIDES[g["id"]]
         if i % 100 == 99:
             print(f"  {i + 1} done ({hit} found, {miss} not)"); out_path.write_text(json.dumps(out, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
         time.sleep(0.26)  # IGDB allows 4 requests a second

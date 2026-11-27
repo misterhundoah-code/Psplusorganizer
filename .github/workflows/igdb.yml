@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "all (update data/igdb.json), refresh (look every game up again) or sample (print only)"
+        description: "all (update data/igdb.json), misses (retry games not found), refresh (every game again) or sample (print only)"
         required: false
         default: "all"
         type: string
@@ -49,6 +49,7 @@ jobs:
           if [ -n "$IDS" ]; then python tools/fetch_igdb.py --ids "$IDS"
           elif [ "$MODE" = "sample" ]; then python tools/fetch_igdb.py --sample "${SAMPLE:-24}"
           elif [ "$MODE" = "refresh" ]; then python tools/fetch_igdb.py --all --refresh
+          elif [ "$MODE" = "misses" ]; then python tools/fetch_igdb.py --all --misses
           else python tools/fetch_igdb.py --all; fi
       - name: Save data/igdb.json
         run: |
