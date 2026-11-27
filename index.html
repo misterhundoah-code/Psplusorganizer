@@ -100,7 +100,7 @@ h1.logo{line-height:0;margin:2px 0 0 -8px}h1.logo img{display:block;width:clamp(
 .deckhead span{color:var(--band-muted);font-size:13.5px}
 .deck{display:flex;gap:14px;overflow-x:auto;padding:0 0 10px;scrollbar-width:thin}
 .card{flex:0 0 156px;display:flex;flex-direction:column;gap:6px;text-decoration:none;color:var(--ink);background:var(--case);padding:8px 8px 10px;border-bottom:6px solid var(--lip)}
-.card .tile{width:140px;height:140px;border-radius:0;font-size:46px}
+.card .tile{width:120px;height:160px;border-radius:0;font-size:46px}
 .card .ct{font-weight:800;font-size:14px;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .card .cm{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
 .card:hover{outline:3px solid var(--yellow);outline-offset:0}
@@ -119,8 +119,8 @@ h1.logo{line-height:0;margin:2px 0 0 -8px}h1.logo img{display:block;width:clamp(
 .themesw svg{width:13px;height:13px;flex:none}
 
 /* ---------- game art and fallback tiles ---------- */
-.tile{flex:none;display:block;width:44px;height:44px;border-radius:0;position:relative;overflow:hidden;container-type:size;background:#16171D}
-td.title .tile{width:88px;height:88px}
+.tile{flex:none;display:block;width:44px;height:58px;border-radius:0;position:relative;overflow:hidden;container-type:size;background:#16171D}
+td.title .tile{width:84px;height:112px}
 /* blank tape: black clamshell, ruled paper label, handwritten title */
 .tape{position:absolute;inset:0;background:linear-gradient(180deg,#24262E 0 8%,#16171D 8% 92%,#24262E 92%)}
 .tape .lab{position:absolute;left:9%;right:9%;top:24%;bottom:30%;display:grid;place-items:center;padding:2% 5%;text-align:center;
@@ -217,7 +217,7 @@ mark.hit{background:var(--yellow);color:var(--yellow-ink);padding:0 1px}
 .shelfband:first-child{margin-top:0}
 .shelfband small{font-family:var(--font);font-size:13px;color:var(--muted);font-weight:500}
 .case{font:inherit;color:inherit;text-align:left;cursor:pointer;width:auto;padding:10px 10px 12px;display:flex;flex-direction:column;gap:4px;border:0}
-.wall .case .tile{width:100%;height:auto;aspect-ratio:1}
+.wall .case .tile{width:100%;height:auto;aspect-ratio:3/4}
 .case:hover,.case:focus-visible{transform:translateY(-4px) rotate(-.6deg)}
 .case{transition:transform .15s ease}
 /* On a mouse or trackpad the box leans towards the pointer, with light catching the cover (see tiltCase). */
@@ -258,7 +258,7 @@ dialog.dlgbox{overscroll-behavior:contain}
 .dlgx{position:absolute;right:10px;top:8px;z-index:2;font:inherit;font-size:18px;font-weight:800;width:36px;height:36px;border:2px solid var(--line);background:var(--case);color:var(--ink);border-radius:3px;cursor:pointer}
 .gamebox .tablebox{margin:0}
 .gamebox tr.game{box-shadow:none !important;border-bottom:0 !important;padding:6px 40px 0 6px !important}
-.gamebox td.title .tile{width:132px;height:132px}
+.gamebox td.title .tile{width:132px;height:176px}
 .gamebox td.title .gt>a{font-size:20px}
 .gamebox .syn{font-size:14.5px;max-width:60ch}
 .gamebox.has-about .syn{display:none}
@@ -276,6 +276,13 @@ dialog.dlgbox{overscroll-behavior:contain}
 .gamebox .facts dt{font-weight:700;color:var(--muted)}
 .gamebox .facts dd{margin:0}
 .gamebox .dlglinks{margin:12px 6px 0}
+dialog.dlgbox.vidbox{width:min(960px,calc(100vw - 16px));max-height:calc(100vh - 16px);padding:0}
+.vidbox .dlg{padding:12px 12px 10px;display:flex;flex-direction:column;gap:10px}
+.vidhead{display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap}
+.vidhead p{margin:0 auto 0 0;line-height:1.3}.vidhead p b{display:block;font-size:17px}.vidhead p span{font-size:14px;color:var(--muted)}
+.vidframe{position:relative;aspect-ratio:16/9;background:#000}
+.vidframe iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vidfoot{margin:0;font-size:13.5px}
 .gamebox .dlglinks .btn{text-decoration:none;display:inline-block}
 .gamebox .about{margin:12px 6px 0;max-width:68ch;font-size:14.5px;line-height:1.55}
 .gamebox .about p{margin:0 0 10px}
@@ -295,7 +302,7 @@ body.notaste th[data-k="pri"],body.notaste td.fyc{display:none}
   .gamebox td.pl{grid-column:3 !important;grid-row:2 !important;justify-self:end;align-self:center}
   .gamebox td.fyc{grid-column:1 / -1 !important;grid-row:3 !important;text-align:left !important}
   .gamebox td.mk{grid-column:1 / -1 !important;grid-row:4 !important}
-  .gamebox td.title .tile{width:140px;height:140px}
+  .gamebox td.title .tile{width:140px;height:187px}
 }
 .count b{color:var(--accent)}
 .tablebox{background:transparent;overflow-x:auto;container-type:inline-size;container-name:list}
@@ -338,7 +345,7 @@ tr.is-p .title a,tr.is-x .title a,tr.is-b .title a{color:var(--muted)}
 dialog.dlgbox.qsbox{width:min(720px,calc(100vw - 16px));max-height:calc(100vh - 16px);overflow:auto}
 .qshead{display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:700;color:var(--muted)}
 .qsgame{display:grid;grid-template-columns:200px 1fr;gap:18px;align-items:start}
-.qscover{aspect-ratio:1;background:var(--paper,#e8ebf3);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:800;padding:0}
+.qscover{aspect-ratio:3/4;background:var(--paper,#e8ebf3);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:800;padding:0}
 .qscover img{width:100%;height:100%;object-fit:cover;display:block}
 .qsinfo h2{margin:0 0 4px;font-size:24px;line-height:1.15}
 .qsmeta,.qsfacts{margin:0 0 6px;color:var(--muted);font-size:14px}
@@ -575,7 +582,7 @@ footer b{color:var(--ink)}
   tr.band th small{display:block;margin:2px 0 0}
   .g{align-items:flex-start}
   .eyebrow{font-size:20px}
-  .card{flex-basis:132px}.card .tile{width:116px;height:116px}
+  .card{flex-basis:132px}.card .tile{width:108px;height:144px}
   .counter{padding:16px 16px 18px}
   .layout{padding:0 10px}
   .taste{margin:0 10px 18px}
@@ -593,7 +600,7 @@ footer b{color:var(--ink)}
   td.pl{grid-column:1;grid-row:3}
   td.fyc{grid-column:2;grid-row:3;text-align:right}
   td.mk{grid-column:1 / -1;grid-row:4}
-  td.title .tile{width:72px;height:72px}
+  td.title .tile{width:66px;height:88px}
   .marks{flex-wrap:wrap;white-space:normal}
   .marks button .ml{display:inline}.marks button{font-size:12.5px;padding:6px 8px}
 }
@@ -1151,13 +1158,21 @@ dialog.dlgbox#madedlg{width:min(720px,calc(100vw - 32px));max-height:calc(100vh 
       <p class="qsfoot"><button type="button" class="linkbtn" id="qsundo" disabled>Undo the last one</button><span>Keys 1 to 4 mark, the right arrow skips and Z undoes.</span></p>
     </div>
   </dialog>
+  <dialog class="dlgbox vidbox" id="viddlg" aria-labelledby="vidtitle">
+    <div class="dlg">
+      <div class="vidhead"><p><b id="vidtitle"></b><span id="vidwhat"></span></p>
+        <button type="button" class="btn" id="vidnext">Next video</button><button type="button" class="btn" id="vidclose">Close</button></div>
+      <div class="vidframe"><iframe id="vidframe" title="Trailer" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+      <p class="vidfoot"><a id="vidyt" target="_blank" rel="noopener">Open on YouTube</a></p>
+    </div>
+  </dialog>
   <dialog class="dlgbox gamebox" id="gamedlg" aria-label="Game details">
     <div class="dlg"><button type="button" class="dlgx" id="gamex" aria-label="Close">✕</button>
       <div class="tablebox"><table><tbody id="dlgrows"></tbody></table></div>
       <p class="whyfit" id="dlgwhy"></p>
       <p class="comm" id="dlgcomm"></p>
       <dl class="facts" id="dlgfacts"></dl>
-      <p class="dlglinks"><a id="dlgtrailer" class="btn" target="_blank" rel="noopener">▶ Watch trailers on YouTube</a></p>
+      <p class="dlglinks"><a id="dlgtrailer" class="btn" target="_blank" rel="noopener">▶ Watch the trailer</a></p>
       <div class="dlgbuy" id="dlgbuy" hidden></div>
       <div class="about" id="dlgabout"></div></div>
   </dialog>
@@ -1242,13 +1257,15 @@ dialog.dlgbox#madedlg{width:min(720px,calc(100vw - 32px));max-height:calc(100vh 
 (()=>{const f=()=>document.documentElement.style.setProperty("--sbw",(innerWidth-document.documentElement.clientWidth)+"px");addEventListener("resize",f);addEventListener("load",f);new ResizeObserver(f).observe(document.documentElement);})();
 (async function main(){
 "use strict";
-let GAMES,META,ARTLIST,LINKS,REGDATA,FACTS={},XPLAY={},COMING={games:[],posts:[]},REGNOTES={};
+let GAMES,META,ARTLIST,LINKS,REGDATA,FACTS={},XPLAY={},COMING={games:[],posts:[]},REGNOTES={},BOXLIST=[];
 try{
   const get=u=>fetch(u,{cache:"no-cache"}).then(r=>{if(!r.ok)throw new Error(u+" "+r.status);return r.json();});
   [GAMES,META,ARTLIST,LINKS,REGDATA,FACTS,XPLAY,COMING]=await Promise.all([get("data/games.json"),get("data/catalogue.json"),get("data/art.json").catch(()=>[]),get("data/links.json").catch(()=>({})),get("data/regions.json").catch(()=>({})),get("data/facts.json").catch(()=>({})),get("data/crossplay.json").then(j=>j&&j.games&&typeof j.games==="object"?j.games:{}).catch(()=>({})),
   get("data/coming.json").then(j=>({games:Array.isArray(j&&j.games)?j.games:[],posts:Array.isArray(j&&j.posts)?j.posts:[],monthly:j&&j.monthly&&typeof j.monthly==="object"?j.monthly:null})).catch(()=>({games:[],posts:[]}))]);
   // data/region-notes.json: month (YYYY-MM) -> one sentence on how that month's lineup differs by country.
   REGNOTES=await get("data/region-notes.json").catch(()=>({}));if(!REGNOTES||typeof REGNOTES!=="object")REGNOTES={};
+  // data/box.json: games with IGDB's portrait box art in box/ (tools/igdb_extras.py). The rest keep art/.
+  BOXLIST=await get("data/box.json").catch(()=>[]);if(!Array.isArray(BOXLIST))BOXLIST=[];
 }catch(e){
   document.getElementById("count").textContent="Couldn't load the game list. Check your connection and reload the page.";
   return;
@@ -1487,9 +1504,12 @@ function downloadIcs(games,name){
 }
 const fmtD=iso=>{const [y,m,d]=iso.split("-").map(Number);return d+" "+MONTHS[m-1].slice(0,3)+" "+y;};
 const ART=new Set(Array.isArray(ARTLIST)?ARTLIST:[]);
+const BOXART=new Set(BOXLIST);
+// The cover to show: IGDB's portrait box art if we have it, else our square art (cropped to the box shape).
+const coverSrc=g=>BOXART.has(g.id)?`box/${encodeURIComponent(g.id)}.webp`:ART.has(g.id)?`art/${encodeURIComponent(g.id)}.webp`:"";
 /* Cover art, or for games without any a blank VHS tape with the title written on its label */
 const tapeName=t=>t.length>34?t.slice(0,32).replace(/\s+\S*$/,"")+"…":t;
-const tile=g=>`<span class="tile${ART.has(g.id)||g.img?" art":""}" aria-hidden="true"><span class="tape"><span class="lab" style="--tilt:${((g.hue||0)%5)-2}deg">${esc(tapeName(g.t))}</span><span class="vhs">VHS</span></span>${ART.has(g.id)?`<img src="art/${encodeURIComponent(g.id)}.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()">`:g.img?`<img src="${esc(g.img)}?w=440" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.parentNode.classList.remove('art');this.remove()">`:""}</span>`;
+const tile=g=>`<span class="tile${ART.has(g.id)||BOXART.has(g.id)||g.img?" art":""}" aria-hidden="true"><span class="tape"><span class="lab" style="--tilt:${((g.hue||0)%5)-2}deg">${esc(tapeName(g.t))}</span><span class="vhs">VHS</span></span>${coverSrc(g)?`<img src="${coverSrc(g)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">`:g.img?`<img src="${esc(g.img)}?w=440" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.parentNode.classList.remove('art');this.remove()">`:""}</span>`;
 
 /* HowLongToBeat time for the chosen play style. No stand-in when a style has no figure: HLTB's "all styles"
    average is not comparable (it can be shorter than the story), so those games show "no data" and are left
@@ -2191,7 +2211,7 @@ function qsShow(){
   $("qsgame").hidden=!g;$("qsbtns").hidden=!g;$("qsend").hidden=!!g;$("qsundo").disabled=!q.hist.length;
   $("qsprog").textContent=g?`${q.i+1} of ${q.ids.length}`:`${q.done} marked`;
   if(!g){$("qsend").textContent=q.ids.length?`That's every unmarked game in this view. You marked ${q.done} and skipped ${q.skipped}.`:"Every game shown here is already marked.";$("qsdone").focus();return;}
-  $("qscover").innerHTML=ART.has(g.id)?`<img src="art/${encodeURIComponent(g.id)}.webp" alt="">`:g.img?`<img src="${esc(g.img)}?w=440" alt="" referrerpolicy="no-referrer">`:`<span>${esc(g.t)}</span>`;
+  $("qscover").innerHTML=coverSrc(g)?`<img src="${coverSrc(g)}" alt="">`:g.img?`<img src="${esc(g.img)}?w=440" alt="" referrerpolicy="no-referrer">`:`<span>${esc(g.t)}</span>`;
   $("qstitle").textContent=g.t;
   $("qsmeta").textContent=[g.y,g.sys||(g.p||[]).join(", "),g.pv,(g.g||[]).join(", ")].filter(Boolean).join(" · ");
   $("qsfacts").innerHTML=[g.m!=null?`Metascore <b>${g.m}</b>`:"",g.h?`Main story <b>${esc(fmtT(g.h))}</b>`:"",g.cl?(g.s3?"PS3 streaming":"Premium classic"):g.cat?"Game Catalogue":g.e?"Monthly game":""].filter(Boolean).map(x=>`<span>${x}</span>`).join("");
@@ -2222,6 +2242,29 @@ $("qsmore").addEventListener("click",e=>{e.preventDefault();const id=QS&&QS.ids[
 $("qsdlg").addEventListener("keydown",e=>{if(e.ctrlKey||e.metaKey||e.altKey)return;
   const k={"1":"w","2":"p","3":"b","4":"x","ArrowRight":"skip","z":"undo","Z":"undo","ArrowLeft":"undo"}[e.key];if(k){e.preventDefault();qsAct(k);}});
 $("qsdlg").addEventListener("close",()=>{if(QS&&(QS.done||QS.back)){renderHero();render(false);}QS=null;});
+/* ---- Trailers: IGDB's videos for the game (data/videos.json, loaded after the page), played here. ---- */
+let VIDS=null,VID=null;
+const loadVids=()=>VIDS?Promise.resolve(VIDS):fetch("data/videos.json").then(r=>r.ok?r.json():{}).then(j=>VIDS=j&&typeof j==="object"?j:{}).catch(()=>VIDS={});
+setTimeout(()=>loadVids(),2000);
+const vidsFor=id=>VIDS&&Array.isArray(VIDS[id])?VIDS[id].filter(v=>Array.isArray(v)&&/^[\w-]{6,20}$/.test(v[1]||"")):[];
+function playVid(){
+  const v=VID.list[VID.i];
+  $("vidtitle").textContent=VID.g.t;
+  $("vidwhat").textContent=String(v[0]||"Trailer")+(VID.list.length>1?` (${VID.i+1} of ${VID.list.length})`:"");
+  $("vidnext").hidden=VID.list.length<2;
+  $("vidframe").src=`https://www.youtube-nocookie.com/embed/${encodeURIComponent(v[1])}?autoplay=1&playsinline=1&rel=0&modestbranding=1`;
+  $("vidyt").href=`https://www.youtube.com/watch?v=${encodeURIComponent(v[1])}`;
+}
+// Returns true when it opened the player; otherwise the link carries on to a YouTube search.
+function openTrailer(g){
+  const list=vidsFor(g.id);if(!list.length)return false;
+  VID={g,list,i:0};playVid();$("viddlg").showModal();return true;
+}
+$("vidnext").addEventListener("click",()=>{if(!VID)return;VID.i=(VID.i+1)%VID.list.length;playVid();});
+$("vidclose").addEventListener("click",()=>$("viddlg").close());
+$("viddlg").addEventListener("close",()=>{$("vidframe").src="about:blank";VID=null;});
+$("dlgtrailer").addEventListener("click",e=>{const g=BYID.get(DLG_ID);if(g&&!e.metaKey&&!e.ctrlKey&&openTrailer(g))e.preventDefault();});
+$("qstrailer").addEventListener("click",e=>{const id=QS&&QS.ids[QS.i],g=id&&BYID.get(id);if(g&&!e.metaKey&&!e.ctrlKey&&openTrailer(g))e.preventDefault();});
 function saveNote(id,text){text=(text||"").trim().slice(0,2000);if(text)NOTES[id]=text;else delete NOTES[id];OPEN_NOTE=null;saveMarks();render(false);}
 /* ---- Ask Claude: recommendations that read the viewer's notes ---- */
 let askCtl=null;
