@@ -79,6 +79,13 @@ body.night .stock,body.night #stocknote,body.night .aisle,body.night .aislemeta{
 .over div{background:#f4f6fb;color:var(--ink);border-top:6px solid var(--red);padding:18px 20px;max-width:420px;text-align:center;box-shadow:0 14px 40px rgba(0,0,0,.5)}
 .over h2{margin:0 0 6px;font:400 24px Bungee,sans-serif;color:var(--red)}
 .over p{margin:0 0 14px}
+#arcade{position:fixed;inset:0;z-index:20;background:#05061a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;touch-action:none;user-select:none;-webkit-user-select:none}
+#arcade[hidden]{display:none!important}
+.arctop{display:flex;align-items:center;justify-content:space-between;gap:12px;width:min(100vw - 16px,calc((100dvh - 120px)*4/3))}
+#arctitle{font:400 18px Bungee,sans-serif;color:var(--yellow)}
+#arcclose{font:inherit;font-weight:800;font-size:14px;color:#fff;background:transparent;border:2px solid #fff;border-radius:3px;padding:6px 12px;min-height:40px;cursor:pointer}
+#arcv{width:min(100vw - 16px,calc((100dvh - 120px)*4/3));aspect-ratio:4/3;image-rendering:pixelated;image-rendering:crisp-edges;border:4px solid #1f2e7a;box-shadow:0 0 40px rgba(79,216,255,.25);background:#000}
+#archint{margin:0;max-width:min(100vw - 16px,560px);color:#c9cff0;font-size:13.5px;text-align:center;line-height:1.4}
 .mgover div{border-top-color:var(--yellow)}.mgover h2{color:var(--blue)}
 #mg{position:fixed;right:12px;top:12px;z-index:3;width:min(340px,calc(100vw - 24px));background:#f4f6fb;color:var(--ink);border-top:6px solid var(--yellow);padding:10px 14px 12px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
 .mgtop{display:flex;justify-content:space-between;align-items:center;gap:10px}#mgtitle{font:400 16px/1.1 Bungee,sans-serif;color:var(--blue)}
@@ -139,6 +146,8 @@ body.mgpop #cross{display:block}
 <div id="say" hidden></div>
 <section id="mg" hidden aria-live="polite"><div class="mgtop"><b id="mgtitle"></b><button type="button" id="mgstop">Stop</button></div><p id="mgtext"></p><div id="mgstats"></div><div class="mgacts" id="mgacts"></div></section>
 <div id="mgpow" hidden aria-hidden="true"><i></i></div>
+<section id="arcade" hidden aria-label="Arcade game"><div class="arctop"><b id="arctitle"></b><button type="button" id="arcclose">Back to the shop</button></div>
+  <canvas id="arcv" width="320" height="240"></canvas><p id="archint"></p></section>
 <div class="over mgover" id="mgover" hidden><div role="dialog" aria-labelledby="mgovertitle"><h2 id="mgovertitle"></h2><p id="mgovertext"></p>
   <button type="button" id="mgagain">Play again</button> <button type="button" id="mgdone" class="plain">Done</button></div></div>
 <div id="ouch"></div>

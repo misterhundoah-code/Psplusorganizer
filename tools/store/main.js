@@ -8,6 +8,7 @@
 import * as THREE from "three/webgpu";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { clone as cloneRig } from "three/examples/jsm/utils/SkeletonUtils.js";
+import { openArcade, attract, GAMES as CABINETS } from "./arcade.js";
 
 const $ = (id) => document.getElementById(id);
 const CALM = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -139,6 +140,34 @@ function crunch(x, z) {
     const e = c.createGain(); e.gain.setValueAtTime(0.0001, t); e.gain.exponentialRampToValueAtTime(1, t + 0.008); e.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
     s.connect(f); f.connect(e); e.connect(sink); s.start(t, Math.random()); s.stop(t + 0.08);
   }
+}
+// arcade beeps: a tone (optionally sliding to another pitch), a burst of noise, and a car engine hum
+const live = () => SND.on && SND.ctx && SND.ctx.state === "running";
+function tone(f, d, type = "square", vol = 0.05, to) {
+  if (!live()) return;
+  const c = SND.ctx, t = c.currentTime, o = c.createOscillator(), g = c.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t); if (to) o.frequency.exponentialRampToValueAtTime(to, t + d);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+  o.connect(g); g.connect(SND.master); o.start(t); o.stop(t + d + 0.02);
+}
+function noiseBurst(d, vol = 0.1) {
+  if (!live()) return;
+  const c = SND.ctx, t = c.currentTime, s = c.createBufferSource(), g = c.createGain(), f = c.createBiquadFilter();
+  s.buffer = noiseBuf(); f.type = "lowpass"; f.frequency.value = 1800;
+  g.gain.setValueAtTime(vol * 4, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+  s.connect(f); f.connect(g); g.connect(SND.master); s.start(t, Math.random()); s.stop(t + d + 0.02);
+}
+function engine(level, rough) {
+  if (!live()) return;
+  const c = SND.ctx;
+  if (!SND.eng) {
+    const o = c.createOscillator(), o2 = c.createOscillator(), f = c.createBiquadFilter(), g = c.createGain();
+    o.type = "sawtooth"; o2.type = "square"; f.type = "lowpass"; f.frequency.value = 600; g.gain.value = 0;
+    o.connect(f); o2.connect(f); f.connect(g); g.connect(SND.master); o.start(); o2.start(); SND.eng = { o, o2, g };
+  }
+  const e = SND.eng, t = c.currentTime;
+  e.g.gain.setTargetAtTime(level ? 0.035 : 0, t, 0.05);
+  e.o.frequency.setTargetAtTime(50 + level * 110 + (rough ? Math.random() * 20 : 0), t, 0.05); e.o2.frequency.setTargetAtTime(25 + level * 55, t, 0.05);
 }
 function setSound(on) {
   SND.on = on; try { localStorage.setItem("psplus-shop-sound", on ? "on" : "off"); } catch (e) {}
@@ -562,6 +591,38 @@ async function start() {
     };
     const neons = [nAdd("GAMES", "#ff4fd8", 1.5, 0.47, -halfW + 4.6, 2.55, zBack + 0.02, 0), nAdd("RENTALS", "#4fd8ff", 1.6, 0.5, halfW - 4.6, 2.55, zBack + 0.02, 0),
       nAdd("PLAY ON", "#ffcf3a", 1.4, 0.44, -halfW + 0.02, 2.45, zFront - 3.4, Math.PI / 2)];
+    // the arcade corner under the PLAY ON neon: three cabinets against the left wall, facing into the shop
+    const cabs = [];
+    ["dash", "cruise", "tape"].forEach((kind, i) => {
+      const g = new THREE.Group(), info = CABINETS[kind], z = zFront - 2.95 - i * 0.92;
+      g.position.set(-halfW + 0.42, 0, z); g.rotation.y = Math.PI / 2; group.add(g);
+      const body = own(new THREE.MeshStandardMaterial({ color: ["#1f2e7a", "#5a1f6a", "#0d3a4a"][i], roughness: 0.55 }));
+      const trim = own(new THREE.MeshStandardMaterial({ color: info.col, roughness: 0.4, emissive: info.col, emissiveIntensity: 0.25 }));
+      const add = (geo, mat, x, y, zz, rx = 0) => { const m = new THREE.Mesh(own(geo), mat); m.position.set(x, y, zz); m.rotation.x = rx; g.add(m); return m; };
+      add(new THREE.BoxGeometry(0.76, 1.0, 0.7), body, 0, 0.5, -0.05);
+      add(new THREE.BoxGeometry(0.76, 0.85, 0.5), body, 0, 1.4, -0.15);
+      add(new THREE.BoxGeometry(0.8, 0.04, 0.74), trim, 0, 1.01, -0.03);
+      for (const sx of [-0.39, 0.39]) add(new THREE.BoxGeometry(0.03, 1.95, 0.76), trim, sx, 0.97, -0.05);
+      // control panel with a stick and two buttons
+      add(new THREE.BoxGeometry(0.76, 0.08, 0.3), body, 0, 1.03, 0.2, 0.25);
+      add(new THREE.CylinderGeometry(0.012, 0.012, 0.09, 8), M.pole, -0.12, 1.11, 0.2);
+      add(new THREE.SphereGeometry(0.03, 12, 8), DM.red, -0.12, 1.16, 0.2);
+      add(new THREE.CylinderGeometry(0.025, 0.025, 0.02, 12), trim, 0.06, 1.09, 0.22);
+      add(new THREE.CylinderGeometry(0.025, 0.025, 0.02, 12), DM.red, 0.14, 1.09, 0.18);
+      // the screen, tilted back, showing the game's demo loop
+      const cv = document.createElement("canvas"); cv.width = 192; cv.height = 144;
+      const tex = own(new THREE.CanvasTexture(cv)); tex.colorSpace = THREE.SRGBColorSpace;
+      attract(kind, cv.getContext("2d"), 0, cv.width, cv.height);
+      add(new THREE.PlaneGeometry(0.56, 0.42), own(new THREE.MeshBasicMaterial({ map: tex })), 0, 1.42, 0.105, -0.22);
+      // the lit marquee across the top
+      const mq = own(canvasTex(512, 128, (x, w, h) => { x.fillStyle = "#05061a"; x.fillRect(0, 0, w, h); x.shadowColor = info.col; x.shadowBlur = 18; x.fillStyle = info.col; x.textAlign = "center"; x.textBaseline = "middle"; let fs = 70; x.font = `${fs}px Bungee, sans-serif`; while (x.measureText(info.title).width > w - 30) { fs -= 4; x.font = `${fs}px Bungee, sans-serif`; } x.fillText(info.title, w / 2, h / 2 + 4); }));
+      add(new THREE.BoxGeometry(0.76, 0.2, 0.42), body, 0, 1.92, -0.1);
+      add(new THREE.PlaneGeometry(0.72, 0.18), own(new THREE.MeshBasicMaterial({ map: mq })), 0, 1.92, 0.112);
+      const hit = new THREE.Mesh(own(new THREE.BoxGeometry(0.9, 2.0, 0.9))); hit.visible = false; hit.position.y = 1; g.add(hit);
+      hit.userData.kind = kind;
+      cabs.push({ kind, hit, cv, tex, x: g.position.x, z });
+    });
+    obstacles.push({ x0: -halfW, x1: -halfW + 0.85, z0: zFront - 5.35, z1: zFront - 2.45 });
     // the returns box by the door
     const rx = -halfW + 3.5, rz = zFront - 0.55;
     mg.box(DM.drop, 0.7, 1.05, 0.5, rx, 0.525, rz); mg.box(DM.drop, 0.74, 0.08, 0.54, rx, 1.09, rz);
@@ -577,7 +638,7 @@ async function start() {
     }
     mg.box(DM.chrome, 0.03, 0.03, 0.4, bx, 0.6, bz);
     obstacles.push({ x0: bx - 0.3, x1: bx + 0.3, z0: bz - 0.24, z1: bz + 0.24 });
-    return { neons };
+    return { neons, cabs };
   }
 
 
@@ -1010,6 +1071,8 @@ async function start() {
     if (sw && sw.distance < 4) { lightsOut(); return; }
     const mh = ray.intersectObjects([S.popHit, S.bellHit], false)[0];
     if (mh && mh.distance < 4 && !P.held) { if (mh.object === S.popHit) startPop(); else startFind(); return; }
+    const ah = ray.intersectObjects(S.deco.cabs.map((c) => c.hit), false)[0];
+    if (ah && ah.distance < 3.5 && !P.held) { playArcade(ah.object.userData.kind); return; }
     const hit = ray.intersectObjects(S.boxes.filter((b) => b.visible), false)[0];
     if (P.held) { if (hit && hit.object === P.held) flip(); else putBack(); return; }
     if (hit && hit.distance < 4.5) pick(hit.object);
@@ -1653,6 +1716,23 @@ async function start() {
     MG.done = true; const i = S.starts.findIndex((s) => s.name === MG.sec);
     mgShow("Find the game", `It was <b>${esc(MG.g.t)}</b>, in the ${esc(MG.sec)} section.`, "", [["Show me", () => { if (i >= 0) goSection(i); }], ["Next customer", () => startFind(MG.round + 1)], ["Done", endMG]]);
   }
+  // ---------- the arcade cabinets ----------
+  // A cabinet opens its game full screen (tools/store/arcade.js); the 3D shop stops drawing until you come back.
+  const ARC = { open: false };
+  function playArcade(kind) {
+    if (night.on || ARC.open) return;
+    endMG(); if (P.held) putBack(); if (P.watch) leaveTV();
+    keys.clear(); stick.x = stick.y = 0; if (document.pointerLockElement) document.exitPointerLock();
+    audioStart(); ARC.open = true; hideHint();
+    openArcade(kind, { sfx: { tone, noise: noiseBurst, engine }, onClose: () => { ARC.open = false; engine(0); last = performance.now(); } });
+  }
+  function tickArcade(now) {
+    if (frame % 6) return;
+    for (const c of S.deco.cabs) {
+      if (Math.hypot(c.x - P.x, c.z - P.z) > 9) continue;
+      attract(c.kind, c.cv.getContext("2d"), now / 1000, c.cv.width, c.cv.height); c.tex.needsUpdate = true;
+    }
+  }
   function tickMG(dt) { if (MG) (MG.kind === "pop" ? tickPop : tickFind)(dt); }
 
   // ---------- stock switching and sections ----------
@@ -1682,7 +1762,7 @@ async function start() {
     setQuality(qPick === "auto" ? (slowDevice ? "lite" : "full") : qPick);
   });
   $("secsel").addEventListener("change", (e) => { if (e.target.value !== "") { if (P.held) putBack(); goSection(+e.target.value); } e.target.value = ""; });
-  if (location.hash.includes("debug")) window.__store = { P, night, ZT, SND, cam: camera, V2: THREE.Vector2, V3: THREE.Vector3, mg: () => MG, pick, mouth: () => (MG && MG.clerk ? mouthOf(MG.clerk).toArray() : null), mark: (x, y, z) => { const m = new THREE.Mesh(new THREE.SphereGeometry(0.04), new THREE.MeshBasicMaterial({ color: "#ff00ff", depthTest: false })); m.renderOrder = 9; m.position.set(x, y, z); scene.add(m); return m; }, startPop, startFind, MOUTH, popDown, popThrow, spawn: (x, z, b) => night.zombies.push(makeZombie(x, z, b)), shoot, lightsOut, lightsOn, shop: () => S, goSection, mem: () => ({ loaded, q: qName, tex: renderer.info.memory.textures, sheets: sheetState.filter((x) => x === 2).length, filled: S.boxes.filter((b) => b.material[4] !== M.blank).length, boxes: S.boxes.length }) };
+  if (location.hash.includes("debug")) window.__store = { P, night, playArcade, ARC, ZT, SND, cam: camera, V2: THREE.Vector2, V3: THREE.Vector3, mg: () => MG, pick, mouth: () => (MG && MG.clerk ? mouthOf(MG.clerk).toArray() : null), mark: (x, y, z) => { const m = new THREE.Mesh(new THREE.SphereGeometry(0.04), new THREE.MeshBasicMaterial({ color: "#ff00ff", depthTest: false })); m.renderOrder = 9; m.position.set(x, y, z); scene.add(m); return m; }, startPop, startFind, MOUTH, popDown, popThrow, spawn: (x, z, b) => night.zombies.push(makeZombie(x, z, b)), shoot, lightsOut, lightsOn, shop: () => S, goSection, mem: () => ({ loaded, q: qName, tex: renderer.info.memory.textures, sheets: sheetState.filter((x) => x === 2).length, filled: S.boxes.filter((b) => b.material[4] !== M.blank).length, boxes: S.boxes.length }) };
 
   // ---------- frame loop ----------
   build(fromWall && new URLSearchParams(location.search).get("from") === "wall" ? "wall" : "all");
@@ -1692,6 +1772,7 @@ async function start() {
   const perf = { t: 0, n: 0 };
   const ease = (t) => 1 - Math.pow(1 - t, 3);
   renderer.setAnimationLoop((now) => {
+    if (ARC.open) return;
     const dt = Math.min(0.05, (now - last) / 1000); last = now; frame++;
     if (!P.watch && !P.held && !night.over && !(MG && MG.kind === "pop")) move(dt, night.on ? (night.fx.ff > 0 ? 4.6 : 3.1) : 2.6);
     const k = CALM ? 1 : Math.min(1, dt * (P.watch ? 4 : 14));
@@ -1721,7 +1802,7 @@ async function start() {
       tickNight(dt);
       if (!CALM && frame % 7 === 0) S.lights.forEach((p, i) => { if (i % 2 === 0) p.intensity = Math.random() < 0.15 ? 0.5 : 4; });
     }
-    tickStreet(dt, now); tickMG(dt);
+    tickStreet(dt, now); tickMG(dt); tickArcade(now);
     if (document.body.classList.contains("held") !== !!P.held) document.body.classList.toggle("held", !!P.held);
     S.btnMat.emissiveIntensity = night.on && !CALM ? 0.55 + 0.45 * Math.sin(now / 160) : 0.25;
     if (!$("tv").hidden && watchScreen) placeVideo();
