@@ -1071,7 +1071,7 @@ dialog.dlgbox#madedlg{width:min(720px,calc(100vw - 32px));max-height:calc(100vh 
       </div>
       <div class="countrow"><div class="count" id="count" aria-live="polite"></div>
         <button type="button" class="btn qsopen" id="qsopen" title="Go through the unmarked games shown here one at a time">Quick sort</button>
-        <div class="layoutsw" role="group" aria-label="Show games as"><button type="button" data-layout="wall">Cover wall</button><button type="button" data-layout="list">List</button></div></div>
+        <div class="layoutsw" role="group" aria-label="Show games as"><button type="button" data-layout="wall">Cover wall</button><button type="button" data-layout="list">List</button><button type="button" id="walkaisles" title="Walk through the shop in 3D, stocked with the games shown here">Walk the aisles</button></div></div>
       <div class="ctx" id="ctx" hidden></div>
       <div class="bulkbar" id="bulkbar" hidden><span id="bulktxt"></span><button type="button" class="btn" id="bulkx"></button></div>
       <div class="tablebox" style="margin-top:8px">
@@ -2932,6 +2932,11 @@ function flipOpen(caseEl,id){
 // has the store and trailer links, so visitors stay on the site. Ctrl, Cmd or middle click still opens the store page.
 document.addEventListener("click",e=>{const c=e.target.closest("a.card[data-open]");if(!c||c.closest("#wall")||e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||!BYID.get(c.dataset.open))return;e.preventDefault();openGame(c.dataset.open);});
 document.querySelector(".layoutsw").addEventListener("click",e=>{const b=e.target.closest("[data-layout]");if(!b)return;S.layout=b.dataset.layout;render();});
+// Walk the aisles: the 3D shop (store/) can stock its shelves with what the wall is showing, so leave it the list.
+$("walkaisles").addEventListener("click",()=>{
+  try{sessionStorage.setItem("psplus-store",JSON.stringify({ids:LASTLIST.map(g=>g.id),label:$("count").textContent.trim()}));}catch(e){}
+  location.href="store/?from=wall";
+});
 $("gamex").addEventListener("click",()=>$("gamedlg").close());
 $("ratestars").addEventListener("click",e=>{const b=e.target.closest("button[data-n]");if(!b||!RB)return;const n=+b.dataset.n,id=RB.id;
   RATE[id]=n;$("ratestars").querySelectorAll("button").forEach(x=>{x.classList.toggle("on",+x.dataset.n<=n);x.setAttribute("aria-pressed",String(+x.dataset.n===n));});

@@ -3,67 +3,101 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Store walk-through preview | Wall of PS Plus</title>
+<title>Walk the aisles | Wall of PS Plus</title>
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="../fonts/fonts.css">
 <style>
-/* VOICE: the Wall of PS Plus, after hours: a neighbourhood rental shop you can walk into.
-   IDEA: one aisle of the shop, two shelves of real games, boxes you pick up and turn over.
-   PICTURE: the 3D aisle fills the screen; everything else floats over it.
-   COLOUR and TYPE: the site's own blue #1E3A9E and yellow #FFC925 on night navy; Bungee signs, Archivo text.
-   LAYOUT: full-bleed stage, a title tab top left, walk buttons bottom right, the game card along the bottom.
+/* VOICE: the Wall of PS Plus as a neighbourhood rental shop you can walk into; after hours, something else.
+   IDEA: one aisle of the shop at a time, stocked with every game or with what your wall was showing.
+   PICTURE: the 3D aisle fills the screen; the controls float over it.
+   COLOUR and TYPE: the site's blue #1E3A9E and yellow #FFC925 on night navy; Bungee signs, Archivo text.
+   LAYOUT: full-bleed stage, a shop tab top left with the aisle picker, walk buttons bottom right, the game card bottom left.
    The trailer is YouTube's own player, laid exactly over the TV's screen while you stand in front of it. */
-:root{--blue:#1E3A9E;--yellow:#FFC925;--ink:#141a33;--night:#0d1230}
+:root{--blue:#1E3A9E;--yellow:#FFC925;--ink:#141a33;--night:#0d1230;--red:#d7263d}
 *{box-sizing:border-box;min-width:0}
 html,body{margin:0;height:100%;background:var(--night);color:#fff;font:16px/1.5 Archivo,system-ui,sans-serif;overflow:hidden}
 #stage{position:fixed;inset:0;touch-action:none}
 #stage canvas{display:block;width:100%;height:100%;cursor:grab;outline:none}
 #stage canvas:active{cursor:grabbing}
-.tab{position:fixed;left:12px;top:12px;background:var(--blue);border-bottom:5px solid var(--yellow);padding:10px 14px 9px;max-width:min(460px,calc(100vw - 24px));box-shadow:0 8px 24px rgba(0,0,0,.35)}
-.tab h1{margin:0;font:400 20px/1.1 Bungee,"Arial Black",sans-serif;letter-spacing:0}
-.tab p{margin:4px 0 0;font-size:13.5px;color:#dfe5ff}
-#engine{display:block;margin-top:2px;font-size:13px;color:var(--yellow);font-weight:600}
+body.night #stage canvas{cursor:crosshair}
+[hidden]{display:none!important}
+.tab{position:fixed;left:12px;top:12px;z-index:3;background:var(--blue);border-bottom:5px solid var(--yellow);padding:10px 12px 10px;width:min(430px,calc(100vw - 24px));box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.tabtop{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.tab h1{margin:0;font:400 19px/1.1 Bungee,"Arial Black",sans-serif}
+.tab .back{color:#fff;font-size:14px;font-weight:700}
+.stock{display:flex;gap:6px;margin-top:8px}
+.stock button,.aisle button{font:inherit;font-size:14px;font-weight:700;color:#fff;background:transparent;border:2px solid rgba(255,255,255,.55);border-radius:3px;padding:5px 10px;min-height:36px;cursor:pointer}
+.stock button[aria-pressed=true]{background:var(--yellow);border-color:var(--yellow);color:var(--ink)}
+#stocknote{margin:6px 0 0;font-size:13px;color:#dfe5ff}
+.aisle{display:flex;gap:6px;align-items:center;margin-top:8px}
+.aisle select{flex:1;font:inherit;font-size:15px;font-weight:700;min-height:40px;padding:4px 8px;border:2px solid var(--yellow);background:#fff;color:var(--ink);border-radius:3px}
+.aisle button{min-width:40px;min-height:40px;font-size:18px}
+.aislemeta{display:flex;justify-content:space-between;gap:8px;margin-top:4px;font-size:12.5px;color:#cbd4ff}
+#aislename{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 #hint{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:rgba(13,18,48,.86);border:2px solid var(--yellow);padding:10px 16px;font-size:15px;text-align:center;max-width:calc(100vw - 32px);transition:opacity .5s;pointer-events:none}
 #hint.gone{opacity:0}
-.walk{position:fixed;right:12px;bottom:12px;display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,48px);gap:6px}
+.walk{position:fixed;right:12px;bottom:12px;display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,48px);gap:6px;z-index:3}
 .walk button{font:inherit;font-size:20px;font-weight:800;background:rgba(30,58,158,.92);color:#fff;border:2px solid var(--yellow);border-radius:4px;touch-action:none;cursor:pointer}
-.walk button:focus-visible,#card button:focus-visible,#card a:focus-visible{outline:3px solid #fff;outline-offset:2px}
+button:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .walk [data-walk=ArrowUp]{grid-column:2}.walk [data-walk=ArrowLeft]{grid-column:1;grid-row:2}.walk [data-walk=ArrowDown]{grid-column:2;grid-row:2}.walk [data-walk=ArrowRight]{grid-column:3;grid-row:2}
-#card{position:fixed;left:12px;bottom:12px;width:min(420px,calc(100vw - 196px));background:#f4f6fb;color:var(--ink);border-top:6px solid var(--yellow);padding:12px 14px 14px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+#card{position:fixed;left:12px;bottom:12px;z-index:3;width:min(420px,calc(100vw - 196px));background:#f4f6fb;color:var(--ink);border-top:6px solid var(--yellow);padding:12px 14px 14px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
 #card h2{margin:0;font-size:20px;line-height:1.15}
 #cmeta{margin:4px 0 0;font-size:13.5px;color:#4a5170}
 #cfacts{display:flex;flex-wrap:wrap;gap:2px 16px;margin:6px 0 0;font-size:14px;color:#4a5170}
 #cfacts b{color:var(--ink);font-size:16px}
 #cdesc{margin:6px 0 0;font-size:14.5px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.acts{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:10px}
-.acts button{font:inherit;font-weight:800;font-size:14.5px;padding:9px 14px;min-height:44px;border:2px solid var(--blue);background:var(--blue);color:#fff;border-radius:3px;cursor:pointer}
-.acts button.plain{background:#fff;color:var(--blue)}
+.acts{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-top:10px}
+.acts button,#tvbar button,.over button{font:inherit;font-weight:800;font-size:14.5px;padding:9px 14px;min-height:44px;border:2px solid var(--blue);background:var(--blue);color:#fff;border-radius:3px;cursor:pointer}
+.acts button.plain,#tvbar button.plain,.over button.plain{background:#fff;color:var(--blue)}
 .acts a{color:var(--blue);font-weight:800;font-size:14px}
-#loading[hidden],#card[hidden],#tv[hidden],#tvbar[hidden],.acts [hidden]{display:none}
 #tv{position:fixed;z-index:2;background:#000;box-shadow:0 0 0 2px #000,0 0 40px rgba(160,255,180,.18)}
 #tv iframe{display:block;width:100%;height:100%;border:0}
 #tvbar{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);z-index:3;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px 12px;
   background:#f4f6fb;color:var(--ink);border-top:6px solid var(--yellow);padding:10px 14px;box-shadow:0 10px 30px rgba(0,0,0,.45);max-width:calc(100vw - 24px)}
 #tvbar p{margin:0;font-size:14.5px;line-height:1.3;text-align:center}#tvbar b{display:block;font-size:16px}
-#tvbar button{font:inherit;font-weight:800;font-size:14.5px;padding:9px 14px;min-height:44px;border:2px solid var(--blue);background:var(--blue);color:#fff;border-radius:3px;cursor:pointer}
-#tvbar button.plain{background:#fff;color:var(--blue)}
 #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;font:400 20px Bungee,sans-serif;color:var(--yellow)}
+/* after hours */
+body.night .tab{background:#2a0b10;border-bottom-color:var(--red)}
+#hud{position:fixed;right:12px;top:12px;z-index:3;background:rgba(20,4,8,.88);border:2px solid var(--red);padding:8px 12px;display:grid;grid-template-columns:auto auto;gap:2px 14px;font-size:14px;align-items:center}
+#hud b{font:400 18px Bungee,sans-serif;color:#fff}#hhp{color:#ff5d6c;font-size:20px;letter-spacing:2px}
+#hud button{grid-column:1/-1;margin-top:6px;font:inherit;font-weight:800;font-size:13.5px;padding:6px 10px;min-height:36px;border:2px solid #fff;background:transparent;color:#fff;border-radius:3px;cursor:pointer}
+#throwbtn{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:3;font:400 18px Bungee,sans-serif;padding:12px 22px;min-height:56px;background:var(--red);color:#fff;border:3px solid #fff;border-radius:4px;cursor:pointer;touch-action:manipulation}
+#say{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:3;font:400 clamp(20px,4vw,34px)/1.2 Bungee,sans-serif;color:#fff;text-shadow:0 3px 0 #000,0 0 20px rgba(255,40,40,.6);text-align:center;max-width:min(680px,calc(100vw - 40px));pointer-events:none}
+#ouch{position:fixed;inset:0;z-index:2;pointer-events:none;box-shadow:inset 0 0 140px 40px rgba(220,0,20,.75);opacity:0}
+#ouch.on{animation:ouch .6s ease-out}
+@keyframes ouch{from{opacity:1}to{opacity:0}}
+.over{position:fixed;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;background:rgba(10,0,4,.7);padding:20px}
+.over div{background:#f4f6fb;color:var(--ink);border-top:6px solid var(--red);padding:18px 20px;max-width:420px;text-align:center;box-shadow:0 14px 40px rgba(0,0,0,.5)}
+.over h2{margin:0 0 6px;font:400 24px Bungee,sans-serif;color:var(--red)}
+.over p{margin:0 0 14px}
 @media (max-width:600px){
-  .tab h1{font-size:17px}.tab p{display:none}
+  .tab{padding:8px 10px}.tab h1{font-size:16px}#stocknote,.aislemeta span:last-child{display:none}
   #card{left:8px;right:8px;width:auto;bottom:118px}
   .walk{right:50%;transform:translateX(50%);bottom:8px;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(2,46px)}
-  #hint{bottom:120px}
+  body.night .walk{right:8px;transform:none;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(2,42px)}
+  body.night #throwbtn{left:12px;transform:none;bottom:12px}
+  #hint{bottom:120px}#hud{top:auto;bottom:118px;right:8px}
 }
-@media (prefers-reduced-motion:reduce){#hint{transition:none}}
+@media (prefers-reduced-motion:reduce){#hint{transition:none}#ouch.on{animation:none;opacity:.6}}
 </style>
 </head>
 <body>
 <div id="stage" aria-label="A 3D aisle of game boxes. Use the arrow keys or the walk buttons to move, and tap a box to pick it up."></div>
 <div id="loading">Opening the shop…</div>
 <header class="tab">
-  <h1>Wall of PS Plus</h1>
-  <p>Store walk-through preview: the best-reviewed JRPGs on the left, horror on the right, and a TV at the end of the aisle.</p>
-  <span id="engine"></span>
+  <div class="tabtop"><h1>Wall of PS Plus</h1><a class="back" href="/">Back to the wall</a></div>
+  <div class="stock" role="group" aria-label="Stock the shop with">
+    <button type="button" data-stock="all" aria-pressed="true">Every game</button>
+    <button type="button" data-stock="wall" id="wallstock" aria-pressed="false" hidden>My wall's filters</button>
+  </div>
+  <p id="stocknote"></p>
+  <div class="aisle">
+    <button type="button" id="prevaisle" aria-label="Previous aisle">←</button>
+    <select id="aislesel" aria-label="Aisle"></select>
+    <button type="button" id="nextaisle" aria-label="Next aisle">→</button>
+  </div>
+  <div class="aislemeta"><span id="aislecount"></span><span id="engine"></span></div>
+  <span id="aislename" aria-live="polite"></span>
 </header>
 <div id="hint">Drag to look around and walk the aisle. Tap a box to pick it up, then watch its trailer on the TV.</div>
 <section id="card" hidden aria-live="polite">
@@ -84,12 +118,19 @@ html,body{margin:0;height:100%;background:var(--night);color:#fff;font:16px/1.5 
   <button type="button" id="tvnext">Next video</button>
   <button type="button" id="tvleave" class="plain">Step back</button>
 </div>
+<div id="hud" hidden aria-live="polite"><span>Score</span><b id="hscore">0</b><span>Wave</span><b id="hwave">1</b><span>You</span><span id="hhp" aria-label="Health"></span><button type="button" id="lightson">Lights back on</button></div>
+<div id="say" hidden></div>
+<div id="ouch"></div>
+<button type="button" id="throwbtn" hidden>Throw</button>
+<div class="over" id="over" hidden><div role="dialog" aria-labelledby="overtitle"><h2 id="overtitle">The shop's overrun</h2><p id="overtext"></p>
+  <button type="button" id="again">Try again</button> <button type="button" id="lightson2" class="plain">Lights back on</button></div></div>
 <nav class="walk" aria-label="Walk">
   <button type="button" data-walk="ArrowUp" aria-label="Walk forward">↑</button>
   <button type="button" data-walk="ArrowLeft" aria-label="Look left">←</button>
   <button type="button" data-walk="ArrowDown" aria-label="Walk back">↓</button>
   <button type="button" data-walk="ArrowRight" aria-label="Look right">→</button>
 </nav>
+<script>new MutationObserver(()=>{const n=document.body.classList.contains("night");document.getElementById("throwbtn").hidden=!n||!matchMedia("(pointer:coarse)").matches;}).observe(document.body,{attributes:true,attributeFilter:["class"]});</script>
 <script type="module" src="store.js"></script>
 </body>
 </html>
