@@ -119,8 +119,8 @@ function shelve(games, keepOrder) {
 }
 
 async function start() {
-  const [raw, boxList, artList, VIDS] = await Promise.all([get("../data/games.json"), get("../data/box.json").catch(() => []),
-    get("../data/art.json").catch(() => []), get("../data/videos.json").catch(() => ({}))]);
+  const [raw, boxList, artList, VIDS, THUMBS] = await Promise.all([get("../data/games.json"), get("../data/box.json").catch(() => []),
+    get("../data/art.json").catch(() => []), get("../data/videos.json").catch(() => ({})), get("thumbs.json").catch(() => null)]);
   const GAMES = (Array.isArray(raw) ? raw : raw.games || []).filter((g) => !g.gone && g.t);
   const BYID = new Map(GAMES.map((g) => [g.id, g]));
   const BOX = new Set(Array.isArray(boxList) ? boxList : []), ART = new Set(Array.isArray(artList) ? artList : []);
@@ -132,8 +132,8 @@ async function start() {
   // Graphics quality. "lite" for phones and slower machines, "full" for the rest; "auto" picks one and steps
   // down if the frame rate struggles. The visitor can choose in the shop's menu.
   const QUALITY = {
-    lite: { dpr: 1.25, cap: 200, near: 7, far: 13, fog: [7, 17], lights: 3 },
-    full: { dpr: 2, cap: 480, near: 10, far: 18, fog: [10, 25], lights: 6 },
+    lite: { dpr: 1.25, cap: 120, near: 5, far: 13, fog: [7, 17], lights: 3 },
+    full: { dpr: 2, cap: 320, near: 8, far: 18, fog: [10, 25], lights: 6 },
   };
   let qPick = "auto"; try { qPick = localStorage.getItem("psplus-shop-quality") || "auto"; } catch (e) {}
   const slowDevice = TOUCH || (navigator.deviceMemory && navigator.deviceMemory <= 4) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
@@ -371,12 +371,36 @@ async function start() {
   const loader = new THREE.TextureLoader();
   const coverURL = (g) => BOX.has(g.id) ? `../box/${encodeURIComponent(g.id)}.webp` : ART.has(g.id) ? `../art/${encodeURIComponent(g.id)}.webp` : "";
   // The full-size cover, for the box in your hand.
-  function coverTex(g) {
+  function coverTex(g, th, ready) {
     const t = new THREE.Texture(); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
     const url = coverURL(g);
-    if (url) loader.load(url, (tx) => { t.image = tx.image; if (!BOX.has(g.id)) { t.repeat.set(0.75, 1); t.offset.set(0.125, 0); } t.needsUpdate = true; });
+    if (url) loader.load(url, (tx) => { t.image = tx.image; fit(t, th, !BOX.has(g.id)); t.needsUpdate = true; if (ready) ready(); });
     return t;
   }
+  // Every cover also sits on a shared sheet (store/thumbs/), 64 to a sheet, so a whole shelf fills in from one
+  // small download. Each box's front face points at its own cell on the sheet; the sharper single covers that
+  // load up close are mapped back to the full face with fit().
+  const TH = new Map(), sheetMats = [], NOTH = { sheet: -1, ox: 0, oy: 0, sx: 1, sy: 1 };
+  if (THUMBS && THUMBS.ids) THUMBS.ids.forEach((id, i) => {
+    const per = THUMBS.cols * THUMBS.rows, k = i % per, c = k % THUMBS.cols, r = Math.floor(k / THUMBS.cols), e = 0.02;
+    TH.set(id, { sheet: Math.floor(i / per), ox: (c + e) / THUMBS.cols, oy: 1 - (r + 1 - e) / THUMBS.rows, sx: (1 - 2 * e) / THUMBS.cols, sy: (1 - 2 * e) / THUMBS.rows });
+  });
+  function fit(t, th, sq) {
+    th = th || NOTH; const rx = sq ? 0.75 : 1, bx = sq ? 0.125 : 0;
+    t.repeat.set(rx / th.sx, 1 / th.sy); t.offset.set(bx - (rx * th.ox) / th.sx, -th.oy / th.sy);
+  }
+  const sheetState = [];   // undefined: not asked for, 1: loading, 2: ready
+  function loadSheets(order) {
+    for (const n of order) {
+      if (sheetState[n]) continue; sheetState[n] = 1;
+      loader.load(`thumbs/${n}.webp?v=${THUMBS.ids.length}`, (t) => {
+        t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+        sheetMats[n] = new THREE.MeshStandardMaterial({ map: t, roughness: 0.32 }); sheetState[n] = 2;
+        if (S) for (const b of S.boxes) if (b.userData.th.sheet === n && !b.userData.loaded) b.material[4] = sheetMats[n];
+      }, undefined, () => { sheetState[n] = 0; });
+    }
+  }
+  const faceMat = (b) => sheetMats[b.userData.th.sheet] || M.blank;
   // A small cover for the shelf: the image is drawn down to 132x176 as it arrives, so each one takes about
   // a sixth of the graphics memory of the full image. Square art is cropped to the box shape here.
   function smallTex(g) {
@@ -388,7 +412,7 @@ async function start() {
       if (t.userData.gone) return;
       const x = c.getContext("2d"), sq = !BOX.has(g.id), sw = sq ? img.width * 0.75 : img.width;
       x.drawImage(img, sq ? img.width * 0.125 : 0, 0, sw, img.height, 0, 0, 132, 176);
-      t.needsUpdate = true;
+      t.needsUpdate = true; t.userData.ok = true; if (t.userData.ready) t.userData.ready();
     };
     img.src = url;
     return t;
@@ -435,12 +459,18 @@ async function start() {
         items.forEach((it, j) => {
           const r = Math.floor(j / COLS), c = j % COLS;
           const backMat = new THREE.MeshStandardMaterial({ color: "#e9ecf5", roughness: 0.6 });
-          const b = new THREE.Mesh(M.boxGeo, [M.plastic, M.plastic, M.plastic, M.plastic, M.blank, backMat]);
+          const th = TH.get(it.g.id) || NOTH;
+          let geo = M.boxGeo;
+          if (th.sheet >= 0) {   // point the front face (vertices 16-19) at this game's cell on its sheet
+            geo = own(M.boxGeo.clone()); const uv = geo.attributes.uv;
+            for (let v = 16; v < 20; v++) uv.setXY(v, th.ox + uv.getX(v) * th.sx, th.oy + uv.getY(v) * th.sy);
+          }
+          const b = new THREE.Mesh(geo, [M.plastic, M.plastic, M.plastic, M.plastic, sheetMats[th.sheet] || M.blank, backMat]);
           // read left to right as you face the shelf
           const along = (c - (COLS - 1) / 2) * SP * (s > 0 ? -1 : 1);
           b.position.set(x + s * 0.2, SHELF_Y[ROWS - 1 - r] + BH / 2 + 0.012, z + along);
           b.rotation.set(0, s * Math.PI / 2, 0, "YXZ"); b.rotateX(-0.1);
-          b.userData = { g: it.g, home: { p: b.position.clone(), q: b.quaternion.clone() }, backMat, loaded: false };
+          b.userData = { g: it.g, th, home: { p: b.position.clone(), q: b.quaternion.clone() }, backMat, loaded: false };
           group.add(b); boxes.push(b);
         });
       }
@@ -507,6 +537,11 @@ async function start() {
     document.querySelectorAll("[data-stock]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.stock === kind)));
     P.x = C % 2 ? PX / 2 : 0; P.z = zFront - 1.6; P.yaw = 0; P.pitch = -0.05;   // start in the middle aisle, by the door
     camera.position.set(P.x, EYE, P.z);
+    if (THUMBS && THUMBS.ids) {   // fetch the sheets nearest the door first
+      const best = new Map();
+      for (const b of boxes) { const n = b.userData.th.sheet; if (n < 0) continue; const d = Math.hypot(b.position.x - P.x, b.position.z - P.z); if (!best.has(n) || d < best.get(n)) best.set(n, d); }
+      loadSheets([...best].sort((a, c) => a[1] - c[1]).map(([n]) => n));
+    }
     loadNear();
     if (night.on) nightLights(true); else streetNight(false);
   }
@@ -517,8 +552,13 @@ async function start() {
   function setCover(b, on) {
     const u = b.userData;
     if (on === u.loaded) return;
-    if (on) { u.loaded = true; loaded++; u.small = smallTex(u.g); b.material = b.material.slice(); b.material[4] = u.coverMat = new THREE.MeshStandardMaterial({ map: u.small, roughness: 0.32 }); }
-    else { u.loaded = false; loaded--; u.small.userData.gone = true; u.small.dispose(); u.coverMat.dispose(); u.small = u.coverMat = null; b.material[4] = M.blank; }
+    if (on) {
+      // the sharper cover replaces the sheet cell only once it has arrived, so the shelf never blinks blank
+      u.loaded = true; loaded++; u.small = smallTex(u.g); fit(u.small, u.th, false); b.material = b.material.slice();
+      u.coverMat = new THREE.MeshStandardMaterial({ map: u.small, roughness: 0.32 });
+      const mine = u.coverMat; u.small.userData.ready = () => { if (u.coverMat === mine && !u.full) b.material[4] = mine; };
+    }
+    else { u.loaded = false; loaded--; u.small.userData.gone = true; u.small.dispose(); u.coverMat.dispose(); u.small = u.coverMat = null; b.material[4] = faceMat(b); }
   }
   function loadNear() {
     const near = [];
@@ -644,14 +684,14 @@ async function start() {
   }
   function pick(m) {
     setCover(m, true);
-    m.userData.full = coverTex(m.userData.g); m.userData.coverMat.map = m.userData.full; m.userData.coverMat.needsUpdate = true;
+    const u = m.userData, full = coverTex(u.g, u.th, () => { if (u.full === full && u.coverMat) { u.coverMat.map = full; u.coverMat.needsUpdate = true; m.material[4] = u.coverMat; } }); u.full = full;
     if (!m.userData.backMat.map) { m.userData.backMat.map = boxBack(m.userData.g); m.userData.backMat.color.set("#ffffff"); m.userData.backMat.needsUpdate = true; }
     P.held = m; P.flipped = false;
     const { p, q } = heldPose(false); animate(m, p, q);
     showCard(m.userData.g); tvLabel = ["CH 3", "WATCH ON THE TV?"];
   }
   function flip() { if (!P.held) return; P.flipped = !P.flipped; const { p, q } = heldPose(P.flipped); animate(P.held, p, q, 520); $("flip").textContent = P.flipped ? "Turn to the front" : "Turn it over"; }
-  function dropFull(m) { const u = m.userData; if (u.full) { if (u.coverMat) { u.coverMat.map = u.small; u.coverMat.needsUpdate = true; } u.full.dispose(); u.full = null; } }
+  function dropFull(m) { const u = m.userData; if (u.full) { if (u.coverMat) { u.coverMat.map = u.small; u.coverMat.needsUpdate = true; m.material[4] = u.small.userData.ok ? u.coverMat : faceMat(m); } u.full.dispose(); u.full = null; } }
   function putBack() { const m = P.held; if (!m) return; P.held = null; dropFull(m); animate(m, m.userData.home.p.clone(), m.userData.home.q.clone()); $("card").hidden = true; tvLabel = ["CH 3", "PICK UP A BOX"]; }
   const vidsFor = (g) => (Array.isArray(VIDS[g.id]) ? VIDS[g.id].filter((v) => Array.isArray(v) && /^[\w-]{6,20}$/.test(v[1] || "")) : []);
   function showCard(g) {
@@ -993,7 +1033,7 @@ async function start() {
     setQuality(qPick === "auto" ? (slowDevice ? "lite" : "full") : qPick);
   });
   $("secsel").addEventListener("change", (e) => { if (e.target.value !== "") { if (P.held) putBack(); goSection(+e.target.value); } e.target.value = ""; });
-  if (location.hash.includes("debug")) window.__store = { P, night, lightsOut, lightsOn, shop: () => S, goSection, mem: () => ({ loaded, q: qName, tex: renderer.info.memory.textures }) };
+  if (location.hash.includes("debug")) window.__store = { P, night, lightsOut, lightsOn, shop: () => S, goSection, mem: () => ({ loaded, q: qName, tex: renderer.info.memory.textures, sheets: sheetState.filter((x) => x === 2).length, filled: S.boxes.filter((b) => b.material[4] !== M.blank).length, boxes: S.boxes.length }) };
 
   // ---------- frame loop ----------
   build(fromWall && new URLSearchParams(location.search).get("from") === "wall" ? "wall" : "all");

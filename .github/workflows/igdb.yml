@@ -56,11 +56,12 @@ jobs:
         run: |
           pip install -q pillow
           python tools/igdb_extras.py
+          python tools/store_thumbs.py
       - name: Save data/igdb.json
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
-          git add data/igdb.json data/videos.json data/box.json box 2>/dev/null || true
+          git add data/igdb.json data/videos.json data/box.json box store/thumbs store/thumbs.json 2>/dev/null || true
           git diff --cached --quiet && exit 0
           git commit -m "Update IGDB covers and trailers"
           for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
