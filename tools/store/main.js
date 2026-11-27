@@ -454,11 +454,11 @@ async function start() {
     P.held = null; animate(m, m.userData.home.p.clone(), m.userData.home.q.clone(), 500);
     P.watch = { g, list, i: 0, back: { x: P.x, z: P.z, yaw: P.yaw, pitch: P.pitch }, tv: best };
     watchScreen = best.scr; best.scr.material = watchMat;
-    // stand under it and look up, far enough back that the screen fills most of the view
+    // the view rises to the screen and squares up to it, far enough back that it fills most of the view
+    // (looking up at it from the floor squashed the picture into a strip)
     const v = THREE.MathUtils.degToRad(camera.fov) / 2, h = Math.atan(Math.tan(v) * camera.aspect);
-    const dist = Math.max((TVW / 0.84) / (2 * Math.tan(h)), (TVH / 0.6) / (2 * Math.tan(v)));
-    const back = Math.sqrt(Math.max(0.25, dist * dist - (TVY - EYE) ** 2));
-    P.x = best.x; P.z = best.z + best.f * back; P.yaw = best.f > 0 ? 0 : Math.PI; P.pitch = Math.atan2(TVY - EYE, back);
+    const dist = Math.max((TVW / 0.9) / (2 * Math.tan(h)), (TVH / 0.62) / (2 * Math.tan(v)));
+    P.x = best.x; P.z = best.z + best.f * (dist + 0.3); P.yaw = best.f > 0 ? 0 : Math.PI; P.pitch = 0;
     $("card").hidden = true; $("tvbar").hidden = false; hideHint();
     setTimeout(() => { if (P.watch && P.watch.g === g) play(); }, CALM ? 0 : 700);
   }
@@ -759,7 +759,9 @@ async function start() {
     const k = CALM ? 1 : Math.min(1, dt * (P.watch ? 4 : 14));
     const walking = keys.size || stick.x || stick.y;
     const bob = CALM || !walking ? 0 : Math.sin(now / 130) * 0.018;
-    camera.position.x += (P.x - camera.position.x) * k; camera.position.z += (P.z - camera.position.z) * k; camera.position.y = EYE + bob;
+    camera.position.x += (P.x - camera.position.x) * k; camera.position.z += (P.z - camera.position.z) * k;
+    const ty = P.watch ? TVY : EYE + bob;
+    camera.position.y = P.watch || Math.abs(camera.position.y - EYE) > 0.06 ? camera.position.y + (ty - camera.position.y) * k : ty;
     let dy = P.yaw - camera.rotation.y; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
     camera.rotation.set(camera.rotation.x + (P.pitch - camera.rotation.x) * k, camera.rotation.y + dy * k, 0, "YXZ");
     camera.updateMatrixWorld();

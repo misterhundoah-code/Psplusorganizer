@@ -188,7 +188,7 @@ except FileNotFoundError:
 
 
 # The bar across the top of every page, the wall included (update_index writes it into index.html).
-NAV = [("", "/", "The wall"), ("coming-to-ps-plus", "/lists/coming-to-ps-plus", "Predictions"),
+NAV = [("", "/", "The wall"), ("store", "/store/", "Walk the shop"), ("coming-to-ps-plus", "/lists/coming-to-ps-plus", "Predictions"),
        ("leaving-ps-plus", "/lists/leaving-ps-plus", "Leaving soon"), ("new-on-ps-plus", "/lists/new-on-ps-plus", "New this month"),
        ("best-ps-plus-extra-games", "/lists/best-ps-plus-extra-games", "Best of Extra"),
        ("ps-plus-co-op-games", "/lists/ps-plus-co-op-games", "Co-op"), ("short-ps-plus-games", "/lists/short-ps-plus-games", "Short games"),
