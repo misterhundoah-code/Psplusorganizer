@@ -1,0 +1,37 @@
+name: IGDB lookup (test)
+
+# Looks a sample of games up on IGDB for portrait covers and trailer videos and prints what it finds to
+# the job log. Run by hand only; it changes nothing.
+on:
+  workflow_dispatch:
+    inputs:
+      sample:
+        description: "How many games to sample"
+        required: false
+        default: "24"
+        type: string
+      ids:
+        description: "Or particular wall ids, separated by commas"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  lookup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - env:
+          IGDB_CLIENT_ID: ${{ secrets.IGDB_CLIENT_ID }}
+          IGDB_CLIENT_SECRET: ${{ secrets.IGDB_CLIENT_SECRET }}
+          SAMPLE: ${{ inputs.sample }}
+          IDS: ${{ inputs.ids }}
+        run: |
+          if [ -n "$IDS" ]; then python tools/fetch_igdb.py --ids "$IDS"; else python tools/fetch_igdb.py --sample "${SAMPLE:-24}"; fi
