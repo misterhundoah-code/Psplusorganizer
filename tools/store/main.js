@@ -129,17 +129,27 @@ async function start() {
   if (fromWall && !fromWall.ids.length) fromWall = null;
   try { await Promise.all(["96px Bungee", "800 38px Archivo", "44px 'Permanent Marker'", "40px VT323"].map((f) => document.fonts.load(f))); } catch (e) {}
 
+  // Graphics quality. "lite" for phones and slower machines, "full" for the rest; "auto" picks one and steps
+  // down if the frame rate struggles. The visitor can choose in the shop's menu.
+  const QUALITY = {
+    lite: { dpr: 1.25, cap: 200, near: 7, far: 13, fog: [7, 17], lights: 3 },
+    full: { dpr: 2, cap: 480, near: 10, far: 18, fog: [10, 25], lights: 6 },
+  };
+  let qPick = "auto"; try { qPick = localStorage.getItem("psplus-shop-quality") || "auto"; } catch (e) {}
+  const slowDevice = TOUCH || (navigator.deviceMemory && navigator.deviceMemory <= 4) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+  let qName = qPick === "auto" ? (slowDevice ? "lite" : "full") : qPick;
+  let Q = QUALITY[qName];
   const renderer = new THREE.WebGPURenderer({ antialias: true, forceWebGL: location.hash.includes("webgl") });
   await renderer.init();
   $("engine").textContent = renderer.backend && renderer.backend.isWebGPUBackend ? "Drawn with WebGPU" : "Drawn with WebGL";
-  renderer.setPixelRatio(Math.min(devicePixelRatio, TOUCH ? 1.75 : 2));
+  renderer.setPixelRatio(Math.min(devicePixelRatio, Q.dpr));
   renderer.toneMapping = THREE.NeutralToneMapping;
   $("stage").appendChild(renderer.domElement);
   const el = renderer.domElement;
 
   const scene = new THREE.Scene();
   const BG = new THREE.Color("#0d1230"), BG_NIGHT = new THREE.Color("#07020a");
-  scene.background = BG.clone(); scene.fog = new THREE.Fog("#0d1230", 10, 26);
+  scene.background = BG.clone(); scene.fog = new THREE.Fog("#0d1230", Q.fog[0], Q.fog[1]);
   const camera = new THREE.PerspectiveCamera(66, 1, 0.1, 45);   // a tighter near/far range gives the depth test more precision
   const hemi = new THREE.HemisphereLight("#fff6e8", "#2a3566", 1.35); scene.add(hemi);
   const sun = new THREE.DirectionalLight("#ffffff", 0.9); sun.position.set(2, 6, 3); scene.add(sun);
@@ -177,14 +187,32 @@ async function start() {
   // ---------- the shop (rebuilt when the stock changes) ----------
   let S = null;   // the current shop: group, boxes, obstacles, grid, tvs...
   const loader = new THREE.TextureLoader();
+  const coverURL = (g) => BOX.has(g.id) ? `../box/${encodeURIComponent(g.id)}.webp` : ART.has(g.id) ? `../art/${encodeURIComponent(g.id)}.webp` : "";
+  // The full-size cover, for the box in your hand.
   function coverTex(g) {
     const t = new THREE.Texture(); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
-    const url = BOX.has(g.id) ? `../box/${encodeURIComponent(g.id)}.webp` : ART.has(g.id) ? `../art/${encodeURIComponent(g.id)}.webp` : "";
+    const url = coverURL(g);
     if (url) loader.load(url, (tx) => { t.image = tx.image; if (!BOX.has(g.id)) { t.repeat.set(0.75, 1); t.offset.set(0.125, 0); } t.needsUpdate = true; });
     return t;
   }
+  // A small cover for the shelf: the image is drawn down to 132x176 as it arrives, so each one takes about
+  // a sixth of the graphics memory of the full image. Square art is cropped to the box shape here.
+  function smallTex(g) {
+    const c = document.createElement("canvas"); c.width = 132; c.height = 176;
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 2;
+    const url = coverURL(g); if (!url) return t;
+    const img = new Image(); img.decoding = "async";
+    img.onload = () => {
+      if (t.userData.gone) return;
+      const x = c.getContext("2d"), sq = !BOX.has(g.id), sw = sq ? img.width * 0.75 : img.width;
+      x.drawImage(img, sq ? img.width * 0.125 : 0, 0, sw, img.height, 0, 0, 132, 176);
+      t.needsUpdate = true;
+    };
+    img.src = url;
+    return t;
+  }
   function build(kind) {
-    if (S) { scene.remove(S.group); S.dispose.forEach((d) => d.dispose()); S.boxes.forEach((m) => m.material.forEach((mt, k) => { if (k >= 4 && mt !== M.blank) { mt.map && mt.map.dispose(); mt.dispose(); } })); }
+    if (S) { scene.remove(S.group); S.dispose.forEach((d) => d.dispose()); S.boxes.forEach((b) => { setCover(b, false); b.userData.backMat.map && b.userData.backMat.map.dispose(); b.userData.backMat.dispose(); }); loaded = 0; }
     const games = kind === "wall" && fromWall ? fromWall.ids.map((id) => BYID.get(id)).filter(Boolean) : GAMES;
     const { list, starts } = shelve(games, kind === "wall");
     const G = Math.max(4, Math.ceil(list.length / (PER_FACE * 2))), C = Math.ceil(G / 2);
@@ -279,6 +307,7 @@ async function start() {
     // a few warm lights, over the aisles
     const lights = [];
     for (const [x, z] of [[gx(0) - PX / 2, 0], [0, 0], [gx(C - 1) + PX / 2, 0], [0, ROWZ], [0, -ROWZ], [cx, cz]]) { const p = new THREE.PointLight("#fff4dc", 3, 9, 1.4); p.position.set(x, CEIL - 0.3, z); group.add(p); lights.push(p); }
+    lights.forEach((p, i) => (p.visible = i < Q.lights));
     scene.add(group);
 
     // walkable grid for the zombies
@@ -295,15 +324,33 @@ async function start() {
     document.querySelectorAll("[data-stock]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.stock === kind)));
     P.x = C % 2 ? PX / 2 : 0; P.z = zFront - 1.6; P.yaw = 0; P.pitch = -0.05;   // start in the middle aisle, by the door
     camera.position.set(P.x, EYE, P.z);
-    loadNear(true);
+    loadNear();
     if (night.on) nightLights(true);
   }
-  function loadNear(all) {
-    // covers load as you walk up to them; far boxes are hidden (the fog hides them anyway)
+  // Covers load as you walk up to them and are let go again as you walk away, with a cap on how many are
+  // held at once, so a long walk round the shop doesn't fill the phone's graphics memory. Far boxes are
+  // hidden (the fog hides them anyway).
+  let loaded = 0;
+  function setCover(b, on) {
+    const u = b.userData;
+    if (on === u.loaded) return;
+    if (on) { u.loaded = true; loaded++; u.small = smallTex(u.g); b.material = b.material.slice(); b.material[4] = u.coverMat = new THREE.MeshStandardMaterial({ map: u.small, roughness: 0.32 }); }
+    else { u.loaded = false; loaded--; u.small.userData.gone = true; u.small.dispose(); u.coverMat.dispose(); u.small = u.coverMat = null; b.material[4] = M.blank; }
+  }
+  function loadNear() {
+    const near = [];
     for (const b of S.boxes) {
       const d = Math.hypot(b.position.x - P.x, b.position.z - P.z);
-      b.visible = d < 19 || b === P.held;
-      if (!b.userData.loaded && d < (all ? 8 : 10)) { b.userData.loaded = true; b.material = b.material.slice(); b.material[4] = new THREE.MeshStandardMaterial({ map: coverTex(b.userData.g), roughness: 0.32 }); }
+      b.visible = d < Q.far + 1 || b === P.held;
+      if (b === P.held || (P.watch && b === P.watch.m)) continue;
+      if (b.userData.loaded && d > Q.near + 5) setCover(b, false);
+      else if (!b.userData.loaded && d < Q.near) near.push([d, b]);
+    }
+    near.sort((a, c) => a[0] - c[0]);
+    for (const [, b] of near) { if (loaded >= Q.cap) break; setCover(b, true); }
+    if (loaded > Q.cap) {   // still over: let go of the farthest
+      const far = S.boxes.filter((b) => b.userData.loaded && b !== P.held).map((b) => [Math.hypot(b.position.x - P.x, b.position.z - P.z), b]).sort((a, c) => c[0] - a[0]);
+      for (const [, b] of far) { if (loaded <= Q.cap) break; setCover(b, false); }
     }
   }
   function goSection(i) {
@@ -312,7 +359,7 @@ async function start() {
     const face = S.faces[Math.floor(s.at / PER_FACE)];
     const c = (s.at % PER_FACE) % COLS, along = (c - (COLS - 1) / 2) * SP * (face.s > 0 ? -1 : 1);
     P.x = face.x; P.z = face.z + along; P.yaw = face.s > 0 ? Math.PI / 2 : -Math.PI / 2; P.pitch = -0.12;
-    camera.position.set(P.x, EYE, P.z); hideHint(); loadNear(true);
+    camera.position.set(P.x, EYE, P.z); hideHint(); loadNear();
   }
 
   // ---------- the player ----------
@@ -413,14 +460,16 @@ async function start() {
     return { p, q };
   }
   function pick(m) {
-    if (!m.userData.loaded) { m.userData.loaded = true; m.material = m.material.slice(); m.material[4] = new THREE.MeshStandardMaterial({ map: coverTex(m.userData.g), roughness: 0.32 }); }
+    setCover(m, true);
+    m.userData.full = coverTex(m.userData.g); m.userData.coverMat.map = m.userData.full; m.userData.coverMat.needsUpdate = true;
     if (!m.userData.backMat.map) { m.userData.backMat.map = boxBack(m.userData.g); m.userData.backMat.color.set("#ffffff"); m.userData.backMat.needsUpdate = true; }
     P.held = m; P.flipped = false;
     const { p, q } = heldPose(false); animate(m, p, q);
     showCard(m.userData.g); tvLabel = ["CH 3", "WATCH ON THE TV?"];
   }
   function flip() { if (!P.held) return; P.flipped = !P.flipped; const { p, q } = heldPose(P.flipped); animate(P.held, p, q, 520); $("flip").textContent = P.flipped ? "Turn to the front" : "Turn it over"; }
-  function putBack() { const m = P.held; if (!m) return; P.held = null; animate(m, m.userData.home.p.clone(), m.userData.home.q.clone()); $("card").hidden = true; tvLabel = ["CH 3", "PICK UP A BOX"]; }
+  function dropFull(m) { const u = m.userData; if (u.full) { if (u.coverMat) { u.coverMat.map = u.small; u.coverMat.needsUpdate = true; } u.full.dispose(); u.full = null; } }
+  function putBack() { const m = P.held; if (!m) return; P.held = null; dropFull(m); animate(m, m.userData.home.p.clone(), m.userData.home.q.clone()); $("card").hidden = true; tvLabel = ["CH 3", "PICK UP A BOX"]; }
   const vidsFor = (g) => (Array.isArray(VIDS[g.id]) ? VIDS[g.id].filter((v) => Array.isArray(v) && /^[\w-]{6,20}$/.test(v[1] || "")) : []);
   function showCard(g) {
     $("ctitle").textContent = g.t;
@@ -453,7 +502,7 @@ async function start() {
     let best = null, bd = 1e9;
     for (const tv of S.tvs) { const dz = P.z - tv.z; if (Math.sign(dz) !== tv.f) continue; const d = Math.hypot(P.x - tv.x, dz); if (d < bd) { bd = d; best = tv; } }
     if (!best) best = S.tvs[0];
-    P.held = null; animate(m, m.userData.home.p.clone(), m.userData.home.q.clone(), 500);
+    P.held = null; dropFull(m); animate(m, m.userData.home.p.clone(), m.userData.home.q.clone(), 500);
     P.watch = { g, list, i: 0, back: { x: P.x, z: P.z, yaw: P.yaw, pitch: P.pitch }, tv: best };
     watchScreen = best.scr; best.scr.material = watchMat;
     // the view rises to the screen and squares up to it, far enough back that it fills most of the view
@@ -567,7 +616,7 @@ async function start() {
     ray.setFromCamera(at || new THREE.Vector2(0, 0), camera);
     const spread = night.fx.set > 0 ? [-0.09, 0, 0.09] : [0];
     for (const a of spread) {
-      if (caseTex.length < 24) { const g = S.list.length ? S.list[Math.floor(Math.random() * S.list.length)].g : GAMES[0]; caseTex.push(coverTex(g)); }
+      if (caseTex.length < 24) { const g = S.list.length ? S.list[Math.floor(Math.random() * S.list.length)].g : GAMES[0]; caseTex.push(smallTex(g)); }
       const front = new THREE.MeshStandardMaterial({ map: caseTex[Math.floor(Math.random() * caseTex.length)], roughness: 0.4, emissive: "#222222", emissiveIntensity: 0.4 });
       const m = new THREE.Mesh(caseGeo, [M.plastic, M.plastic, M.plastic, M.plastic, front, M.plastic]);
       const start = new THREE.Vector3(0.16, -0.18, -0.35).applyMatrix4(camera.matrixWorld);
@@ -746,14 +795,28 @@ async function start() {
     if (night.on) lightsOn();
     build(b.dataset.stock);
   }));
+  function setQuality(name, auto) {
+    qName = name; Q = QUALITY[name];
+    renderer.setPixelRatio(Math.min(devicePixelRatio, Q.dpr)); size();
+    if (!night.on) { scene.fog.near = Q.fog[0]; scene.fog.far = Q.fog[1]; }
+    S.lights.forEach((p, i) => (p.visible = i < Q.lights));
+    loadNear();
+    if (auto) say("Switched to lighter graphics so it moves smoothly", 2200);
+  }
+  $("qualsel").value = qPick;
+  $("qualsel").addEventListener("change", (e) => {
+    qPick = e.target.value; try { localStorage.setItem("psplus-shop-quality", qPick); } catch (x) {}
+    setQuality(qPick === "auto" ? (slowDevice ? "lite" : "full") : qPick);
+  });
   $("secsel").addEventListener("change", (e) => { if (e.target.value !== "") { if (P.held) putBack(); goSection(+e.target.value); } e.target.value = ""; });
-  if (location.hash.includes("debug")) window.__store = { P, night, lightsOut, lightsOn, shop: () => S, goSection };
+  if (location.hash.includes("debug")) window.__store = { P, night, lightsOut, lightsOn, shop: () => S, goSection, mem: () => ({ loaded, q: qName, tex: renderer.info.memory.textures }) };
 
   // ---------- frame loop ----------
   build(fromWall && new URLSearchParams(location.search).get("from") === "wall" ? "wall" : "all");
   size();
   camera.rotation.set(P.pitch, P.yaw, 0, "YXZ");
   let last = performance.now(), frame = 0;
+  const perf = { t: 0, n: 0 };
   const ease = (t) => 1 - Math.pow(1 - t, 3);
   renderer.setAnimationLoop((now) => {
     const dt = Math.min(0.05, (now - last) / 1000); last = now; frame++;
@@ -774,7 +837,12 @@ async function start() {
       a.m.quaternion.slerpQuaternions(a.fromQ, a.toQ, e);
       if (a.t >= 1) anim.splice(i, 1);
     }
-    if (frame % 12 === 0) loadNear(false);
+    if (frame % 12 === 0) loadNear();
+    // auto quality: if the frame rate struggles for a few seconds on "full", step down to "lite"
+    if (qPick === "auto" && qName === "full") {
+      perf.t += dt; perf.n++;
+      if (perf.t > 4) { if (perf.t / perf.n > 1 / 30) setQuality("lite", true); perf.t = perf.n = 0; }
+    }
     if (night.on) {
       tickNight(dt);
       if (!CALM && frame % 7 === 0) S.lights.forEach((p, i) => { if (i % 2 === 0) p.intensity = Math.random() < 0.15 ? 0.5 : 4; });

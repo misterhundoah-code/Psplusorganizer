@@ -32,6 +32,7 @@ body.night #stage canvas{cursor:crosshair}
 .aisle{display:flex;gap:6px;align-items:center;margin-top:8px}
 .aisle select{flex:1;font:inherit;font-size:15px;font-weight:700;min-height:40px;padding:4px 8px;border:2px solid var(--yellow);background:#fff;color:var(--ink);border-radius:3px}
 .aislemeta{display:flex;justify-content:space-between;gap:8px;margin-top:4px;font-size:12.5px;color:#cbd4ff}
+.qual{display:flex;align-items:center;gap:6px}.qual select{font:inherit;font-size:12.5px;font-weight:700;border:1px solid rgba(255,255,255,.6);background:transparent;color:#fff;border-radius:3px;padding:1px 4px}.qual option{color:#141a33}
 #stick{position:fixed;z-index:3;width:100px;height:100px;border-radius:50%;border:3px solid rgba(255,201,37,.8);background:rgba(13,18,48,.35);pointer-events:none}
 #knob{position:absolute;left:30px;top:30px;width:40px;height:40px;border-radius:50%;background:var(--yellow);opacity:.9}
 #stickhint{position:fixed;left:16px;bottom:16px;z-index:2;width:92px;height:92px;border-radius:50%;border:3px dashed rgba(255,201,37,.6);display:none;align-items:center;justify-content:center;text-align:center;font-size:12px;font-weight:700;color:#fff;pointer-events:none}
@@ -97,7 +98,7 @@ body.night .stock,body.night #stocknote,body.night .aisle,body.night .aislemeta{
   </div>
   <p id="stocknote"></p>
   <div class="aisle"><select id="secsel" aria-label="Go to a section"></select></div>
-  <div class="aislemeta"><span id="controls"></span><span id="engine"></span></div>
+  <div class="aislemeta"><span id="controls"></span><label class="qual">Graphics <select id="qualsel"><option value="auto">Auto</option><option value="lite">Lighter</option><option value="full">Richer</option></select></label><span id="engine"></span></div>
 </header>
 <div id="hint"></div>
 <div id="stick" hidden><span id="knob"></span></div>
