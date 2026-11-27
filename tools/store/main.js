@@ -1370,7 +1370,7 @@ async function start() {
 
   // Feed the clerk
   const kernMat2 = new THREE.MeshStandardMaterial({ color: "#fff3c4", roughness: 0.8, emissive: "#ffcc55", emissiveIntensity: 0.35 });
-  const kernGeo2 = new THREE.IcosahedronGeometry(0.04, 0), tmpV = new THREE.Vector3();
+  const kernGeo2 = new THREE.IcosahedronGeometry(0.04, 0), tmpV = new THREE.Vector3(), tmpV2 = new THREE.Vector3();
   function startPop() {
     endMG(); if (P.held) putBack(); if (P.watch) leaveTV();
     loadHuman("clerk");
@@ -1387,7 +1387,8 @@ async function start() {
     const f = c.g.rotation.y; tmpV.x += Math.sin(f) * MOUTH.f; tmpV.z += Math.cos(f) * MOUTH.f; tmpV.y += MOUTH.y;
     return tmpV;
   }
-  const MOUTH = { f: 0.17, y: 0.22, r: 0.2 };
+  const mouthGeo = new THREE.CircleGeometry(0.08, 20).scale(1, 0.85, 1), mouthMat = new THREE.MeshBasicMaterial({ color: "#3a0a10" });
+  const MOUTH = { f: 0.36, y: 0.07, r: 0.27 };
   const popPower = () => Math.min(1, (performance.now() - MG.hold) / 900);
   function popDown() { if (!MG || MG.kind !== "pop" || MG.over || !MG.clerk) return; MG.hold = performance.now(); $("mgpow").hidden = false; }
   function popThrow(at) {
@@ -1407,7 +1408,11 @@ async function start() {
   function tickPop(dt) {
     if (!MG.clerk) {
       if (!humanReady("clerk")) return;
-      MG.clerk = spawnHuman("clerk", MG.x0, MG.z, "GARY", 1.9); MG.clerk.hitT = 0; gesture(MG.clerk, "Wave"); MG.clerk.hitT = 1.2; popStats(); return;
+      MG.clerk = spawnHuman("clerk", MG.x0, MG.z, "GARY", 1.9); MG.clerk.hitT = 0;
+      // Gary's mouth, wide open for popcorn, pinned to his head so it moves with him
+      const c0 = MG.clerk; c0.g.rotation.y = Math.atan2(P.x - c0.g.position.x, P.z - c0.g.position.z); c0.g.updateMatrixWorld(true);
+      const mo = new THREE.Mesh(mouthGeo, mouthMat); mo.position.copy(mouthOf(c0)); mo.position.y += 0.0; mo.rotation.y = c0.g.rotation.y; scene.add(mo);
+      if (c0.head) c0.head.attach(mo); else c0.g.attach(mo); gesture(MG.clerk, "Wave"); MG.clerk.hitT = 1.2; popStats(); return;
     }
     const c = MG.clerk;
     if (MG.over) { c.mixer.update(dt); return; }
@@ -1424,6 +1429,9 @@ async function start() {
     for (let i = MG.kernels.length - 1; i >= 0; i--) {
       const k = MG.kernels[i];
       if (k.rest !== undefined) { if ((k.rest += dt) > 2.5) { scene.remove(k.m); MG.kernels.splice(i, 1); } continue; }
+      // a little help: popcorn that gets close curves into his mouth
+      const toM = tmpV2.copy(mouth).sub(k.m.position), dm = toM.length();
+      if (!k.missed && dm < 0.9 && dm > 0.01) k.vel.addScaledVector(toM.normalize(), dt * 14 * (1 - dm / 0.9) * 2);
       k.age += dt; k.vel.y -= 9.8 * dt; k.m.position.addScaledVector(k.vel, dt); k.m.rotation.x += dt * 9; k.m.rotation.z += dt * 6;
       const q = k.m.position;
       if (!k.missed && q.distanceTo(mouth) < MOUTH.r) {
@@ -1477,16 +1485,33 @@ async function start() {
     for (const w of words) d = d.replace(new RegExp(`\\b${w}\\w*`, "gi"), "____");
     return d;
   }
-  const findStats = () => `<span>Time<b>${mmss(MG.t)}</b></span><span>Wrong picks<b>${MG.wrong}</b></span>`;
-  function startFind() {
+  const findStats = () => `<span>Customer<b>${MG.round}</b></span><span>Time<b>${mmss(MG.t)}</b></span><span>Wrong picks<b>${MG.wrong}</b></span>`;
+  // Customers start with the best-known games and work down. "Well known" is how many people have logged the
+  // game on HowLongToBeat (the n field), which tracks fame far better than its score does.
+  const FIND_TIERS = [[0, 30], [0, 70], [30, 140], [80, 260], [180, 450]];
+  const normT = (t) => (t || "").toLowerCase().split(/[^a-z0-9]+/).filter((w) => w && !STOPW.has(w)).join(" ");
+  function startFind(round) {
+    round = typeof round === "number" ? round : 1;
     endMG(); if (P.held) putBack();
     const ok = (it) => it.g.d && it.g.d.length > 60 && vague(it.g).split("____").join("").split(/\s+/).length > 8;
-    let pool = S.list.filter((it) => ok(it) && (it.g.m || 0) >= 72); if (pool.length < 5) pool = S.list.filter(ok);
+    const ranked = S.list.filter(ok).sort((a, b) => (b.g.n || 0) - (a.g.n || 0));
+    const [a, b] = FIND_TIERS[Math.min(FIND_TIERS.length - 1, Math.floor((round - 1) / 2))];
+    let pool = ranked.slice(Math.min(a, Math.max(0, ranked.length - 10)), b);
+    if (FIND.seen.size) { const fresh = pool.filter((it) => !FIND.seen.has(it.g.id)); if (fresh.length) pool = fresh; }
     const it = pool[Math.floor(Math.random() * pool.length)];
     if (!it) { say("Nobody's waiting right now", 1500); return; }
+    FIND.seen.add(it.g.id);
     ding(); loadHuman("customer");
-    MG = { kind: "find", g: it.g, sec: it.sec, t: 0, wrong: 0, hints: 0, done: false, customer: null };
+    MG = { kind: "find", g: it.g, sec: it.sec, t: 0, wrong: 0, hints: 0, done: false, customer: null, round };
     document.body.classList.add("mg"); hideHint(); findText();
+  }
+  const FIND = { seen: new Set() };
+  // two boxes count as the same game when one title is the other plus edition words
+  const EDW = new Set(["ultimate", "intergrade", "director", "directors", "cut", "enhanced", "voidheart", "gold", "royal", "complete", "special", "anniversary", "bundle", "ps4", "ps5", "s"]);
+  function sameGame(a, b) {
+    if (a.id === b.id) return true;
+    let x = normT(a.t).split(" "), y = normT(b.t).split(" "); if (x.length > y.length) [x, y] = [y, x];
+    return x.length > 0 && x.every((w, i) => y[i] === w) && y.slice(x.length).every((w) => EDW.has(w));
   }
   function findText() {
     const g = MG.g, hints = [];
@@ -1502,23 +1527,24 @@ async function start() {
     if (c) { c.mixer.update(dt); if (c.back > 0 && (c.back -= dt) <= 0) zAct(c, "Idle", 0.3); }
     if (MG.done) return;
     const before = Math.floor(MG.t); MG.t += dt;
-    const at = [25, 50, 80];
+    const at = [20, 40, 60];
     if (MG.hints < 3 && MG.t > at[MG.hints]) { MG.hints++; findText(); say("Here's another clue", 1200); }
     else if (Math.floor(MG.t) !== before) $("mgstats").innerHTML = findStats();
   }
   function findCheck(g) {
-    if (g.id === MG.g.id) {
+    const same = sameGame(g, MG.g);
+    if (same) {
       MG.done = true; ding(); sfx("power", 0.6); gesture(MG.customer, "Yes");
       const score = Math.max(100, 1000 - Math.floor(MG.t) * 6 - MG.wrong * 100 - MG.hints * 100), best = mgBest("find");
       if (score > best) mgSave("find", score);
       $("mg").hidden = true;
       mgOver("That's the one", `${g.t}, found in ${mmss(MG.t)}${MG.wrong ? ` after ${MG.wrong} wrong ${MG.wrong === 1 ? "pick" : "picks"}` : ""}. Score ${score}.` + (score > best && best ? " That's a new best." : best ? ` Your best is ${best}.` : ""),
-        "Serve another", startFind);
+        "Next customer", () => startFind(MG.round + 1));
     } else { MG.wrong++; say("Not that one", 1000); gesture(MG.customer, "No"); $("mgstats").innerHTML = findStats(); }
   }
   function findGiveUp() {
     MG.done = true; const i = S.starts.findIndex((s) => s.name === MG.sec);
-    mgShow("Find the game", `It was <b>${esc(MG.g.t)}</b>, in the ${esc(MG.sec)} section.`, "", [["Show me", () => { if (i >= 0) goSection(i); }], ["Serve another", startFind], ["Done", endMG]]);
+    mgShow("Find the game", `It was <b>${esc(MG.g.t)}</b>, in the ${esc(MG.sec)} section.`, "", [["Show me", () => { if (i >= 0) goSection(i); }], ["Next customer", () => startFind(MG.round + 1)], ["Done", endMG]]);
   }
   function tickMG(dt) { if (MG) (MG.kind === "pop" ? tickPop : tickFind)(dt); }
 
