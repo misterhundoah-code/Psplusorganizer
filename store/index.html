@@ -8,10 +8,10 @@
 <link rel="stylesheet" href="../fonts/fonts.css">
 <style>
 /* VOICE: the Wall of PS Plus as a neighbourhood rental shop you can walk into; after hours, something else.
-   IDEA: one aisle of the shop at a time, stocked with every game or with what your wall was showing.
+   IDEA: the whole shop, rows of shelves by genre with TVs hanging from the ceiling, stocked with every game or with your wall.
    PICTURE: the 3D aisle fills the screen; the controls float over it.
    COLOUR and TYPE: the site's blue #1E3A9E and yellow #FFC925 on night navy; Bungee signs, Archivo text.
-   LAYOUT: full-bleed stage, a shop tab top left with the aisle picker, walk buttons bottom right, the game card bottom left.
+   LAYOUT: full-bleed stage, a shop tab top left with the section picker, the game card bottom left; a walking stick on touch screens.
    The trailer is YouTube's own player, laid exactly over the TV's screen while you stand in front of it. */
 :root{--blue:#1E3A9E;--yellow:#FFC925;--ink:#141a33;--night:#0d1230;--red:#d7263d}
 *{box-sizing:border-box;min-width:0}
@@ -31,16 +31,19 @@ body.night #stage canvas{cursor:crosshair}
 #stocknote{margin:6px 0 0;font-size:13px;color:#dfe5ff}
 .aisle{display:flex;gap:6px;align-items:center;margin-top:8px}
 .aisle select{flex:1;font:inherit;font-size:15px;font-weight:700;min-height:40px;padding:4px 8px;border:2px solid var(--yellow);background:#fff;color:var(--ink);border-radius:3px}
-.aisle button{min-width:40px;min-height:40px;font-size:18px}
 .aislemeta{display:flex;justify-content:space-between;gap:8px;margin-top:4px;font-size:12.5px;color:#cbd4ff}
-#aislename{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+#stick{position:fixed;z-index:3;width:100px;height:100px;border-radius:50%;border:3px solid rgba(255,201,37,.8);background:rgba(13,18,48,.35);pointer-events:none}
+#knob{position:absolute;left:30px;top:30px;width:40px;height:40px;border-radius:50%;background:var(--yellow);opacity:.9}
+#stickhint{position:fixed;left:16px;bottom:16px;z-index:2;width:92px;height:92px;border-radius:50%;border:3px dashed rgba(255,201,37,.6);display:none;align-items:center;justify-content:center;text-align:center;font-size:12px;font-weight:700;color:#fff;pointer-events:none}
+@media (pointer:coarse){#stickhint{display:flex}}
+#cross{position:fixed;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;z-index:2;pointer-events:none;display:none}
+#cross::before,#cross::after{content:"";position:absolute;background:#fff;box-shadow:0 0 0 1px #000}
+#cross::before{left:10px;top:0;width:2px;height:22px}#cross::after{top:10px;left:0;height:2px;width:22px}
+body.night #cross{display:block}
 #hint{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:rgba(13,18,48,.86);border:2px solid var(--yellow);padding:10px 16px;font-size:15px;text-align:center;max-width:calc(100vw - 32px);transition:opacity .5s;pointer-events:none}
 #hint.gone{opacity:0}
-.walk{position:fixed;right:12px;bottom:12px;display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,48px);gap:6px;z-index:3}
-.walk button{font:inherit;font-size:20px;font-weight:800;background:rgba(30,58,158,.92);color:#fff;border:2px solid var(--yellow);border-radius:4px;touch-action:none;cursor:pointer}
 button:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid #fff;outline-offset:2px}
-.walk [data-walk=ArrowUp]{grid-column:2}.walk [data-walk=ArrowLeft]{grid-column:1;grid-row:2}.walk [data-walk=ArrowDown]{grid-column:2;grid-row:2}.walk [data-walk=ArrowRight]{grid-column:3;grid-row:2}
-#card{position:fixed;left:12px;bottom:12px;z-index:3;width:min(420px,calc(100vw - 196px));background:#f4f6fb;color:var(--ink);border-top:6px solid var(--yellow);padding:12px 14px 14px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+#card{position:fixed;left:12px;bottom:12px;z-index:3;width:min(420px,calc(100vw - 24px));background:#f4f6fb;color:var(--ink);border-top:6px solid var(--yellow);padding:12px 14px 14px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
 #card h2{margin:0;font-size:20px;line-height:1.15}
 #cmeta{margin:4px 0 0;font-size:13.5px;color:#4a5170}
 #cfacts{display:flex;flex-wrap:wrap;gap:2px 16px;margin:6px 0 0;font-size:14px;color:#4a5170}
@@ -58,8 +61,12 @@ button:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid #fff
 #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;font:400 20px Bungee,sans-serif;color:var(--yellow)}
 /* after hours */
 body.night .tab{background:#2a0b10;border-bottom-color:var(--red)}
-#hud{position:fixed;right:12px;top:12px;z-index:3;background:rgba(20,4,8,.88);border:2px solid var(--red);padding:8px 12px;display:grid;grid-template-columns:auto auto;gap:2px 14px;font-size:14px;align-items:center}
-#hud b{font:400 18px Bungee,sans-serif;color:#fff}#hhp{color:#ff5d6c;font-size:20px;letter-spacing:2px}
+body.night .stock,body.night #stocknote,body.night .aisle,body.night .aislemeta{display:none}
+#hud{position:fixed;right:12px;top:12px;z-index:3;background:rgba(20,4,8,.88);border:2px solid var(--red);padding:8px 12px;display:grid;grid-template-columns:auto auto;gap:2px 14px;font-size:14px;align-items:center;min-width:190px}
+#hud b{font:400 18px Bungee,sans-serif;color:#fff;text-align:right}
+#hhp{grid-column:1/-1;height:12px;background:#3a0a12;border:1px solid #ff5d6c;position:relative;margin:4px 0 2px}
+#hhp::after{content:"";position:absolute;inset:0;width:calc(var(--hp,1)*100%);background:linear-gradient(90deg,#ff3b4e,#ffc925);transition:width .2s}
+#fx{position:fixed;left:50%;top:64px;transform:translateX(-50%);z-index:3;font:400 15px Bungee,sans-serif;color:var(--yellow);text-shadow:0 2px 0 #000;white-space:pre;pointer-events:none}
 #hud button{grid-column:1/-1;margin-top:6px;font:inherit;font-weight:800;font-size:13.5px;padding:6px 10px;min-height:36px;border:2px solid #fff;background:transparent;color:#fff;border-radius:3px;cursor:pointer}
 #throwbtn{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:3;font:400 18px Bungee,sans-serif;padding:12px 22px;min-height:56px;background:var(--red);color:#fff;border:3px solid #fff;border-radius:4px;cursor:pointer;touch-action:manipulation}
 #say{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:3;font:400 clamp(20px,4vw,34px)/1.2 Bungee,sans-serif;color:#fff;text-shadow:0 3px 0 #000,0 0 20px rgba(255,40,40,.6);text-align:center;max-width:min(680px,calc(100vw - 40px));pointer-events:none}
@@ -72,17 +79,15 @@ body.night .tab{background:#2a0b10;border-bottom-color:var(--red)}
 .over p{margin:0 0 14px}
 @media (max-width:600px){
   .tab{padding:8px 10px}.tab h1{font-size:16px}#stocknote,.aislemeta span:last-child{display:none}
-  #card{left:8px;right:8px;width:auto;bottom:118px}
-  .walk{right:50%;transform:translateX(50%);bottom:8px;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(2,46px)}
-  body.night .walk{right:8px;transform:none;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(2,42px)}
-  body.night #throwbtn{left:12px;transform:none;bottom:12px}
+  #card{left:8px;right:8px;width:auto;bottom:8px}
+  body.night #throwbtn{left:auto;right:14px;transform:none;bottom:24px}
   #hint{bottom:120px}#hud{top:auto;bottom:118px;right:8px}
 }
 @media (prefers-reduced-motion:reduce){#hint{transition:none}#ouch.on{animation:none;opacity:.6}}
 </style>
 </head>
 <body>
-<div id="stage" aria-label="A 3D aisle of game boxes. Use the arrow keys or the walk buttons to move, and tap a box to pick it up."></div>
+<div id="stage" aria-label="A 3D video shop full of game boxes. Walk with WASD or the arrow keys, drag to look around, and click a box to pick it up. The section list jumps to a genre."></div>
 <div id="loading">Opening the shop…</div>
 <header class="tab">
   <div class="tabtop"><h1>Wall of PS Plus</h1><a class="back" href="/">Back to the wall</a></div>
@@ -91,15 +96,13 @@ body.night .tab{background:#2a0b10;border-bottom-color:var(--red)}
     <button type="button" data-stock="wall" id="wallstock" aria-pressed="false" hidden>My wall's filters</button>
   </div>
   <p id="stocknote"></p>
-  <div class="aisle">
-    <button type="button" id="prevaisle" aria-label="Previous aisle">←</button>
-    <select id="aislesel" aria-label="Aisle"></select>
-    <button type="button" id="nextaisle" aria-label="Next aisle">→</button>
-  </div>
-  <div class="aislemeta"><span id="aislecount"></span><span id="engine"></span></div>
-  <span id="aislename" aria-live="polite"></span>
+  <div class="aisle"><select id="secsel" aria-label="Go to a section"></select></div>
+  <div class="aislemeta"><span id="controls"></span><span id="engine"></span></div>
 </header>
-<div id="hint">Drag to look around and walk the aisle. Tap a box to pick it up, then watch its trailer on the TV.</div>
+<div id="hint"></div>
+<div id="stick" hidden><span id="knob"></span></div>
+<div id="stickhint" aria-hidden="true">Walk</div>
+<div id="cross" aria-hidden="true"></div>
 <section id="card" hidden aria-live="polite">
   <h2 id="ctitle"></h2>
   <p id="cmeta"></p>
@@ -118,19 +121,15 @@ body.night .tab{background:#2a0b10;border-bottom-color:var(--red)}
   <button type="button" id="tvnext">Next video</button>
   <button type="button" id="tvleave" class="plain">Step back</button>
 </div>
-<div id="hud" hidden aria-live="polite"><span>Score</span><b id="hscore">0</b><span>Wave</span><b id="hwave">1</b><span>You</span><span id="hhp" aria-label="Health"></span><button type="button" id="lightson">Lights back on</button></div>
+<div id="hud" hidden><span>Score</span><b id="hscore">0</b><span>Floored</span><b id="hfloored">0</b><span>Time</span><b id="htime">0:00</b><div id="hhp" role="img" aria-label="Health"></div><button type="button" id="lightson">Lights back on</button></div>
+<div id="fx" aria-live="polite"></div>
 <div id="say" hidden></div>
 <div id="ouch"></div>
 <button type="button" id="throwbtn" hidden>Throw</button>
 <div class="over" id="over" hidden><div role="dialog" aria-labelledby="overtitle"><h2 id="overtitle">The shop's overrun</h2><p id="overtext"></p>
   <button type="button" id="again">Try again</button> <button type="button" id="lightson2" class="plain">Lights back on</button></div></div>
-<nav class="walk" aria-label="Walk">
-  <button type="button" data-walk="ArrowUp" aria-label="Walk forward">↑</button>
-  <button type="button" data-walk="ArrowLeft" aria-label="Look left">←</button>
-  <button type="button" data-walk="ArrowDown" aria-label="Walk back">↓</button>
-  <button type="button" data-walk="ArrowRight" aria-label="Look right">→</button>
-</nav>
-<script>new MutationObserver(()=>{const n=document.body.classList.contains("night");document.getElementById("throwbtn").hidden=!n||!matchMedia("(pointer:coarse)").matches;}).observe(document.body,{attributes:true,attributeFilter:["class"]});</script>
+<script>{const t=matchMedia("(pointer:coarse)").matches;document.getElementById("hint").textContent=t?"Walk with the stick in the corner and drag anywhere else to look around. Tap a box to pick it up.":"Walk with WASD or the arrow keys and drag to look around. Click a box to pick it up.";document.getElementById("controls").textContent=t?"":"WASD to walk, drag to look";}
+new MutationObserver(()=>{const n=document.body.classList.contains("night");document.getElementById("throwbtn").hidden=!n||!matchMedia("(pointer:coarse)").matches;}).observe(document.body,{attributes:true,attributeFilter:["class"]});</script>
 <script type="module" src="store.js"></script>
 </body>
 </html>
