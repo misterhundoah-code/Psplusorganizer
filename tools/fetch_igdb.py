@@ -1,11 +1,17 @@
 """Look games up on IGDB (Twitch's game database) for portrait cover art and official trailer videos.
 
 Needs the IGDB_CLIENT_ID and IGDB_CLIENT_SECRET secrets (a Twitch developer app). For now this only runs a
-sample: it prints, for each game, the IGDB match it chose, its cover and its videos, so we can judge the
-matching and the quality before using it across the catalogue. It changes no files.
+sample (prints what it finds) or the whole list, saved to data/igdb.json:
+
+  { wall id: {"igdb": id, "name": IGDB name, "y": year, "cover": image_id, "cw": width, "ch": height,
+              "videos": [[label, YouTube id], ...]} }   or  { wall id: {"miss": "YYYY-MM-DD"} }
+
+Covers are served by IGDB at https://images.igdb.com/igdb/image/upload/t_cover_big_2x/<image_id>.jpg
 
   python tools/fetch_igdb.py --sample 24          # a spread of modern, classic and PS3 games
   python tools/fetch_igdb.py --ids a,b,c          # particular games by wall id
+  python tools/fetch_igdb.py --all                # every game not looked up yet (misses retried after 14 days)
+  python tools/fetch_igdb.py --all --refresh      # every game again
 """
 import argparse, json, os, re, sys, time, urllib.parse, urllib.request
 from pathlib import Path
@@ -39,7 +45,7 @@ def norm(t):
 
 
 def find(g, cid, tok):
-    title = re.sub(r"\s*\((ps1|ps2|psp|ps3)\)\s*$", "", g["t"], flags=re.I)
+    title = re.sub(r"\s*\((ps1|ps2|psp|ps3|(19|20)\d\d)\)\s*$", "", g["t"], flags=re.I)
     q = (f'search "{title.replace(chr(34), "")}"; '
          "fields name,first_release_date,platforms,cover.image_id,cover.width,cover.height,"
          "videos.video_id,videos.name,category,version_parent; "
@@ -66,7 +72,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--sample", type=int, default=0)
     ap.add_argument("--ids", default="")
+    ap.add_argument("--all", action="store_true")
+    ap.add_argument("--refresh", action="store_true")
     a = ap.parse_args()
+    if a.all:
+        return run_all(a.refresh)
     d = json.loads((ROOT / "data/games.json").read_text())
     G = d if isinstance(d, list) else d["games"]
     by = {g["id"]: g for g in G}
@@ -100,6 +110,47 @@ def main():
             print(f"     video: {v.get('name')!s:40.40} https://www.youtube.com/watch?v={v.get('video_id')}")
         time.sleep(0.3)  # IGDB allows 4 requests a second
     print(f"\n{found} of {len(pick)} matched, {vids} with at least one video.")
+
+
+def entry(r):
+    cov = r.get("cover") or {}
+    return {"igdb": r["id"], "name": r.get("name"),
+            "y": time.gmtime(r["first_release_date"]).tm_year if r.get("first_release_date") else None,
+            "cover": cov.get("image_id"), "cw": cov.get("width"), "ch": cov.get("height"),
+            "videos": [[v.get("name") or "Trailer", v["video_id"]] for v in (r.get("videos") or []) if v.get("video_id")]}
+
+
+def run_all(refresh):
+    d = json.loads((ROOT / "data/games.json").read_text())
+    G = d if isinstance(d, list) else d["games"]
+    out_path = ROOT / "data/igdb.json"
+    out = {} if refresh or not out_path.exists() else json.loads(out_path.read_text())
+    today = time.strftime("%Y-%m-%d")
+    retry = time.strftime("%Y-%m-%d", time.gmtime(time.time() - 14 * 86400))
+    todo = [g for g in G if g["id"] not in out or (out[g["id"]].get("miss") and out[g["id"]]["miss"] <= retry)]
+    print(f"{len(G)} games, {len(todo)} to look up.")
+    cid, tok = token()
+    hit = miss = 0
+    for i, g in enumerate(todo):
+        try:
+            r, _ = find(g, cid, tok)
+        except Exception as e:
+            print(f"!! {g['t']}: {e}"); time.sleep(2); continue
+        if r:
+            out[g["id"]] = entry(r); hit += 1
+        else:
+            out[g["id"]] = {"miss": today}; miss += 1
+        if i % 100 == 99:
+            print(f"  {i + 1} done ({hit} found, {miss} not)"); out_path.write_text(json.dumps(out, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+        time.sleep(0.26)  # IGDB allows 4 requests a second
+    keep = {g["id"] for g in G}
+    out = {k: v for k, v in out.items() if k in keep}
+    out_path.write_text(json.dumps(out, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+    have = [v for v in out.values() if v.get("igdb")]
+    print(f"Done: {hit} found and {miss} not this run. In the file: {len(have)} of {len(out)} matched, "
+          f"{sum(1 for v in have if v.get('cover'))} with covers, {sum(1 for v in have if v.get('videos'))} with videos.")
+    for k, v in out.items():
+        if v.get("miss"): print("   no match:", k)
 
 
 if __name__ == "__main__":

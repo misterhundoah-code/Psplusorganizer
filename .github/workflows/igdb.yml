@@ -1,10 +1,17 @@
-name: IGDB lookup (test)
+name: IGDB lookup
 
-# Looks a sample of games up on IGDB for portrait covers and trailer videos and prints what it finds to
-# the job log. Run by hand only; it changes nothing.
+# Looks games up on IGDB for portrait covers and trailer videos (tools/fetch_igdb.py).
+# Weekly, and by hand: "all" updates data/igdb.json with games not looked up yet; "sample" or ids only print.
 on:
+  schedule:
+    - cron: "17 7 * * 1"
   workflow_dispatch:
     inputs:
+      mode:
+        description: "all (update data/igdb.json), refresh (look every game up again) or sample (print only)"
+        required: false
+        default: "all"
+        type: string
       sample:
         description: "How many games to sample"
         required: false
@@ -17,12 +24,16 @@ on:
         type: string
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: igdb
+  cancel-in-progress: false
 
 jobs:
   lookup:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -31,7 +42,19 @@ jobs:
       - env:
           IGDB_CLIENT_ID: ${{ secrets.IGDB_CLIENT_ID }}
           IGDB_CLIENT_SECRET: ${{ secrets.IGDB_CLIENT_SECRET }}
+          MODE: ${{ inputs.mode || 'all' }}
           SAMPLE: ${{ inputs.sample }}
           IDS: ${{ inputs.ids }}
         run: |
-          if [ -n "$IDS" ]; then python tools/fetch_igdb.py --ids "$IDS"; else python tools/fetch_igdb.py --sample "${SAMPLE:-24}"; fi
+          if [ -n "$IDS" ]; then python tools/fetch_igdb.py --ids "$IDS"
+          elif [ "$MODE" = "sample" ]; then python tools/fetch_igdb.py --sample "${SAMPLE:-24}"
+          elif [ "$MODE" = "refresh" ]; then python tools/fetch_igdb.py --all --refresh
+          else python tools/fetch_igdb.py --all; fi
+      - name: Save data/igdb.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
+          git add data/igdb.json 2>/dev/null || exit 0
+          git diff --cached --quiet && exit 0
+          git commit -m "Update IGDB covers and trailers"
+          for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
