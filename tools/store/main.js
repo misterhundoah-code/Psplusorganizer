@@ -140,7 +140,7 @@ async function start() {
   const scene = new THREE.Scene();
   const BG = new THREE.Color("#0d1230"), BG_NIGHT = new THREE.Color("#07020a");
   scene.background = BG.clone(); scene.fog = new THREE.Fog("#0d1230", 10, 26);
-  const camera = new THREE.PerspectiveCamera(66, 1, 0.05, 60);
+  const camera = new THREE.PerspectiveCamera(66, 1, 0.1, 45);   // a tighter near/far range gives the depth test more precision
   const hemi = new THREE.HemisphereLight("#fff6e8", "#2a3566", 1.35); scene.add(hemi);
   const sun = new THREE.DirectionalLight("#ffffff", 0.9); sun.position.set(2, 6, 3); scene.add(sun);
 
@@ -207,8 +207,10 @@ async function start() {
     for (let row = 0; row < 2; row++) for (let i = 0; i < C; i++) {
       const x = gx(i), z = row === 0 ? ROWZ : -ROWZ;
       mg.box(M.wood, 0.06, 2.2, GL, x, 1.1, z);
-      for (const end of [-1, 1]) mg.box(M.wood, GD, 2.2, 0.06, x, 1.1, z + end * GL / 2);
-      for (const y of [0.06, ...SHELF_Y.map((v) => v - 0.01)]) { mg.box(M.wood, GD, 0.04, GL, x, y, z); for (const s of [-1, 1]) mg.box(M.edge, 0.02, 0.05, GL, x + s * (GD / 2 - 0.01), y + 0.01, z); }
+      // end panels a touch wider than the shelves, and the yellow lips just proud of the shelf edge, so no two
+      // surfaces share a plane (coplanar faces flicker against each other as you move)
+      for (const end of [-1, 1]) mg.box(M.wood, GD + 0.03, 2.2, 0.06, x, 1.1, z + end * (GL / 2 + 0.03));
+      for (const y of [0.06, ...SHELF_Y.map((v) => v - 0.01)]) { mg.box(M.wood, GD - 0.004, 0.04, GL, x, y, z); for (const s of [-1, 1]) mg.box(M.edge, 0.024, 0.06, GL - 0.01, x + s * (GD / 2 + 0.01), y + 0.008, z); }
       obstacles.push({ x0: x - GD / 2, x1: x + GD / 2, z0: z - GL / 2, z1: z + GL / 2 });
       for (const s of [-1, 1]) {
         const items = list.slice(k * PER_FACE, (k + 1) * PER_FACE), first = k * PER_FACE; k++;
@@ -237,7 +239,7 @@ async function start() {
         const txt = [...new Set([...lf, ...rt])].slice(0, 3).join(" · ") || "Empty";
         const tx = own(sign(txt.toUpperCase(), null, 1024, 180));
         const m = new THREE.Mesh(own(new THREE.PlaneGeometry(GD + 0.3, 0.2)), own(new THREE.MeshBasicMaterial({ map: tx })));
-        m.position.set(x, 2.3, z + end * (GL / 2 + 0.04)); m.rotation.y = end > 0 ? 0 : Math.PI; group.add(m);
+        m.position.set(x, 2.3, z + end * (GL / 2 + 0.075)); m.rotation.y = end > 0 ? 0 : Math.PI; group.add(m);
       }
     }
     // TVs hang from the ceiling over the cross aisle and the front of the shop, two screens back to back
@@ -255,8 +257,8 @@ async function start() {
     }
     // the counter by the door, the staff light switch on the wall behind it, and the staff doors at the back
     const cx = halfW - 2.0, cz = zFront - 3.2;
-    mg.box(M.counter, 2.6, 1.0, 0.7, cx - 0.4, 0.5, cz); mg.box(M.edge, 2.64, 0.04, 0.74, cx - 0.4, 1.02, cz);
-    mg.box(M.counter, 0.7, 1.0, 1.6, cx + 1.25, 0.5, cz + 0.45);
+    mg.box(M.counter, 2.6, 1.0, 0.7, cx - 0.4, 0.5, cz); mg.box(M.edge, 2.64, 0.04, 0.74, cx - 0.4, 1.021, cz);
+    mg.box(M.counter, 0.7, 0.98, 1.6, cx + 1.25, 0.49, cz + 0.45);
     mg.box(M.tv, 0.42, 0.3, 0.34, cx - 0.9, 1.19, cz);
     obstacles.push({ x0: cx - 1.7, x1: cx + 1.6, z0: cz - 0.35, z1: cz + 1.25 });
     const sw = new THREE.Group(); sw.position.set(halfW - 0.02, 1.35, cz + 1.6); sw.rotation.y = -Math.PI / 2;
