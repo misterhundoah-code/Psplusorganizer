@@ -120,6 +120,26 @@ function ambMode(nightOn) {
   const t = SND.ctx.currentTime;
   SND.amb.gain.setTargetAtTime(nightOn ? 0 : 1, t, 0.6); SND.ambNight.gain.setTargetAtTime(nightOn ? 1 : 0, t, 0.6);
 }
+// the service bell, and a crunch for popcorn landing
+function ding() {
+  if (!SND.on || !SND.ctx || SND.ctx.state !== "running") return;
+  const c = SND.ctx, t = c.currentTime;
+  for (const [f, v] of [[2093, 0.3], [3140, 0.15], [4190, 0.07], [5270, 0.04]]) {
+    const o = c.createOscillator(); o.frequency.value = f; const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.8);
+    o.connect(g); g.connect(SND.master); o.start(t); o.stop(t + 1.9);
+  }
+}
+function crunch(x, z) {
+  if (!SND.on || !SND.ctx || SND.ctx.state !== "running") return;
+  const c = SND.ctx, { g, pan } = place(x, z), sink = out(0.9 * g, pan);
+  for (let i = 0; i < 4; i++) {
+    const t = c.currentTime + i * 0.11 + Math.random() * 0.03, s = c.createBufferSource(); s.buffer = noiseBuf();
+    const f = c.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = 1800 + Math.random() * 1500; f.Q.value = 1.5;
+    const e = c.createGain(); e.gain.setValueAtTime(0.0001, t); e.gain.exponentialRampToValueAtTime(1, t + 0.008); e.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+    s.connect(f); f.connect(e); e.connect(sink); s.start(t, Math.random()); s.stop(t + 0.08);
+  }
+}
 function setSound(on) {
   SND.on = on; try { localStorage.setItem("psplus-shop-sound", on ? "on" : "off"); } catch (e) {}
   const b = $("snd"); b.setAttribute("aria-pressed", String(on)); b.textContent = on ? "Sound on" : "Sound off";
@@ -518,6 +538,7 @@ async function start() {
     drop: new THREE.MeshStandardMaterial({ color: BLUE, roughness: 0.6 }),
     slot: new THREE.MeshStandardMaterial({ color: "#0a0d18", roughness: 0.9 }),
     basket: new THREE.MeshStandardMaterial({ color: "#d7263d", roughness: 0.55 }),
+    bell: new THREE.MeshStandardMaterial({ color: "#e4c46a", roughness: 0.25, metalness: 0.35, emissive: "#3a2a00", emissiveIntensity: 0.4 }),
   };
   function decorate(group, mg, own, obstacles, halfW, zBack, zFront, cx, cz) {
     const flatOn = (tex, w, h, x, y, z, ry, extra = {}) => {
@@ -540,15 +561,6 @@ async function start() {
     };
     const neons = [nAdd("GAMES", "#ff4fd8", 1.5, 0.47, -halfW + 4.6, 2.55, zBack + 0.02, 0), nAdd("RENTALS", "#4fd8ff", 1.6, 0.5, halfW - 4.6, 2.55, zBack + 0.02, 0),
       nAdd("PLAY ON", "#ffcf3a", 1.4, 0.44, -halfW + 0.02, 2.45, zFront - 3.4, Math.PI / 2)];
-    // the popcorn machine at the end of the counter
-    const px = cx - 2.25, pzz = cz + 0.1;
-    mg.box(DM.red, 0.62, 0.8, 0.5, px, 0.4, pzz); mg.box(DM.chrome, 0.66, 0.04, 0.54, px, 0.82, pzz);
-    mg.box(DM.glassy, 0.58, 0.6, 0.46, px, 1.14, pzz); mg.box(DM.red, 0.64, 0.14, 0.52, px, 1.51, pzz);
-    mg.box(DM.corn, 0.54, 0.08, 0.42, px, 0.88, pzz);
-    for (let i = 0; i < 60; i++) mg.box(DM.corn, 0.05, 0.05, 0.05, px + rnd(-0.25, 0.25), 0.93 + rnd(0, 0.1) * (1 - Math.abs(i % 7 - 3) / 4), pzz + rnd(-0.19, 0.19), rnd(0, 1.5));
-    for (const sx of [-0.31, 0.31]) mg.box(DM.chrome, 0.03, 0.62, 0.03, px + sx, 1.14, pzz - 0.24);
-    flatOn(own(sign("POPCORN", null, 512, 128, "#c81e2e")), 0.6, 0.15, px, 1.51, pzz - 0.265, Math.PI, { emissive: "#ffffff", emissiveIntensity: 0.25 });
-    obstacles.push({ x0: px - 0.36, x1: px + 0.36, z0: pzz - 0.3, z1: pzz + 0.3 });
     // the returns box by the door
     const rx = -halfW + 3.5, rz = zFront - 0.55;
     mg.box(DM.drop, 0.7, 1.05, 0.5, rx, 0.525, rz); mg.box(DM.drop, 0.74, 0.08, 0.54, rx, 1.09, rz);
@@ -697,18 +709,49 @@ async function start() {
         tvs.push({ scr, x, z, f });
       }
     }
-    // the counter by the door, the staff light switch on the wall behind it, and the staff doors at the back
+    // the counter by the door. Behind it, where you start: a service bell, a popcorn machine on the counter
+    // and the red button that puts the lights out.
     const cx = halfW - 2.0, cz = zFront - 3.2;
     mg.box(M.counter, 2.6, 1.0, 0.7, cx - 0.4, 0.5, cz); mg.box(M.edge, 2.64, 0.04, 0.74, cx - 0.4, 1.021, cz);
-    mg.box(M.counter, 0.7, 0.98, 1.6, cx + 1.25, 0.49, cz + 0.45);
-    mg.box(M.tv, 0.42, 0.3, 0.34, cx - 0.9, 1.19, cz);
-    obstacles.push({ x0: cx - 1.7, x1: cx + 1.6, z0: cz - 0.35, z1: cz + 1.25 });
-    const sw = new THREE.Group(); sw.position.set(halfW - 0.02, 1.35, cz + 1.6); sw.rotation.y = -Math.PI / 2;
-    const plate = new THREE.Mesh(own(new THREE.BoxGeometry(0.14, 0.2, 0.02)), own(new THREE.MeshStandardMaterial({ color: "#e8e4d8", roughness: 0.5 })));
-    const lever = new THREE.Mesh(own(new THREE.BoxGeometry(0.035, 0.08, 0.04)), own(new THREE.MeshStandardMaterial({ color: "#f7f3e6" }))); lever.position.set(0, 0.02, 0.02);
-    const staffTx = own(canvasTex(256, 96, (x, w, h) => { x.fillStyle = "#b3261e"; x.fillRect(0, 0, w, h); x.fillStyle = "#fff"; x.font = "30px Bungee, sans-serif"; x.textAlign = "center"; x.fillText("STAFF ONLY", w / 2, 40); x.font = "600 22px Archivo, sans-serif"; x.fillText("Lights: do not touch", w / 2, 76); }));
-    const staff = new THREE.Mesh(own(new THREE.PlaneGeometry(0.36, 0.135)), own(new THREE.MeshBasicMaterial({ map: staffTx }))); staff.position.set(0, 0.22, 0.012);
-    sw.add(plate, lever, staff); group.add(sw);
+    mg.box(M.counter, 0.7, 0.98, 1.6, cx + 1.25, 0.49, cz + 0.45); mg.box(M.edge, 0.74, 0.04, 1.64, cx + 1.25, 1.0, cz + 0.45);
+    mg.box(M.tv, 0.36, 0.24, 0.3, cx + 1.25, 1.12, cz + 0.75);
+    obstacles.push({ x0: cx - 1.7, x1: cx + 0.9, z0: cz - 0.35, z1: cz + 0.35 }, { x0: cx + 0.9, x1: cx + 1.6, z0: cz - 0.35, z1: cz + 1.25 });
+    const hitBox = (w, h, d, x, y, z) => { const m = new THREE.Mesh(own(new THREE.BoxGeometry(w, h, d))); m.visible = false; m.position.set(x, y, z); group.add(m); return m; };
+    // popcorn machine
+    const ppx = cx - 1.1, ppz = cz, top = 1.04;
+    mg.box(DM.red, 0.5, 0.12, 0.4, ppx, top + 0.06, ppz); mg.box(DM.glassy, 0.48, 0.46, 0.38, ppx, top + 0.35, ppz); mg.box(DM.red, 0.52, 0.12, 0.42, ppx, top + 0.64, ppz);
+    mg.box(DM.corn, 0.44, 0.06, 0.34, ppx, top + 0.15, ppz);
+    for (let i = 0; i < 70; i++) mg.box(DM.corn, 0.028, 0.028, 0.028, ppx + rnd(-0.2, 0.2), top + 0.2 + rnd(0, 0.08), ppz + rnd(-0.15, 0.15), rnd(0, 1.5));
+    for (const sx of [-0.25, 0.25]) for (const sz of [-0.19, 0.19]) mg.box(DM.chrome, 0.025, 0.46, 0.025, ppx + sx, top + 0.35, ppz + sz);
+    const popSign = own(sign("POPCORN", null, 512, 128, "#c81e2e"));
+    for (const f of [1, -1]) { const m = new THREE.Mesh(own(new THREE.PlaneGeometry(0.5, 0.12)), own(new THREE.MeshBasicMaterial({ map: popSign }))); m.position.set(ppx, top + 0.64, ppz + f * 0.215); m.rotation.y = f > 0 ? 0 : Math.PI; group.add(m); }
+    const popHit = hitBox(0.6, 0.8, 0.5, ppx, top + 0.38, ppz);
+    // service bell
+    const bell = new THREE.Group(); bell.position.set(cx - 0.4, top, cz + 0.1);
+    const bellBase = new THREE.Mesh(own(new THREE.CylinderGeometry(0.075, 0.08, 0.025, 20)), M.plastic); bellBase.position.y = 0.0125;
+    const dome = new THREE.Mesh(own(new THREE.SphereGeometry(0.06, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2)), DM.bell); dome.position.y = 0.025;
+    const knob = new THREE.Mesh(own(new THREE.CylinderGeometry(0.008, 0.008, 0.025, 8)), DM.chrome); knob.position.y = 0.095;
+    bell.add(bellBase, dome, knob); group.add(bell);
+    const bellCard = own(canvasTex(256, 96, (x, w, h) => { x.fillStyle = "#fff"; x.fillRect(0, 0, w, h); x.fillStyle = INK; x.textAlign = "center"; x.font = "26px Bungee, sans-serif"; x.fillText("RING FOR", w / 2, 40); x.fillText("SERVICE", w / 2, 78); }));
+    const bc = new THREE.Mesh(own(new THREE.PlaneGeometry(0.16, 0.06)), own(new THREE.MeshStandardMaterial({ map: bellCard }))); bc.position.set(cx - 0.4, top + 0.035, cz + 0.27); bc.rotation.x = -Math.PI / 2 + 0.5; group.add(bc);
+    const bellHit = hitBox(0.3, 0.25, 0.3, cx - 0.4, top + 0.1, cz + 0.12);
+    // the red button: a striped plinth on the end of the counter
+    const stripes = own(canvasTex(256, 256, (x, w, h) => { x.fillStyle = YELLOW; x.fillRect(0, 0, w, h); x.fillStyle = "#111"; for (let i = -h; i < w; i += 64) { x.beginPath(); x.moveTo(i, h); x.lineTo(i + 32, h); x.lineTo(i + 32 + h, 0); x.lineTo(i + h, 0); x.fill(); } }));
+    const stripeMat = own(new THREE.MeshStandardMaterial({ map: stripes, roughness: 0.6 }));
+    const bx2 = cx + 0.35, bz2 = cz + 0.05;
+    const plinth = new THREE.Mesh(own(new THREE.BoxGeometry(0.42, 0.16, 0.42)), stripeMat); plinth.position.set(bx2, top + 0.08, bz2); group.add(plinth);
+    const ring = new THREE.Mesh(own(new THREE.CylinderGeometry(0.15, 0.15, 0.03, 24)), M.plastic); ring.position.set(bx2, top + 0.175, bz2); group.add(ring);
+    const btnMat = own(new THREE.MeshStandardMaterial({ color: "#e0111f", roughness: 0.3, emissive: "#ff0010", emissiveIntensity: 0.25 }));
+    const lever = new THREE.Mesh(own(new THREE.SphereGeometry(0.12, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2)), btnMat); lever.scale.y = 0.6; lever.position.set(bx2, top + 0.19, bz2); lever.userData.y0 = lever.position.y; group.add(lever);
+    const warnTx = own(canvasTex(512, 200, (x, w, h) => {
+      x.fillStyle = "#111"; x.fillRect(0, 0, w, h); x.drawImage(stripes.image, 0, 0, w, 28); x.drawImage(stripes.image, 0, h - 28, w, 28);
+      x.fillStyle = YELLOW; x.textAlign = "center"; x.font = "62px Bungee, sans-serif"; x.fillText("DO NOT PRESS", w / 2, 100); x.fillStyle = "#fff"; x.font = "600 30px Archivo, sans-serif"; x.fillText("Lights out. Staff only.", w / 2, 150);
+    }));
+    const warn = new THREE.Mesh(own(new THREE.PlaneGeometry(0.5, 0.195)), own(new THREE.MeshStandardMaterial({ map: warnTx, emissive: "#ffffff", emissiveMap: warnTx, emissiveIntensity: 0.35 })));
+    warn.position.set(bx2, top + 0.42, bz2 - 0.2); group.add(warn);
+    mg.box(M.pole, 0.03, 0.3, 0.03, bx2, top + 0.17, bz2 - 0.21);
+    const btnHit = hitBox(0.5, 0.6, 0.5, bx2, top + 0.25, bz2 - 0.05);
+    const plate = btnHit, staff = warn;
     const doors = [-halfW + 2.4, halfW - 2.4].map((x) => { mg.box(M.door, 1.1, 2.1, 0.06, x, 1.05, zBack + 0.03); return { x, z: zBack + 0.6 }; });
     const doorTx = own(sign("STAFF ROOM", null, 512, 128, "#5a1d24"));
     for (const d of doors) { const m = new THREE.Mesh(own(new THREE.PlaneGeometry(0.9, 0.22)), own(new THREE.MeshBasicMaterial({ map: doorTx }))); m.position.set(d.x, 2.3, zBack + 0.07); group.add(m); }
@@ -733,11 +776,11 @@ async function start() {
       if (x < -halfW + 0.35 || x > halfW - 0.35 || z < zBack + 0.35 || z > zFront - 0.35 || obstacles.some((o) => x > o.x0 - 0.3 && x < o.x1 + 0.3 && z > o.z0 - 0.3 && z < o.z1 + 0.3)) blocked[j * gw + i] = 1;
     }
     S = { group, dispose, boxes, obstacles, tvs, faces, starts, list, halfW, zBack, zFront, lights, lever, switchObjs: [plate, lever, staff], doors,
-      grid: { cell, gw, gh, blocked, dist: new Int32Array(gw * gh) }, counter: { x: cx, z: cz }, street, deco };
+      grid: { cell, gw, gh, blocked, dist: new Int32Array(gw * gh) }, counter: { x: cx, z: cz }, street, deco, popHit, bell, bellHit, btnMat, staffSpot: { x: cx - 0.3, z: cz + 2.2 } };
     $("secsel").innerHTML = `<option value="">Go to a section…</option>` + starts.map((s, i) => `<option value="${i}">${esc(s.name)} (${s.n})</option>`).join("");
     $("stocknote").textContent = kind === "wall" ? (fromWall.label ? `Stocked from your wall: ${fromWall.label}` : "Stocked from your wall's filters") : `Every game, ${GAMES.length} in all, shelved by genre`;
     document.querySelectorAll("[data-stock]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.stock === kind)));
-    P.x = C % 2 ? PX / 2 : 0; P.z = zFront - 1.6; P.yaw = 0; P.pitch = -0.05;   // start in the middle aisle, by the door
+    P.x = cx - 0.3; P.z = cz + 2.2; P.yaw = 0; P.pitch = -0.2;   // start behind the counter, facing the shop
     camera.position.set(P.x, EYE, P.z);
     if (THUMBS && THUMBS.ids) {   // fetch the sheets nearest the door first
       const best = new Map();
@@ -823,13 +866,14 @@ async function start() {
   const locked = () => document.pointerLockElement === el;
   el.addEventListener("pointerdown", (e) => {
     const r = el.getBoundingClientRect();
-    if (e.pointerType === "touch" && e.clientX - r.left < r.width * 0.42 && e.clientY - r.top > r.height * 0.45 && stick.id === null && !P.held && !P.watch) {
+    if (e.pointerType === "touch" && e.clientX - r.left < r.width * 0.42 && e.clientY - r.top > r.height * 0.45 && stick.id === null && !P.held && !P.watch && !(MG && MG.kind === "pop")) {
       stick.id = e.pointerId; stick.ox = e.clientX; stick.oy = e.clientY; stick.x = stick.y = 0;
       const k = $("stick"); k.style.left = e.clientX - 50 + "px"; k.style.top = e.clientY - 50 + "px"; k.hidden = false; $("knob").style.transform = "";
       el.setPointerCapture(e.pointerId); return;
     }
     if (locked()) { if (night.on) shoot(); return; }
     drag = { x: e.clientX, y: e.clientY, moved: 0, id: e.pointerId }; el.setPointerCapture(e.pointerId);
+    popDown();
   });
   el.addEventListener("pointermove", (e) => {
     if (e.pointerId === stick.id) {
@@ -846,6 +890,10 @@ async function start() {
     if (e.pointerId === stick.id) { stick.id = null; stick.x = stick.y = 0; $("stick").hidden = true; return; }
     if (!drag || drag.id !== e.pointerId) return;
     const tap = drag.moved < 10; drag = null;
+    if (MG && MG.kind === "pop") {
+      if (!tap) { MG.hold = null; $("mgpow").hidden = true; return; }
+      const r0 = el.getBoundingClientRect(); popThrow(new THREE.Vector2(((e.clientX - r0.left) / r0.width) * 2 - 1, -((e.clientY - r0.top) / r0.height) * 2 + 1)); return;
+    }
     if (!tap || P.watch) return;
     const r = el.getBoundingClientRect();
     ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
@@ -853,6 +901,8 @@ async function start() {
     ray.setFromCamera(ndc, camera);
     const sw = ray.intersectObjects(S.switchObjs, false)[0];
     if (sw && sw.distance < 4) { lightsOut(); return; }
+    const mh = ray.intersectObjects([S.popHit, S.bellHit], false)[0];
+    if (mh && mh.distance < 4 && !P.held) { if (mh.object === S.popHit) startPop(); else startFind(); return; }
     const hit = ray.intersectObjects(S.boxes.filter((b) => b.visible), false)[0];
     if (P.held) { if (hit && hit.object === P.held) flip(); else putBack(); return; }
     if (hit && hit.distance < 4.5) pick(hit.object);
@@ -892,6 +942,7 @@ async function start() {
     const u = m.userData, full = coverTex(u.g, u.th, () => { if (u.full === full && u.coverMat) { u.coverMat.map = full; u.coverMat.needsUpdate = true; m.material[4] = u.coverMat; } }); u.full = full;
     if (!m.userData.backMat.map) { m.userData.backMat.map = boxBack(m.userData.g); m.userData.backMat.color.set("#ffffff"); m.userData.backMat.needsUpdate = true; }
     P.held = m; P.flipped = false; sfx("pick", 0.6);
+    if (MG && MG.kind === "find" && !MG.done) findCheck(m.userData.g);
     const { p, q } = heldPose(false); animate(m, p, q);
     showCard(m.userData.g); tvLabel = ["CH 3", "WATCH ON THE TV?"];
   }
@@ -1007,9 +1058,9 @@ async function start() {
     });
   }
   const zReady = () => ZT.kinds.basic || ZT.kinds.arm || ZT.kinds.ribcage;
-  function modelZombie(x, z, boss) {
+  function modelZombie(x, z, boss, opt = {}) {
     const pool = ["basic", "arm", "ribcage"].filter((k) => ZT.kinds[k]);
-    const kind = boss && ZT.kinds.chubby ? "chubby" : pool[Math.floor(Math.random() * pool.length)], t = ZT.kinds[kind];
+    const kind = opt.kind && ZT.kinds[opt.kind] ? opt.kind : boss && ZT.kinds.chubby ? "chubby" : pool[Math.floor(Math.random() * pool.length)], t = ZT.kinds[kind];
     const m = cloneRig(t.scene), g = new THREE.Group(), mats = [];
     m.scale.setScalar((boss ? 2.05 : 1.75) / t.h);
     m.traverse((o) => {
@@ -1020,15 +1071,15 @@ async function start() {
     });
     g.add(m);
     // the name badge, pinned on the shirt front
-    const tag = new THREE.Mesh(zG.tag, tagMat(boss ? "MANAGER" : NAMES[Math.floor(Math.random() * NAMES.length)]));
+    const tag = new THREE.Mesh(zG.tag, tagMat(opt.name || (boss ? "MANAGER" : NAMES[Math.floor(Math.random() * NAMES.length)])));
     tag.scale.setScalar(boss ? 1.8 : 1.6); tag.position.set(boss ? -0.2 : 0.14, boss ? 1.08 : 1.0, boss ? 0.5 : 0.33); tag.rotation.x = -0.15; g.add(tag);
     g.position.set(x, 0, z); scene.add(g);
     const mixer = new THREE.AnimationMixer(m), act = {};
     for (const [n, c] of Object.entries(t.clips)) act[n] = mixer.clipAction(c);
-    for (const n of ["Death", "HitReact"]) if (act[n]) { act[n].setLoop(THREE.LoopOnce, 1); act[n].clampWhenFinished = true; }
-    const crawl = !boss && act.Crawl && Math.random() < 0.15;
+    for (const n of ["Death", "HitReact", "Yes", "No"]) if (act[n]) { act[n].setLoop(THREE.LoopOnce, 1); act[n].clampWhenFinished = true; }
+    const crawl = !boss && !opt.upright && act.Crawl && Math.random() < 0.15;
     const sp = (boss ? 0.75 : crawl ? 0.6 : 0.95) + Math.min(1.1, night.t / 110) * (crawl ? 0.5 : 1) + rnd(0, 0.25);
-    const zz = { g, model: true, mixer, act, cur: null, mats, parts: [], hp: boss ? 9 : 3, boss, crawl, speed: sp, phase: rnd(0, 6), flash: 0, dead: 0, knock: 0, kx: 0, kz: 0, rise: 0.6, hitT: 0, nextGroan: rnd(1, 4) };
+    const zz = { g, m, model: true, mixer, act, cur: null, mats, parts: [], hp: boss ? 9 : 3, boss, crawl, speed: sp, phase: rnd(0, 6), flash: 0, dead: 0, knock: 0, kx: 0, kz: 0, rise: 0.6, hitT: 0, nextGroan: rnd(1, 4) };
     zAct(zz, crawl ? "Crawl" : "Walk", 0);
     mixer.update(rnd(0, 1));
     return zz;
@@ -1054,9 +1105,9 @@ async function start() {
     return { g, parts, lL, lR, aL, aR, head, hp: boss ? 9 : 3, boss, speed: sp, phase: rnd(0, 6), flash: 0, dead: 0, knock: 0, kx: 0, kz: 0, rise: 0.6 };
   }
   function lightsOut() {
-    if (P.held) putBack();
+    endMG(); if (P.held) putBack();
     Object.assign(night, { on: true, over: false, t: 0, score: 0, floored: 0, hp: 10, cool: 0, hurt: 0, nextSpawn: 2.5, nextPick: 6, nextManager: 45, fx: { ff: 0, set: 0, rew: 0 } });
-    S.lever.rotation.x = 0.9; nightLights(true); loadZombies(); sfx("switch", 0.8); ambMode(true);
+    S.lever.position.y = S.lever.userData.y0 - 0.035; nightLights(true); loadZombies(); sfx("switch", 0.8); ambMode(true);
     $("card").hidden = true; $("hud").hidden = false; $("over").hidden = true; document.body.classList.add("night");
     tvLabel = ["CH 13", "THEY'RE BACK"]; hideHint();
     say(TOUCH ? "The dead clerks are back. Walk with the stick, look by dragging, tap to throw a case." : "The dead clerks are back. WASD to move, click to aim with the mouse and throw. Esc lets go of the mouse.", 5000);
@@ -1078,7 +1129,7 @@ async function start() {
   function lightsOn() {
     night.on = false; night.over = false; clearNight();
     if (locked()) document.exitPointerLock();
-    S.lever.rotation.x = 0; nightLights(false); sfx("switch", 0.8); ambMode(false);
+    S.lever.position.y = S.lever.userData.y0; nightLights(false); sfx("switch", 0.8); ambMode(false);
     $("hud").hidden = true; $("over").hidden = true; $("fx").textContent = ""; document.body.classList.remove("night");
     tvLabel = ["CH 3", "PICK UP A BOX"];
   }
@@ -1289,13 +1340,195 @@ async function start() {
     if (Math.floor(night.t * 4) !== Math.floor((night.t - dt) * 4)) hud();
   }
 
+  // ---------- minigames behind the counter ----------
+  // Feed the clerk: lob popcorn into a dead clerk's mouth (the popcorn machine). Find the game: a customer
+  // describes a game without its name and you fetch the box (the service bell).
+  let MG = null;
+  const mgBest = (k) => { try { return +localStorage.getItem("psplus-shop-" + k) || 0; } catch (e) { return 0; } };
+  const mgSave = (k, v) => { try { localStorage.setItem("psplus-shop-" + k, String(v)); } catch (e) {} };
+  const mmss = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
+  function mgShow(title, html, stats, acts) {
+    $("mg").hidden = false; $("mgtitle").textContent = title; $("mgtext").innerHTML = html; $("mgstats").innerHTML = stats || "";
+    $("mgacts").innerHTML = "";
+    (acts || []).forEach(([label, fn]) => { const b = document.createElement("button"); b.type = "button"; b.textContent = label; b.addEventListener("click", fn); $("mgacts").append(b); });
+  }
+  function mgOver(title, text, againLabel, again) {
+    $("mgovertitle").textContent = title; $("mgovertext").textContent = text; $("mgagain").textContent = againLabel;
+    MG.again = again; $("mgover").hidden = false; $("mgagain").focus();
+  }
+  function endMG() {
+    if (!MG) return;
+    if (MG.clerk) scene.remove(MG.clerk.g);
+    if (MG.kernels) MG.kernels.forEach((k) => scene.remove(k.m));
+    if (MG.customer) scene.remove(MG.customer.g);
+    MG = null; $("mg").hidden = true; $("mgpow").hidden = true; $("mgover").hidden = true;
+    document.body.classList.remove("mg", "mgpop");
+  }
+  $("mgstop").addEventListener("click", endMG);
+  $("mgdone").addEventListener("click", endMG);
+  $("mgagain").addEventListener("click", () => { const f = MG && MG.again; $("mgover").hidden = true; if (f) f(); });
+
+  // Feed the clerk
+  const kernMat2 = new THREE.MeshStandardMaterial({ color: "#fff3c4", roughness: 0.8, emissive: "#ffcc55", emissiveIntensity: 0.35 });
+  const kernGeo2 = new THREE.IcosahedronGeometry(0.04, 0), tmpV = new THREE.Vector3();
+  function startPop() {
+    endMG(); if (P.held) putBack(); if (P.watch) leaveTV();
+    loadHuman("clerk");
+    MG = { kind: "pop", t: 0, left: 45, score: 0, streak: 0, best: 0, caught: 0, kernels: [], clerk: null, hold: null, x0: S.counter.x - 0.45, z: S.counter.z - 2.0, sway: 0 };
+    document.body.classList.add("mg", "mgpop");
+    P.x = S.staffSpot.x; P.z = S.staffSpot.z; P.yaw = 0; P.pitch = -0.02; hideHint();
+    mgShow("Feed the clerk", (TOUCH ? "Press and hold to wind up, then let go to lob." : "Press and hold the mouse to wind up, then let go to lob.") + " Gary's on his break. Land the popcorn in his mouth. The more you get in a row, the more he moves.", "", []);
+  }
+  function popStats() { if (MG) $("mgstats").innerHTML = `<span>Score<b>${MG.score}</b></span><span>In a row<b>${MG.streak}</b></span><span>Time<b>${Math.max(0, Math.ceil(MG.left))}</b></span>`; }
+  function mouthOf(c) {
+    // the head bone, nudged forward to where the mouth hangs open
+    if (c.head === undefined) { c.head = null; c.m.traverse((o) => { if (!c.head && o.isBone && /head/i.test(o.name)) c.head = o; }); }
+    if (c.head) c.head.getWorldPosition(tmpV); else tmpV.set(c.g.position.x, 1.45, c.g.position.z);
+    const f = c.g.rotation.y; tmpV.x += Math.sin(f) * MOUTH.f; tmpV.z += Math.cos(f) * MOUTH.f; tmpV.y += MOUTH.y;
+    return tmpV;
+  }
+  const MOUTH = { f: 0.17, y: 0.22, r: 0.2 };
+  const popPower = () => Math.min(1, (performance.now() - MG.hold) / 900);
+  function popDown() { if (!MG || MG.kind !== "pop" || MG.over || !MG.clerk) return; MG.hold = performance.now(); $("mgpow").hidden = false; }
+  function popThrow(at) {
+    if (!MG || MG.kind !== "pop" || !MG.hold) return;
+    const p = popPower(); MG.hold = null; $("mgpow").hidden = true; $("mgpow").style.setProperty("--p", "0");
+    ray.setFromCamera(at || new THREE.Vector2(0, 0), camera);
+    const m = new THREE.Mesh(kernGeo2, kernMat2);
+    m.position.copy(new THREE.Vector3(0.1, -0.12, -0.3).applyMatrix4(camera.matrixWorld)); scene.add(m);
+    const vel = ray.ray.direction.clone().multiplyScalar(3.5 + p * 6.5); vel.y += 2.4;
+    MG.kernels.push({ m, vel, age: 0 }); sfx(["throw1", "throw2", "throw3"], 0.25, undefined, undefined, 1.5);
+  }
+  function popMiss(k) {
+    if (k.missed) return; k.missed = true;
+    if (MG.streak >= 3) say("Streak's over", 900);
+    MG.streak = 0; popStats();
+  }
+  function tickPop(dt) {
+    if (!MG.clerk) {
+      if (!humanReady("clerk")) return;
+      MG.clerk = spawnHuman("clerk", MG.x0, MG.z, "GARY", 1.9); MG.clerk.hitT = 0; gesture(MG.clerk, "Wave"); MG.clerk.hitT = 1.2; popStats(); return;
+    }
+    const c = MG.clerk;
+    if (MG.over) { c.mixer.update(dt); return; }
+    MG.t += dt; MG.left -= dt;
+    const lvl = Math.min(10, MG.streak), amp = Math.min(0.72, 0.08 + lvl * 0.08);   // he stays between the popcorn machine and the button
+    MG.sway += dt * (0.7 + lvl * 0.16);
+    const nx = MG.x0 + Math.sin(MG.sway) * amp, moving = Math.abs(nx - c.g.position.x) / Math.max(dt, 1e-3) > 0.25;
+    c.g.position.x = nx; c.g.rotation.y = Math.atan2(P.x - nx, P.z - c.g.position.z);
+    c.hitT = Math.max(0, c.hitT - dt);
+    if (c.hitT <= 0) { zAct(c, moving ? "Walk" : "Idle", 0.3); if (c.cur === c.act.Walk) c.cur.timeScale = 0.8; }
+    c.mixer.update(dt);
+    if (MG.hold) $("mgpow").style.setProperty("--p", popPower().toFixed(3));
+    const mouth = mouthOf(c);
+    for (let i = MG.kernels.length - 1; i >= 0; i--) {
+      const k = MG.kernels[i];
+      if (k.rest !== undefined) { if ((k.rest += dt) > 2.5) { scene.remove(k.m); MG.kernels.splice(i, 1); } continue; }
+      k.age += dt; k.vel.y -= 9.8 * dt; k.m.position.addScaledVector(k.vel, dt); k.m.rotation.x += dt * 9; k.m.rotation.z += dt * 6;
+      const q = k.m.position;
+      if (!k.missed && q.distanceTo(mouth) < MOUTH.r) {
+        scene.remove(k.m); MG.kernels.splice(i, 1);
+        MG.streak++; MG.caught++; MG.score += 10 + (MG.streak - 1) * 5; MG.best = Math.max(MG.best, MG.streak);
+        c.hitT = 1; if (c.act.Yes) { c.cur = null; zAct(c, "Yes", 0.1); }
+        crunch(q.x, q.z); if (MG.streak % 5 === 0) say(`${MG.streak} in a row`, 1100);
+        popStats(); continue;
+      }
+      const cp = c.g.position;
+      if (!k.missed && Math.hypot(q.x - cp.x, q.z - cp.z) < 0.32 && q.y < 1.8) { popMiss(k); k.vel.set(-k.vel.x * 0.15, 0, -k.vel.z * 0.15); }
+      const onCounter = q.x > S.counter.x - 1.7 && q.x < S.counter.x + 1.6 && q.z > S.counter.z - 0.35 && q.z < S.counter.z + 0.35 && q.y < 1.07;
+      if (q.y < 0.03 || onCounter) { q.y = onCounter ? 1.07 : 0.03; k.rest = 0; popMiss(k); }
+      else if (k.age > 3) { scene.remove(k.m); MG.kernels.splice(i, 1); popMiss(k); }
+    }
+    if (MG.left <= 0) {
+      MG.over = true; MG.hold = null; $("mgpow").hidden = true; popStats();
+      const best = mgBest("popcorn"); if (MG.score > best) mgSave("popcorn", MG.score);
+      const n = MG.caught;
+      mgOver(n ? "Gary's full" : "Gary's still hungry",
+        `${n} ${n === 1 ? "piece" : "pieces"} caught, ${MG.best} in a row at best, for a score of ${MG.score}.` + (MG.score > best && best ? " That's a new best." : best ? ` Your best is ${best}.` : ""),
+        "Play again", startPop);
+    }
+  }
+
+  // Find the game
+  // people (not zombies): the customer and Gary behind the popcorn, from the same CC0 kit
+  const HUM = {};
+  function loadHuman(file) {
+    if (HUM[file]) return; HUM[file] = { t: null };
+    new GLTFLoader().load(`models/${file}.glb`, (gl) => { const b = new THREE.Box3().setFromObject(gl.scene); HUM[file].t = { scene: gl.scene, clips: gl.animations, h: b.max.y - b.min.y || 1.8 }; });
+  }
+  const humanReady = (file) => HUM[file] && HUM[file].t;
+  function spawnHuman(file, x, z, name, tall = 1.72) {
+    const T = HUM[file].t, m = cloneRig(T.scene), g = new THREE.Group();
+    m.scale.setScalar(tall / T.h); m.traverse((o) => { if (o.isMesh) o.frustumCulled = false; }); g.add(m);
+    if (name) { const tag = new THREE.Mesh(zG.tag, tagMat(name)); tag.scale.setScalar(1.3); tag.position.set(0.13, 0.88, 0.22); g.add(tag); }
+    g.position.set(x, 0, z); scene.add(g);
+    const mixer = new THREE.AnimationMixer(m), act = {}; T.clips.forEach((c) => (act[c.name] = mixer.clipAction(c)));
+    for (const n of ["Wave", "Yes", "No"]) if (act[n]) { act[n].setLoop(THREE.LoopOnce, 1); act[n].clampWhenFinished = true; }
+    const c = { g, m, mixer, act, cur: null, back: 0, human: true };
+    zAct(c, "Idle", 0);
+    return c;
+  }
+  function spawnCustomer() { const c = spawnHuman("customer", S.counter.x - 0.4, S.counter.z - 0.75); gesture(c, "Wave"); return c; }
+  function gesture(c, name) { if (!c || !c.act[name]) return; c.cur = null; zAct(c, name, 0.15); c.back = c.act[name].getClip().duration * 0.9; }
+  const STOPW = new Set(["the", "and", "edition", "remastered", "remaster", "definitive", "deluxe", "complete", "collection", "game", "year", "goty", "for", "with", "from"]);
+  function vague(g) {
+    let d = g.d || "";
+    const words = (g.t || "").split(/[^A-Za-z0-9]+/).filter((w) => w.length > 2 && !STOPW.has(w.toLowerCase()));
+    for (const w of words) d = d.replace(new RegExp(`\\b${w}\\w*`, "gi"), "____");
+    return d;
+  }
+  const findStats = () => `<span>Time<b>${mmss(MG.t)}</b></span><span>Wrong picks<b>${MG.wrong}</b></span>`;
+  function startFind() {
+    endMG(); if (P.held) putBack();
+    const ok = (it) => it.g.d && it.g.d.length > 60 && vague(it.g).split("____").join("").split(/\s+/).length > 8;
+    let pool = S.list.filter((it) => ok(it) && (it.g.m || 0) >= 72); if (pool.length < 5) pool = S.list.filter(ok);
+    const it = pool[Math.floor(Math.random() * pool.length)];
+    if (!it) { say("Nobody's waiting right now", 1500); return; }
+    ding(); loadHuman("customer");
+    MG = { kind: "find", g: it.g, sec: it.sec, t: 0, wrong: 0, hints: 0, done: false, customer: null };
+    document.body.classList.add("mg"); hideHint(); findText();
+  }
+  function findText() {
+    const g = MG.g, hints = [];
+    if (MG.hints > 0 && g.y) hints.push(`It came out in ${g.y}.`);
+    if (MG.hints > 1) hints.push(`It's in the ${MG.sec} section.`);
+    if (MG.hints > 2) hints.push(`The title starts with ${g.t[0]}.`);
+    mgShow("Find the game", `A customer can't remember the name. Here's how they describe it: <q>${esc(vague(g))}</q>` +
+      (hints.length ? `<small>${esc(hints.join(" "))}</small>` : `<small>Pick up the box when you find it.</small>`), findStats(), [["Give up", findGiveUp]]);
+  }
+  function tickFind(dt) {
+    const c = MG.customer;
+    if (!c && humanReady("customer")) MG.customer = spawnCustomer();
+    if (c) { c.mixer.update(dt); if (c.back > 0 && (c.back -= dt) <= 0) zAct(c, "Idle", 0.3); }
+    if (MG.done) return;
+    const before = Math.floor(MG.t); MG.t += dt;
+    const at = [25, 50, 80];
+    if (MG.hints < 3 && MG.t > at[MG.hints]) { MG.hints++; findText(); say("Here's another clue", 1200); }
+    else if (Math.floor(MG.t) !== before) $("mgstats").innerHTML = findStats();
+  }
+  function findCheck(g) {
+    if (g.id === MG.g.id) {
+      MG.done = true; ding(); sfx("power", 0.6); gesture(MG.customer, "Yes");
+      const score = Math.max(100, 1000 - Math.floor(MG.t) * 6 - MG.wrong * 100 - MG.hints * 100), best = mgBest("find");
+      if (score > best) mgSave("find", score);
+      $("mg").hidden = true;
+      mgOver("That's the one", `${g.t}, found in ${mmss(MG.t)}${MG.wrong ? ` after ${MG.wrong} wrong ${MG.wrong === 1 ? "pick" : "picks"}` : ""}. Score ${score}.` + (score > best && best ? " That's a new best." : best ? ` Your best is ${best}.` : ""),
+        "Serve another", startFind);
+    } else { MG.wrong++; say("Not that one", 1000); gesture(MG.customer, "No"); $("mgstats").innerHTML = findStats(); }
+  }
+  function findGiveUp() {
+    MG.done = true; const i = S.starts.findIndex((s) => s.name === MG.sec);
+    mgShow("Find the game", `It was <b>${esc(MG.g.t)}</b>, in the ${esc(MG.sec)} section.`, "", [["Show me", () => { if (i >= 0) goSection(i); }], ["Serve another", startFind], ["Done", endMG]]);
+  }
+  function tickMG(dt) { if (MG) (MG.kind === "pop" ? tickPop : tickFind)(dt); }
+
   // ---------- stock switching and sections ----------
   $("wallstock").hidden = !fromWall;
   document.querySelectorAll("[data-stock]").forEach((b) => b.addEventListener("click", () => {
     if (b.getAttribute("aria-pressed") === "true") return;
     if (P.watch) leaveTV();
     if (P.held) { P.held = null; $("card").hidden = true; }
-    if (night.on) lightsOn();
+    endMG(); if (night.on) lightsOn();
     build(b.dataset.stock);
   }));
   function setQuality(name, auto) {
@@ -1316,7 +1549,7 @@ async function start() {
     setQuality(qPick === "auto" ? (slowDevice ? "lite" : "full") : qPick);
   });
   $("secsel").addEventListener("change", (e) => { if (e.target.value !== "") { if (P.held) putBack(); goSection(+e.target.value); } e.target.value = ""; });
-  if (location.hash.includes("debug")) window.__store = { P, night, ZT, SND, spawn: (x, z, b) => night.zombies.push(makeZombie(x, z, b)), shoot, lightsOut, lightsOn, shop: () => S, goSection, mem: () => ({ loaded, q: qName, tex: renderer.info.memory.textures, sheets: sheetState.filter((x) => x === 2).length, filled: S.boxes.filter((b) => b.material[4] !== M.blank).length, boxes: S.boxes.length }) };
+  if (location.hash.includes("debug")) window.__store = { P, night, ZT, SND, cam: camera, V2: THREE.Vector2, V3: THREE.Vector3, mg: () => MG, pick, mouth: () => (MG && MG.clerk ? mouthOf(MG.clerk).toArray() : null), mark: (x, y, z) => { const m = new THREE.Mesh(new THREE.SphereGeometry(0.04), new THREE.MeshBasicMaterial({ color: "#ff00ff", depthTest: false })); m.renderOrder = 9; m.position.set(x, y, z); scene.add(m); return m; }, startPop, startFind, MOUTH, popDown, popThrow, spawn: (x, z, b) => night.zombies.push(makeZombie(x, z, b)), shoot, lightsOut, lightsOn, shop: () => S, goSection, mem: () => ({ loaded, q: qName, tex: renderer.info.memory.textures, sheets: sheetState.filter((x) => x === 2).length, filled: S.boxes.filter((b) => b.material[4] !== M.blank).length, boxes: S.boxes.length }) };
 
   // ---------- frame loop ----------
   build(fromWall && new URLSearchParams(location.search).get("from") === "wall" ? "wall" : "all");
@@ -1327,7 +1560,7 @@ async function start() {
   const ease = (t) => 1 - Math.pow(1 - t, 3);
   renderer.setAnimationLoop((now) => {
     const dt = Math.min(0.05, (now - last) / 1000); last = now; frame++;
-    if (!P.watch && !P.held && !night.over) move(dt, night.on ? (night.fx.ff > 0 ? 4.6 : 3.1) : 2.6);
+    if (!P.watch && !P.held && !night.over && !(MG && MG.kind === "pop")) move(dt, night.on ? (night.fx.ff > 0 ? 4.6 : 3.1) : 2.6);
     const k = CALM ? 1 : Math.min(1, dt * (P.watch ? 4 : 14));
     const walking = keys.size || stick.x || stick.y;
     const bob = CALM || !walking ? 0 : Math.sin(now / 130) * 0.018;
@@ -1355,7 +1588,9 @@ async function start() {
       tickNight(dt);
       if (!CALM && frame % 7 === 0) S.lights.forEach((p, i) => { if (i % 2 === 0) p.intensity = Math.random() < 0.15 ? 0.5 : 4; });
     }
-    tickStreet(dt, now);
+    tickStreet(dt, now); tickMG(dt);
+    if (document.body.classList.contains("held") !== !!P.held) document.body.classList.toggle("held", !!P.held);
+    S.btnMat.emissiveIntensity = night.on && !CALM ? 0.55 + 0.45 * Math.sin(now / 160) : 0.25;
     if (!$("tv").hidden && watchScreen) placeVideo();
     if (frame % 3 === 0 && !CALM) drawStatic();
     renderer.render(scene, camera);

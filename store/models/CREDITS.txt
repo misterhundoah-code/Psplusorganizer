@@ -1,2 +1,2 @@
-Zombie models: Zombie Apocalypse Kit by Quaternius (https://quaternius.com/packs/zombieapocalypsekit.html).
+Zombie, customer (Matt) and Gary (Shaun) models: Zombie Apocalypse Kit by Quaternius (https://quaternius.com/packs/zombieapocalypsekit.html).
 License: CC0 1.0 (public domain). Trimmed to the animations the shop uses and compressed with glTF-Transform.
