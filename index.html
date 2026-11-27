@@ -220,6 +220,22 @@ mark.hit{background:var(--yellow);color:var(--yellow-ink);padding:0 1px}
 .wall .case .tile{width:100%;height:auto;aspect-ratio:1}
 .case:hover,.case:focus-visible{transform:translateY(-4px) rotate(-.6deg)}
 .case{transition:transform .15s ease}
+/* On a mouse or trackpad the box leans towards the pointer, with light catching the cover (see tiltCase). */
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  .wall{perspective:900px}
+  .wall .case.tilting{transition:transform .08s linear;transform:translateY(-6px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transform-style:preserve-3d}
+  .wall .case .tile::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .2s;
+    background:radial-gradient(circle at var(--gx,50%) var(--gy,30%),rgba(255,255,255,.38),rgba(255,255,255,0) 55%)}
+  .wall .case.tilting .tile::after{opacity:1}
+}
+/* The shelf leans back a touch while you scroll quickly, and settles when you stop (see shelfLean). */
+.wall.leaning .case:not(.tilting){transform:perspective(700px) rotateX(var(--lean,0deg));transform-origin:50% 100%;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+/* The box that flies out of the shelf and turns over as a game's details open (see flipOpen). */
+.flipbox{position:fixed;z-index:9999;pointer-events:none;transform-style:preserve-3d;margin:0;background:#16171D;box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.flipbox img{width:100%;height:100%;object-fit:cover;display:block;backface-visibility:hidden}
+.flipbox .back{position:absolute;inset:0;background:var(--blue,#1E3A9E);transform:rotateY(180deg);backface-visibility:hidden;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:12px;text-align:center;padding:8px;line-height:1.2}
+dialog.dlgbox.gamebox.flipping{opacity:0}
 @media (prefers-reduced-motion:reduce){.case{transition:none}.case:hover,.case:focus-visible{transform:none}}
 .case .ct{font-weight:700;font-size:14px;line-height:1.2}
 .case .cm{font-size:12.5px;color:var(--muted)}
@@ -2819,7 +2835,56 @@ onRows("click",e=>{
     if(t.dataset.armed){delete CUSTOM[id];delete MARKS[id];delete RATE[id];delete NOTES[id];delete DATES[id];if(DLG_ID===id&&$("gamedlg").open)$("gamedlg").close();syncCustom();saveMarks();renderHero();render(false);}
     else{t.dataset.armed="1";t.innerHTML="Click again to remove";}}
 });
-$("wall").addEventListener("click",e=>{const c=e.target.closest("[data-open]");if(c)openGame(c.dataset.open);});
+$("wall").addEventListener("click",e=>{const c=e.target.closest("[data-open]");if(c)flipOpen(c,c.dataset.open);});
+/* ---- A little life on the shelf. All of it is skipped when the visitor asks for reduced motion. ---- */
+const CALM=()=>matchMedia("(prefers-reduced-motion:reduce)").matches;
+// Opening a game: its box lifts off the shelf, turns over once and lands where the cover sits in the pop-up.
+function flipOpen(caseEl,id){
+  const img=caseEl.querySelector(".tile img");
+  if(CALM()||!img||!img.complete||!img.naturalWidth||!Element.prototype.animate)return openGame(id);
+  const from=img.getBoundingClientRect(),d=$("gamedlg");
+  d.classList.add("flipping");openGame(id);
+  const dest=d.querySelector("td.title .tile");const to=dest?dest.getBoundingClientRect():null;
+  if(!to||!to.width){d.classList.remove("flipping");return;}
+  const box=document.createElement("div");box.className="flipbox";
+  box.style.cssText=`left:${to.left}px;top:${to.top}px;width:${to.width}px;height:${to.height}px`;
+  const g=BYID.get(id)||{};box.innerHTML=`<img alt="" src="${img.currentSrc||img.src}"><div class="back">${esc(g.t||"")}</div>`;
+  document.body.appendChild(box);
+  const dx=from.left-to.left,dy=from.top-to.top,sc=from.width/to.width;
+  const a=box.animate([
+    {transform:`translate(${dx}px,${dy}px) scale(${sc}) rotateY(0deg)`,boxShadow:"0 2px 6px rgba(0,0,0,.3)"},
+    {transform:`translate(${dx*.45}px,${dy*.45-40}px) scale(${(sc+1)/2*1.15}) rotateY(-180deg)`,offset:.55},
+    {transform:"translate(0,0) scale(1) rotateY(-360deg)",boxShadow:"0 18px 40px rgba(0,0,0,.45)"}
+  ],{duration:520,easing:"cubic-bezier(.3,.7,.2,1)"});
+  const done=()=>{box.remove();d.classList.remove("flipping");};
+  d.animate([{opacity:0},{opacity:1}],{duration:200,delay:380,fill:"backwards"});
+  a.onfinish=a.oncancel=done;setTimeout(done,900);
+}
+// Pointer tilt: the box under the mouse leans towards it.
+(()=>{
+  if(!matchMedia("(hover:hover) and (pointer:fine)").matches)return;
+  let cur=null;
+  const clear=()=>{if(cur){cur.classList.remove("tilting");cur.style.removeProperty("--rx");cur.style.removeProperty("--ry");cur=null;}};
+  $("wall").addEventListener("pointermove",e=>{
+    if(CALM())return;const c=e.target.closest(".case");if(c!==cur)clear();if(!c)return;
+    const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;
+    cur=c;c.classList.add("tilting");
+    c.style.setProperty("--ry",((x-.5)*14).toFixed(1)+"deg");c.style.setProperty("--rx",((.5-y)*10).toFixed(1)+"deg");
+    c.style.setProperty("--gx",(x*100).toFixed(0)+"%");c.style.setProperty("--gy",(y*100).toFixed(0)+"%");
+  });
+  $("wall").addEventListener("pointerleave",clear);
+})();
+// Scroll lean: scroll fast and the shelf tips back a few degrees, then settles.
+(()=>{
+  let lastY=scrollY,lastT=performance.now(),timer=0;const w=$("wall");
+  addEventListener("scroll",()=>{
+    if(CALM()||!WALL())return;
+    const t=performance.now(),v=(scrollY-lastY)/Math.max(16,t-lastT);lastY=scrollY;lastT=t;
+    const lean=Math.max(-9,Math.min(9,v*5));
+    w.classList.add("leaning");w.style.setProperty("--lean",lean.toFixed(2)+"deg");
+    clearTimeout(timer);timer=setTimeout(()=>w.style.setProperty("--lean","0deg"),90);
+  },{passive:true});
+})();
 // Cards in the This month panel (Claim now, Leaving, Coming soon, Staff picks) open the game's pop-up on the wall, which
 // has the store and trailer links, so visitors stay on the site. Ctrl, Cmd or middle click still opens the store page.
 document.addEventListener("click",e=>{const c=e.target.closest("a.card[data-open]");if(!c||c.closest("#wall")||e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||!BYID.get(c.dataset.open))return;e.preventDefault();openGame(c.dataset.open);});
