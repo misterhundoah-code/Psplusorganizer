@@ -1,0 +1,35 @@
+name: Store preview covers
+
+# Downloads the IGDB portrait covers for the walk-through store preview (store/aisle.json) into store/covers/.
+on:
+  push:
+    branches: [main]
+    paths: ["store/aisle.json", "tools/store/covers.py"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: store-covers
+  cancel-in-progress: false
+
+jobs:
+  covers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q pillow
+      - run: python tools/store/covers.py
+      - name: Save covers
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
+          git add store/covers
+          git diff --cached --quiet && exit 0
+          git commit -m "Store preview: IGDB covers"
+          for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
