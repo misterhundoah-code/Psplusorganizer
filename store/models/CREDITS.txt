@@ -1,2 +1,5 @@
 Zombie, customer (Matt) and Gary (Shaun) models: Zombie Apocalypse Kit by Quaternius (https://quaternius.com/packs/zombieapocalypsekit.html).
 License: CC0 1.0 (public domain). Trimmed to the animations the shop uses and compressed with glTF-Transform.
+Street (street.glb): KayKit City Builder by Kay Lousberg (buildings, cars, streetlights, hydrant, bench, dumpster)
+and Kenney Car Kit (van, delivery truck, SUV, sports cars, garbage truck, ambulance). License: CC0 1.0. Merged
+into one file and compressed with glTF-Transform.

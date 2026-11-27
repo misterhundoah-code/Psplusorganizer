@@ -402,7 +402,7 @@ async function start() {
       const tl = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.14), OUT.tail); tl.position.set(-2.11, 0.62, z); tl.rotation.y = -Math.PI / 2; g.add(tl);
     }
     const beam = new THREE.Mesh(new THREE.PlaneGeometry(7, 3.2), OUT.beam); beam.rotation.x = -Math.PI / 2; beam.position.set(5.6, 0.02, 0); g.add(beam);
-    g.userData = { body, geos: [body.geometry, cab.geometry, beam.geometry, ...g.children.filter((c) => c.geometry.type === "PlaneGeometry").map((c) => c.geometry)] };
+    g.userData = { beam, body, geos: [body.geometry, cab.geometry, beam.geometry, ...g.children.filter((c) => c.geometry.type === "PlaneGeometry").map((c) => c.geometry)] };
     return g;
   }
   // Builds the front wall (kick plate, glass, door, header), the window lettering and neon, and the street.
@@ -463,7 +463,7 @@ async function start() {
       const arm = new THREE.Mesh(own(new THREE.BoxGeometry(0.08, 0.08, 1.1)), OUT.post); arm.position.set(lx, 4.15, zW + 0.1);
       const head = new THREE.Mesh(own(new THREE.BoxGeometry(0.5, 0.12, 0.3)), OUT.lamp); head.position.set(lx, 4.08, zW + 0.6);
       const pool = flat(OUT.pool, 5.5, 5.5, 0.0, zW + 0.4); pool.position.x = lx;
-      street.add(post, arm, head); lamps.push({ head, pool });
+      street.add(post, arm, head); lamps.push({ head, pool, post, arm, x: lx, z: zW - 0.4 });
     }
     group.add(street);
     const cars = [0, 1].map((lane) => {
@@ -473,13 +473,13 @@ async function start() {
       c.visible = false; street.add(c);
       return { c, dir, wait: 2 + lane * 5 + Math.random() * 4, speed: 0, W };
     });
-    return { cars, lamps, neon, neonMat, W, dim: [walkMat, roadMat, OUT.facade, OUT.curb] };
+    return { cars, lamps, neon, neonMat, W, zW, zR, zF, fac, street, dim: [walkMat, roadMat, OUT.facade, OUT.curb] };
   }
   // Cars pass now and then. After hours the streetlights stutter and the OPEN sign gives up.
   function tickStreet(dt, now) {
     const st = S.street;
     for (const car of st.cars) {
-      if (!car.c.visible) { car.wait -= dt; if (car.wait <= 0) { car.c.visible = true; car.heard = false; car.speed = 7 + Math.random() * 5; car.c.userData.body.material = CAR_COLS[Math.floor(Math.random() * CAR_COLS.length)]; car.c.position.x = -car.dir * (car.W / 2 + 6); } continue; }
+      if (!car.c.visible) { car.wait -= dt; if (car.wait <= 0) { car.c.visible = true; car.heard = false; if (CITY.t) carModel(car); car.speed = 7 + Math.random() * 5; car.c.userData.body.material = CAR_COLS[Math.floor(Math.random() * CAR_COLS.length)]; car.c.position.x = -car.dir * (car.W / 2 + 6); } continue; }
       car.c.position.x += car.dir * car.speed * dt;
       const ahead = car.dir * (P.x - car.c.position.x);
       if (!car.heard && ahead > 0 && ahead < 11) { car.heard = true; carBy(P.x, car.c.position.z, car.dir); }
@@ -492,6 +492,7 @@ async function start() {
   }
   function streetNight(on) {
     if (!S || !S.street) return;
+    tintCity(on);
     S.street.dim.forEach((m) => m.color.set(on ? (m === OUT.facade ? "#7a5560" : "#5a3a44") : (m === OUT.curb ? "#5a5d6a" : "#ffffff")));
     S.street.lamps.forEach((l) => (l.head.visible = l.pool.visible = true));
     S.street.neon.visible = true; S.street.neonMat.color.set(on ? "#ff2a2a" : "#ffffff");
@@ -577,6 +578,111 @@ async function start() {
     mg.box(DM.chrome, 0.03, 0.03, 0.4, bx, 0.6, bz);
     obstacles.push({ x0: bx - 0.3, x1: bx + 0.3, z0: bz - 0.24, z1: bz + 0.24 });
     return { neons };
+  }
+
+
+  // ---------- the street in 3D: KayKit City Builder and Kenney Car Kit (both CC0) ----------
+  // One file, store/models/street.glb (about 0.8 MB), fetched a moment after the shop opens. Until it arrives
+  // the street keeps the simple version above. It stays unlit like the rest of the street (basic materials,
+  // tinted for night), so it adds no lights.
+  const CITY = { loading: false, t: null, mats: [] };
+  const NIGHT_TINT = new THREE.Color("#9aa4d8"), DEAD_TINT = new THREE.Color("#6a4450");
+  const SIGNS = [["PIZZA", "#ff5c3a"], ["LAUNDRY", "#5ce1ff"], ["NOODLES", "#ffcf3a"], ["COMICS", "#ff4fd8"], ["24 HR", "#7cff8a"], ["ARCADE", "#b48cff"], ["DINER", "#ff5c7a"], ["HARDWARE", "#ffe27a"], ["RECORDS", "#4fd8ff"], ["DONUTS", "#ff8ad8"]];
+  const CARS = ["car_sedan", "car_taxi", "car_hatchback", "car_stationwagon", "car_police", "k_van", "k_delivery", "k_suv", "k_sedan-sports", "k_hatchback-sports", "k_garbage-truck", "car_sedan", "car_taxi", "car_hatchback"];
+  function loadCity() {
+    if (CITY.loading) return; CITY.loading = true;
+    new GLTFLoader().load("models/street.glb", (gl) => {
+      const t = {}, conv = new Map();
+      for (const node of [...gl.scene.children]) {
+        node.traverse((o) => {
+          if (!o.isMesh) return;
+          if (!conv.has(o.material)) { const m0 = o.material, m = new THREE.MeshBasicMaterial({ map: m0.map || null, color: m0.map ? 0xffffff : m0.color, fog: false }); m.userData.base = m.color.clone(); conv.set(m0, m); CITY.mats.push(m); }
+          o.material = conv.get(o.material);
+        });
+        node.updateMatrixWorld(true);
+        const b = new THREE.Box3().setFromObject(node);
+        t[node.name] = { node, b, size: b.getSize(new THREE.Vector3()), center: b.getCenter(new THREE.Vector3()) };
+      }
+      CITY.t = t; tintCity(night.on);
+      if (S && S.street) cityUp();
+    });
+  }
+  function tintCity(dead) {
+    CITY.mats.forEach((m) => m.color.copy(m.userData.base).multiply(dead ? DEAD_TINT : NIGHT_TINT));
+    if (CITY.lit) CITY.lit.color.set(dead ? "#a05050" : "#ffffff");
+  }
+  // Lights on upstairs. KayKit's texture is a grid of colour swatches and the window glass uses the grey
+  // swatch in the bottom-left corner. Panes of glass (glass triangles that share corners) are picked at random
+  // and drawn again on top with their texture pointing at the warm orange swatch next to it, at full brightness.
+  function lightWindows(piece, share) {
+    piece.traverse((o) => {
+      if (!o.isMesh || o.userData.lit) return;
+      const g = o.geometry, uv = g.attributes.uv, idx = g.index; if (!uv || !idx) return;
+      const tris = [], parent = new Map();
+      const find = (a) => { while (parent.get(a) !== a) { parent.set(a, parent.get(parent.get(a))); a = parent.get(a); } return a; };
+      for (let t = 0; t < idx.count / 3; t++) {
+        let u = 0, v = 0; for (let k = 0; k < 3; k++) { const i = idx.getX(t * 3 + k); u += uv.getX(i); v += uv.getY(i); }
+        if (u / 3 < 0.25 && v / 3 > 0.75) { tris.push(t); for (let k = 0; k < 3; k++) { const i = idx.getX(t * 3 + k); if (!parent.has(i)) parent.set(i, i); } }
+      }
+      if (!tris.length) return;
+      for (const t of tris) { const a = find(idx.getX(t * 3)); for (let k = 1; k < 3; k++) { const b = find(idx.getX(t * 3 + k)); if (a !== b) parent.set(b, a); } }
+      const on = new Map(), lit = [], uv2 = uv.clone();
+      for (const t of tris) {
+        const pane = find(idx.getX(t * 3)); if (!on.has(pane)) on.set(pane, Math.random() < share);
+        if (!on.get(pane)) continue;
+        for (let k = 0; k < 3; k++) { const i = idx.getX(t * 3 + k); lit.push(i); uv2.setX(i, 0.252 + (uv.getX(i) / 0.25) * 0.12); }
+      }
+      if (!lit.length) return;
+      if (!CITY.lit) CITY.lit = new THREE.MeshBasicMaterial({ map: o.material.map, fog: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -4 });
+      const g2 = new THREE.BufferGeometry(); g2.setAttribute("position", g.attributes.position); g2.setAttribute("uv", uv2); g2.setIndex(lit);
+      const m = new THREE.Mesh(g2, CITY.lit); m.userData.lit = true; o.add(m); S.own(g2);
+    });
+  }
+  // a copy of one asset, scaled, with its footprint centred on the origin and its base on the ground
+  function cityPiece(name, s, rot = 0) {
+    const T = CITY.t[name], outer = new THREE.Group(), inner = T.node.clone();
+    inner.scale.setScalar(s); inner.position.set(-T.center.x * s, -T.b.min.y * s, -T.center.z * s);
+    outer.add(inner); outer.rotation.y = rot; return outer;
+  }
+  function carModel(car) {
+    const g = car.c, old = g.userData.model; if (old) g.remove(old);
+    const name = CARS[Math.floor(Math.random() * CARS.length)], T = CITY.t[name];
+    const long = Math.max(T.size.x, T.size.z), s = (name === "k_garbage-truck" ? 6.2 : 4.3) / long;
+    // the car's long side runs along x; its nose points +x, the way the car group drives
+    const m = cityPiece(name, s, (T.size.z > T.size.x ? Math.PI / 2 : 0) + CITY.carTurn);
+    g.add(m); g.userData.model = m;
+  }
+  CITY.carTurn = 0; CITY.bTurn = Math.PI;
+  function cityUp() {
+    const st = S.street; if (st.city || !CITY.t) return;
+    const T = CITY.t, grp = new THREE.Group(); st.city = grp;
+    // a row of buildings along the far side of the street, shop signs lit up on each
+    const order = ["building_C", "building_A", "building_F", "building_B", "building_H", "building_D", "building_G", "building_E"];
+    const s = 7.5 / T.building_A.size.x;
+    let x = -st.W / 2, i = 0;
+    while (x < st.W / 2) {
+      const nm = order[i % order.length], b = T[nm], w = Math.max(b.size.x, b.size.z) * s, d = Math.min(b.size.x, b.size.z) * s;
+      const piece = cityPiece(nm, s, CITY.bTurn); piece.position.set(x + w / 2, 0, st.zF + d / 2); grp.add(piece); lightWindows(piece, 0.4);
+      const [txt, col] = SIGNS[i % SIGNS.length];
+      const sign = new THREE.Mesh(S.own(new THREE.PlaneGeometry(2.6, 0.8)), S.own(new THREE.MeshBasicMaterial({ map: S.own(neonTex(txt, col)), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false })));
+      sign.position.set(x + w / 2, 3.6, st.zF - 0.12); sign.rotation.y = Math.PI; grp.add(sign);
+      x += w + 0.15; i++;
+    }
+    // the painted street becomes a skyline further back
+    st.fac.position.z = st.zF + 16; st.fac.scale.set((st.W / 48) * 1.7, 1.7, 1); st.fac.position.y = 9 * 1.7 - 2;
+    // streetlights, hydrants, a dumpster and benches
+    const lampS = 4.4 / T.streetlight.size.y;
+    for (const l of st.lamps) {
+      l.post.visible = l.arm.visible = l.head.visible = false; l.head = new THREE.Object3D();   // the model has its own lamp
+      const m = cityPiece("streetlight", lampS, 0); m.position.set(l.x, 0, l.z); grp.add(m);
+    }
+    const hS = 0.8 / T.firehydrant.size.y, dS = 1.4 / T.dumpster.size.y, bS = 0.9 / T.bench.size.y;
+    for (const hx of [-st.W / 2 + 9, 6.5, st.W / 2 - 11]) { const m = cityPiece("firehydrant", hS); m.position.set(hx, 0, st.zW - 0.6); grp.add(m); }
+    for (const bx of [-12, 14]) { const m = cityPiece("bench", bS, Math.PI); m.position.set(bx, 0, st.zR + 1.1); grp.add(m); }
+    { const m = cityPiece("dumpster", dS, Math.PI); m.position.set(st.W / 2 - 6, 0, st.zR + 1.2); grp.add(m); }
+    st.street.add(grp);
+    // the cars swap their boxes for proper models
+    for (const car of st.cars) { car.c.children.forEach((ch) => { if (ch !== car.c.userData.beam && ch !== car.c.userData.model) ch.visible = false; }); carModel(car); }
   }
 
   // ---------- the shop (rebuilt when the stock changes) ----------
@@ -776,7 +882,7 @@ async function start() {
       if (x < -halfW + 0.35 || x > halfW - 0.35 || z < zBack + 0.35 || z > zFront - 0.35 || obstacles.some((o) => x > o.x0 - 0.3 && x < o.x1 + 0.3 && z > o.z0 - 0.3 && z < o.z1 + 0.3)) blocked[j * gw + i] = 1;
     }
     S = { group, dispose, boxes, obstacles, tvs, faces, starts, list, halfW, zBack, zFront, lights, lever, switchObjs: [plate, lever, staff], doors,
-      grid: { cell, gw, gh, blocked, dist: new Int32Array(gw * gh) }, counter: { x: cx, z: cz }, street, deco, popHit, bell, bellHit, btnMat, staffSpot: { x: cx - 0.3, z: cz + 2.2 } };
+      grid: { cell, gw, gh, blocked, dist: new Int32Array(gw * gh) }, counter: { x: cx, z: cz }, street, deco, own, popHit, bell, bellHit, btnMat, staffSpot: { x: cx - 0.3, z: cz + 2.2 } };
     $("secsel").innerHTML = `<option value="">Go to a section…</option>` + starts.map((s, i) => `<option value="${i}">${esc(s.name)} (${s.n})</option>`).join("");
     $("stocknote").textContent = kind === "wall" ? (fromWall.label ? `Stocked from your wall: ${fromWall.label}` : "Stocked from your wall's filters") : `Every game, ${GAMES.length} in all, shelved by genre`;
     document.querySelectorAll("[data-stock]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.stock === kind)));
@@ -789,6 +895,7 @@ async function start() {
     }
     loadNear();
     if (night.on) nightLights(true); else streetNight(false);
+    if (CITY.t) cityUp(); else setTimeout(loadCity, 1200);
   }
   // Covers load as you walk up to them and are let go again as you walk away, with a cap on how many are
   // held at once, so a long walk round the shop doesn't fill the phone's graphics memory. Far boxes are
