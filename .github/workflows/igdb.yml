@@ -3,12 +3,15 @@ name: IGDB lookup
 # Looks games up on IGDB for portrait covers and trailer videos (tools/fetch_igdb.py).
 # Weekly, and by hand: "all" updates data/igdb.json with games not looked up yet; "sample" or ids only print.
 on:
+  push:
+    branches: [main]
+    paths: ["tools/fetch_igdb_meta.py"]
   schedule:
     - cron: "17 7 * * 1"
   workflow_dispatch:
     inputs:
       mode:
-        description: "all (update data/igdb.json), misses (retry games not found), refresh (every game again) or sample (print only)"
+        description: "all (update data/igdb.json), misses (retry games not found), refresh (every game again), meta (genres, modes, ratings and similar games only) or sample (print only)"
         required: false
         default: "all"
         type: string
@@ -46,13 +49,20 @@ jobs:
           SAMPLE: ${{ inputs.sample }}
           IDS: ${{ inputs.ids }}
         run: |
-          if [ -n "$IDS" ]; then python tools/fetch_igdb.py --ids "$IDS"
+          if [ "$MODE" = "meta" ]; then echo "Details only."
+          elif [ -n "$IDS" ]; then python tools/fetch_igdb.py --ids "$IDS"
           elif [ "$MODE" = "sample" ]; then python tools/fetch_igdb.py --sample "${SAMPLE:-24}"
           elif [ "$MODE" = "refresh" ]; then python tools/fetch_igdb.py --all --refresh
           elif [ "$MODE" = "misses" ]; then python tools/fetch_igdb.py --all --misses
           else python tools/fetch_igdb.py --all; fi
-      - name: Covers and videos for the wall
+      - name: Genres, modes, makers, ratings and similar games
         if: ${{ !inputs.ids && inputs.mode != 'sample' }}
+        env:
+          IGDB_CLIENT_ID: ${{ secrets.IGDB_CLIENT_ID }}
+          IGDB_CLIENT_SECRET: ${{ secrets.IGDB_CLIENT_SECRET }}
+        run: python tools/fetch_igdb_meta.py
+      - name: Covers and videos for the wall
+        if: ${{ !inputs.ids && inputs.mode != 'sample' && inputs.mode != 'meta' }}
         run: |
           pip install -q pillow
           python tools/igdb_extras.py
@@ -61,7 +71,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
-          git add data/igdb.json data/videos.json data/box.json box store/thumbs store/thumbs.json 2>/dev/null || true
+          git add data/igdb.json data/igdb-meta.json data/videos.json data/box.json box store/thumbs store/thumbs.json 2>/dev/null || true
           git diff --cached --quiet && exit 0
-          git commit -m "Update IGDB covers and trailers"
+          git commit -m "Update IGDB covers, trailers and details"
           for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done

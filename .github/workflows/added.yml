@@ -1,0 +1,49 @@
+name: Date added
+
+# When each game joined the PS Plus catalogue (tools/fetch_added.py -> data/added.json). Daily: reads Sony's
+# latest announcements and dates any game the wall hasn't seen before. The first run, or a manual run with
+# "backfill", reads every catalogue announcement on the PlayStation Blog since June 2022.
+on:
+  workflow_dispatch:
+    inputs:
+      backfill:
+        description: "Read every catalogue announcement since June 2022"
+        required: false
+        default: false
+        type: boolean
+  schedule:
+    - cron: "41 17 * * *"
+  push:
+    branches: [main]
+    paths: ["tools/fetch_added.py"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: added
+  cancel-in-progress: false
+
+jobs:
+  dates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests pillow
+      - env:
+          BACKFILL: ${{ inputs.backfill }}
+        run: |
+          if [ ! -f data/added.json ] || [ "$BACKFILL" = "true" ]; then python tools/fetch_added.py --backfill
+          else python tools/fetch_added.py; fi
+      - name: Commit any changes
+        run: |
+          git add data/added.json
+          git diff --cached --quiet && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update dates added"
+          for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
